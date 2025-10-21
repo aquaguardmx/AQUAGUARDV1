@@ -1,0 +1,294 @@
+---
+import "tailwindcss/tailwind.css";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión</title>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+    <main
+      class="w-full max-w-md sm:bg-white/90 sm:backdrop-blur-sm sm:shadow-2xl sm:rounded-2xl p-4 sm:p-6 flex flex-col gap-4 justify-center mx-auto"
+    >
+      <header class="flex items-center justify-center gap-3">
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
+          Inicia sesión
+        </h1>
+      </header>
+
+      <p class="text-center text-sm text-gray-500 max-w-[85%] mx-auto">
+        Accede con tu correo y contraseña para continuar.
+      </p>
+
+      <form
+        id="loginForm"
+        class="flex flex-col gap-3"
+        aria-label="Formulario de inicio de sesión"
+      >
+        <label
+          for="correo_electronico"
+          class="flex flex-col gap-1 text-sm text-gray-700"
+        >
+          <span class="font-medium">Correo Electrónico</span>
+          <input
+            id="correo_electronico"
+            name="correo_electronico"
+            type="email"
+            required
+            placeholder="tucorreo@ejemplo.com"
+            class="w-full border border-gray-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+          />
+        </label>
+
+        <label
+          for="contrasena"
+          class="flex flex-col gap-1 text-sm text-gray-700"
+        >
+          <span class="font-medium">Contraseña</span>
+          <input
+            id="contrasena"
+            name="contrasena"
+            type="password"
+            required
+            placeholder="Tu contraseña"
+            class="w-full border border-gray-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+          />
+        </label>
+
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 text-gray-600">
+            <input
+              type="checkbox"
+              name="remember"
+              class="rounded border-gray-300"
+            />
+            <span>Recuérdame</span>
+          </label>
+          <a href="/forgot" class="text-blue-600 hover:underline"
+            >¿Olvidaste tu contraseña?</a
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors shadow-lg w-full text-sm font-medium"
+        >
+          Iniciar sesión
+        </button>
+      </form>
+
+      <div
+        id="responseMessage"
+        aria-live="polite"
+        class="text-center text-sm mt-2"
+      >
+      </div>
+
+      <div class="flex items-center gap-3">
+        <hr class="flex-1 border-t border-gray-200" />
+        <span class="text-gray-400 text-sm">o</span>
+        <hr class="flex-1 border-t border-gray-200" />
+      </div>
+
+      <button
+        type="button"
+        class="flex items-center justify-center gap-3 border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition shadow-sm w-full"
+        aria-label="Continuar con Google"
+      >
+        <svg
+          class="w-5 h-5"
+          viewBox="0 0 533.5 544.3"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            fill="#4285F4"
+            d="M533.5 278.4c0-17.6-1.6-35-4.8-51.8H272v98h147.1c-6.4 34.8-25.6 64.2-54.6 83.8v69.6h88.3c51.6-47.6 81.7-117.6 81.7-199.6z"
+          ></path>
+          <path
+            fill="#34A853"
+            d="M272 544.3c73.5 0 135.3-24.2 180.4-65.8l-88.3-69.6c-24.6 16.5-56 26.2-92.1 26.2-70.7 0-130.6-47.6-152-111.6H31.6v70.2C76.7 482.2 167.5 544.3 272 544.3z"
+          ></path>
+          <path
+            fill="#FBBC05"
+            d="M120 325.1c-9.6-28.8-9.6-59.8 0-88.6V166.3H31.6C11.7 209.9 0 245.4 0 281.6s11.7 71.7 31.6 115.3L120 325.1z"
+          ></path>
+          <path
+            fill="#EA4335"
+            d="M272 109.5c39.9 0 75.8 13.7 104.1 40.6l78.1-78.1C408.2 19.8 345.4 0 272 0 167.5 0 76.7 62.1 31.6 166.3l88.4 70.2C141.4 157.1 201.3 109.5 272 109.5z"
+          ></path>
+        </svg>
+        <span class="text-sm text-gray-700 font-medium"
+          >Continuar con Google</span
+        >
+      </button>
+
+      <p class="text-center text-gray-500 text-sm">
+        ¿No tienes cuenta? <a
+          href="/register"
+          class="text-blue-600 hover:underline">Crea una</a
+        >
+      </p>
+      <p class="text-center text-gray-500 text-sm mt-2">
+        <a href="/" class="text-blue-600 hover:underline">Regresar a inicio</a>
+      </p>
+    </main>
+    <script>
+      // 1. Busca el token en ambos almacenamientos.
+      const authToken =
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("authToken");
+
+      console.log("Token de autenticación encontrado:", authToken);
+
+      // 2. Si el token existe, significa que el usuario ya está logueado.
+      if (authToken) {
+        console.log("Usuario ya autenticado. Redirigiendo a /home...");
+
+        // 3. Redirige inmediatamente al panel principal.
+        window.location.href = "/home";
+      }
+
+      if (!document.getElementById("register-spinner-style")) {
+        const style = document.createElement("style");
+        style.id = "register-spinner-style";
+        style.textContent = `
+                .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
+                @keyframes rg-spin { to { transform: rotate(360deg); } }
+            `;
+        document.head.appendChild(style);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector<HTMLFormElement>("#loginForm");
+        let messageDiv = document.getElementById("responseMessage");
+
+        if (!form) {
+          console.error(
+            'No se encontró el formulario con id "loginForm". Añade id="loginForm" al <form>.',
+          );
+          return;
+        }
+
+        const messageEl = messageDiv as HTMLElement;
+
+        // Botón submit y estado de carga
+        const submitButton = form.querySelector<HTMLButtonElement>(
+          'button[type="submit"]',
+        );
+        const originalButtonHTML = submitButton
+          ? submitButton.innerHTML
+          : "Iniciar sesión";
+
+        function setLoading(isLoading: boolean) {
+          if (!submitButton) return;
+          if (isLoading) {
+            submitButton.disabled = true;
+            submitButton.setAttribute("aria-busy", "true");
+            submitButton.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
+                                <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
+                                <path d="M22 12a10 10 0 0 0-10-10" />
+                            </svg>
+                            <span>Cargando...</span>
+                        `;
+            submitButton.classList.add("opacity-70", "cursor-not-allowed");
+          } else {
+            submitButton.disabled = false;
+            submitButton.removeAttribute("aria-busy");
+            submitButton.innerHTML = originalButtonHTML;
+            submitButton.classList.remove("opacity-70", "cursor-not-allowed");
+          }
+        }
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          if (submitButton && submitButton.disabled) return;
+
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+
+          // 1. Comprueba si la casilla "remember" está marcada.
+          const rememberMe = formData.has("remember");
+          console.log(`¿Recordar sesión? ${rememberMe}`);
+
+          setLoading(true);
+
+          try {
+            const response = await fetch("http://127.0.0.1:8000/api/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            console.log("Login response", response.status, result);
+
+            if (!response.ok) {
+              // Si hay errores de validación... (tu lógica de errores está bien)
+              let errorMessage = "Error al iniciar sesión: ";
+              if (result && typeof result === "object") {
+                const messages = [];
+                for (const key in result) {
+                  if (Array.isArray(result[key])) {
+                    messages.push(result[key][0]);
+                  } else if (typeof result[key] === "string") {
+                    messages.push(result[key]);
+                  }
+                }
+                if (messages.length) errorMessage += messages.join(" | ");
+              } else if (typeof result === "string") {
+                errorMessage += result;
+              }
+              messageEl.textContent = errorMessage;
+              messageEl.style.color = "red";
+            } else {
+              // --- INICIO DE LA CORRECCIÓN --- ✅
+              // 1. Decide dónde guardar (localStorage o sessionStorage)
+              //    basado en la variable 'rememberMe'.
+              const storage = rememberMe ? localStorage : sessionStorage;
+
+              // 2. Guarda los datos en el almacenamiento elegido.
+              storage.setItem("authToken", result.token);
+              storage.setItem("userData", JSON.stringify(result.user));
+              // --- FIN DE LA CORRECCIÓN ---
+
+              messageEl.textContent = "¡Inicio exitoso! Serás redirigido.";
+              messageEl.style.color = "green";
+
+              const userRole = result.user.id_rol;
+              console.log("Rol del usuario:", userRole);
+
+              setTimeout(() => {
+                if (userRole === 1) {
+                  console.log("Redirigiendo al panel de administrador...");
+                  window.location.href = "/admin/dashboardAdmin";
+                  return;
+                } else {
+                  console.log("Redirigiendo al panel de usuario...");
+                  window.location.href = "/home";
+                  return;
+                }
+                
+              }, 1500); // Redirige después de 1.5 segundos
+            }
+          } catch (error) {
+            console.error("Error de conexión:", error);
+            messageEl.textContent = "No se pudo conectar con el servidor.";
+            messageEl.style.color = "red";
+          } finally {
+            setLoading(false);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

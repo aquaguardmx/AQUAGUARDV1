@@ -1,0 +1,171 @@
+<header
+    class="fixed top-0 left-0 right-0 w-full z-50 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+>
+    <nav class="bg-white border-gray-200 dark:bg-gray-900">
+        <div
+            class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
+        >
+            <a
+                href="https://flowbite.com/"
+                class="flex items-center space-x-3 rtl:space-x-reverse"
+            >
+                <img
+                    src="https://flowbite.com/docs/images/logo.svg"
+                    class="h-8"
+                    alt="Flowbite Logo"
+                />
+                <span
+                    class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
+                    >AQUAGUARD</span
+                >
+            </a>
+            <div
+                class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"
+            >
+                <button
+                    type="button"
+                    class="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                    id="user-menu-button"
+                    aria-expanded="false"
+                    data-dropdown-toggle="user-dropdown"
+                    data-dropdown-placement="bottom"
+                >
+                    <span class="sr-only">Open user menu</span>
+                    <img
+                        src="https://icongr.am/material/account-circle.svg?size=35&color=cccccc"
+                        alt="Ícono de perfil claro"
+                    />
+                </button>
+                <!-- Dropdown menu -->
+                <div
+                    class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-sm dark:bg-gray-700 dark:divide-gray-600"
+                    id="user-dropdown"
+                >
+                    <div class="px-4 py-3">
+                        <span
+                            id="nombre"
+                            class="block text-sm text-gray-900 dark:text-white"
+                        ></span>
+                        <span
+                            id="correo"
+                            class="block text-sm text-gray-500 truncate dark:text-gray-400"
+                        ></span>
+                    </div>
+                    <ul class="py-2" aria-labelledby="user-menu-button">
+                        <li>
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >Dashboard</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >Settings</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="#"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >Earnings</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                onclick="handleLogout();"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                >Sign out</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+                <button
+                    type="button"
+                    class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                    aria-controls="navbar-user"
+                    aria-expanded="false"
+                >
+                    <span class="sr-only">Open main menu</span>
+                    <svg
+                        class="w-5 h-5"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 17 14"
+                    >
+                        <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M1 1h15M1 7h15M1 13h15"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<script is:inline>
+    // --- AQUÍ ESTÁ LA SOLUCIÓN ---
+    // Esta es la función que faltaba para el botón "Sign out"
+    function handleLogout() {
+        // ¡DEBES BORRAR AMBAS CLAVES!
+        localStorage.removeItem("userData");
+        localStorage.removeItem("authToken");
+
+        // Y también de sessionStorage, ya que tu login lo comprueba
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+
+        console.log("Usuario deslogueado correctamente.");
+
+        window.location.href = "/login";
+    }
+    // --- FIN DE LA SOLUCIÓN ---
+
+    function handleLogout() {
+        localStorage.removeItem("userData");
+        localStorage.removeItem("authToken");
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "/login";
+    }
+
+    // Este script se ejecuta en el cliente apenas carga la página
+    document.addEventListener("DOMContentLoaded", () => {
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Buscamos los datos del usuario en AMBOS almacenamientos
+        const userString =
+            localStorage.getItem("userData") ||
+            sessionStorage.getItem("userData");
+        // --- FIN DE LA CORRECCIÓN ---
+
+        console.log("Navbar check:", userString);
+
+        // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
+        if (!userString) {
+            window.location.href = "/login";
+            return; // Detenemos la ejecución del script
+        }
+
+        try {
+            const user = JSON.parse(userString);
+            const nombre = document.getElementById("nombre");
+            const correo = document.getElementById("correo");
+
+            if (user && nombre && correo) {
+                nombre.textContent = user.nombre;
+                correo.textContent = user.correo_electronico;
+            }
+        } catch (error) {
+            console.error("Error al procesar los datos del usuario:", error);
+            localStorage.clear();
+            sessionStorage.clear(); // Limpia ambos también
+            window.location.href = "/login";
+        }
+    });
+</script>

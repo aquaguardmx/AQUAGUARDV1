@@ -1,0 +1,45 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="AquaGuard Dashboard">
+    <h1 id="welcome-message" class="text-2xl font-bold mb-4 dark:text-white">
+    </h1>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Buscamos los datos del usuario en AMBOS almacenamientos
+            const userString =
+                localStorage.getItem("userData") ||
+                sessionStorage.getItem("userData");
+            // --- FIN DE LA CORRECCIÓN ---
+            
+            console.log("Dashboard check:", userString);
+
+            // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
+            if (!userString) {
+                window.location.href = "/login";
+                return; // Detenemos la ejecución del script
+            }
+
+            try {
+                const user = JSON.parse(userString);
+                const welcomeMessage =
+                    document.getElementById("welcome-message");
+
+                if (user && welcomeMessage) {
+                    welcomeMessage.textContent = `Bienvenido, ${user.nombre}!`;
+                }
+            } catch (error) {
+                console.error(
+                    "Error al procesar los datos del usuario:",
+                    error,
+                );
+                localStorage.clear();
+                sessionStorage.clear(); // Limpia ambos también
+                window.location.href = "/login";
+            }
+        });
+    </script>
+</AdminLayout>
