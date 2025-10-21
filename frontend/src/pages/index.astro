@@ -1,18 +1,288 @@
 ---
-
+import "../styles/estilos.css";
+import Header from "../components/aquaguard-components/Header.astro";
+import Footer from "../components/aquaguard-components/Footer.astro";
 ---
 
-<html lang="en">
+<!doctype html>
+<html lang="es">
 	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>AquaGuard - Monitoreo de Calidad del Agua</title>
+		<!--Font Awesome 6-->
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<!--Estilos personalizados-->
+		<link rel="stylesheet" href="../styles/estilos.css" />
 	</head>
 	<body>
-		<h1>AQUAGUARD INDEX</h1>
-		<p>Ir a <a href="/login">Login</a></p>
-		<p>Ir a <a href="/register">Registro</a></p>
+		<div class="wrapper">
+			<Header />
+
+			<section class="hero_section">
+				<div class="wrapper_inner">
+					<div class="hero_content">
+						<h5>BIENVENIDO A AQUAGUARD</h5>
+						<h1>
+							Explora la calidad del agua en cuerpos superficiales
+						</h1>
+						<p>
+							Descubre el estado de ríos, lagos y presas en
+							México. Consulta datos oficiales, aprende sobre
+							parametros de calidad y conoce recomendaciones para
+							proteger el agua.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- 
+
+			<section class="features_section">
+				<div class="wrapper_inner">
+					<div class="section_title">
+						<h2>Qué Encontrarás</h2>
+					</div>
+
+					<div class="features_grid">
+						<div class="feature_card">
+							<div class="feature_icon">
+								<i class="fas fa-map-marked-alt"></i>
+							</div>
+							<h3 class="feature_title">Mapa Interactivo</h3>
+							<p>
+								Explora la calidad del agua en cuerpos
+								superficiales cercanos a ti con datos
+								actualizados y proporcionados por CONAGUA.
+							</p>
+						</div>
+
+						<div class="feature_card">
+							<div class="feature_icon">
+								<i class="fas fa-database"></i>
+							</div>
+							<h3 class="feature_title">Datos Detallados</h3>
+							<p>
+								Información completa sobre contaminantes,
+								calidad del agua y recomendaciones.
+							</p>
+						</div>
+
+						<div class="feature_card">
+							<div class="feature_icon">
+								<i class="fas fa-filter"></i>
+							</div>
+							<h3 class="feature_title">Soluciones</h3>
+							<p>
+								Recomendaciones personalizadas de tratamiento
+								según los parámetros de calidad.
+							</p>
+						</div>
+
+						<div class="feature_card">
+							<div class="feature_icon">
+								<i class="fas fa-gamepad"></i>
+							</div>
+							<h3 class="feature_title">Juego Educativo</h3>
+							<p>
+								Aprende sobre conservación del agua de forma
+								interactiva y divertida.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="map_section">
+				<div class="wrapper_inner">
+					<h2>¿Quieres ver el mapa?</h2>
+					<p>
+						Accede al mapa interactivo para consultar la calidad del
+						agua, buscar cuerpos de agua por nombre o ubicación y
+						obtener recomendaciones de tratamiento.
+					</p>
+					<p>.</p>
+					<a href="mapaContaminacion.html" class="cta_button"
+						>Explorar Mapa</a
+					>
+				</div>
+			</section>
+
+			<section class="video_section">
+				<div class="wrapper_inner">
+					<div class="section_title">
+						<h2>Video Introductorio</h2>
+					</div>
+
+					<div class="video_container">
+						<video controls poster="imagenes/posterMapa.PNG">
+							<source
+								src="imagenes/videoMapa.mp4"
+								type="video/mp4"
+							/>
+							Tu navegador no soporta el video.
+						</video>
+					</div>
+				</div>
+			</section>
+
+			<section class="education_section">
+				<div class="wrapper_inner">
+					<div class="section_title">
+						<h2>Educación</h2>
+					</div>
+
+					<p>
+						Contenido sobre la calidad del agua y el medio ambiente.
+					</p>
+
+					<div class="content-grid">
+						<div class="content-card">
+							<div class="card-image">
+								<img
+									src="imagenes/microplasticos.jpg"
+									alt="Microplasticos"
+								/>
+							</div>
+							<div class="card-content">
+								<h3>
+									Que son los microplasticos y como contaminan
+									el agua
+								</h3>
+								<p>
+									Descubre qué son los microplásticos, sus
+									fuentes, impacto en ecosistemas acuáticos y
+									estrategias para combatir su contaminación
+									en el agua.
+								</p>
+								<a
+									href="que-son-microplasticos-y-como-contaminan-agua.html"
+									class="read-more">Leer Mas</a
+								>
+							</div>
+						</div>
+
+						<div class="content-card">
+							<div class="card-image">
+								<img
+									src="imagenes/parametros-agua.jpg"
+									alt="Parámetros de Control del Agua Potable"
+								/>
+							</div>
+							<div class="card-content">
+								<h3>Parámetros de control del agua potable</h3>
+								<p>
+									La vigilancia de la calidad del agua para el
+									abastecimiento a la población, comienza en
+									el origen de la misma, es decir, en
+									embalses, ríos y pozos, continúa durante su
+									tratamiento en las estaciones de tratamiento
+									de agua potable (ETAP) y a través de su paso
+									por la red de distribución hasta que llega
+									al consumidor.
+								</p>
+								<a
+									href="parametros-de-control-del-agua-potable.html"
+									class="read-more">Leer Mas</a
+								>
+							</div>
+						</div>
+
+						<div class="content-card">
+							<div class="card-image">
+								<img
+									src="imagenes/contaminacion-agua.jpg"
+									alt="Contaminación del agua"
+								/>
+							</div>
+							<div class="card-content">
+								<h3>Contaminación del agua</h3>
+								<p>
+									La contaminación del agua: cómo no poner en
+									peligro nuestra fuente de vida
+								</p>
+								<a
+									href="contaminacion-del-agua.html"
+									class="read-more">Leer Mas</a
+								>
+							</div>
+						</div>
+
+						<!--Divs para futuros contenidos-->
+						<!--<div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Juego" alt="Juego Educativo">
+                        </div>
+                        <div class="card-content">
+                            <h3>Juego Educativo</h3>
+                            <p>Aprende sobre conservación del agua de forma interactiva y divertida.</p>
+                            <a href="juego.html" class="read-more">Jugar ahora</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Contaminantes" alt="Contaminantes">
+                        </div>
+                        <div class="card-content">
+                            <h3>Contaminantes del Agua</h3>
+                            <p>Conoce los principales contaminantes y sus efectos en la salud y el medio ambiente.</p>
+                            <a href="contaminantes.html" class="read-more">Saber más</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Soluciones" alt="Soluciones">
+                        </div>
+                        <div class="card-content">
+                            <h3>Soluciones y Recomendaciones</h3>
+                            <p>Descubre recomendaciones personalizadas de filtración según parámetros de calidad.</p>
+                            <a href="soluciones.html" class="read-more">Ver soluciones</a>
+                        </div>
+                    </div>
+					</div>
+				</div>
+			</section>
+			-->
+
+			<Footer />
+		</div>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				// Mobile menu toggle (usa una clase para controlar la visibilidad)
+				const menuToggle = document.querySelector(
+					".mobile_menu_button",
+				);
+				const mainMenu = document.querySelector(".main_menu");
+				if (menuToggle && mainMenu) {
+					menuToggle.addEventListener("click", function () {
+						mainMenu.classList.toggle("open");
+					});
+				}
+
+				// Header scroll effect (verifica que exista el header)
+				const header = document.querySelector("header");
+				function updateHeaderTransparency() {
+					if (!header) return;
+					if (window.scrollY <= 10) {
+						header.classList.add("transparent");
+					} else {
+						header.classList.remove("transparent");
+					}
+				}
+				window.addEventListener("scroll", updateHeaderTransparency);
+				updateHeaderTransparency(); // Ejecuta al cargar la página
+			});
+		</script>
+		<!-- Requiere CSS: .main_menu.open { display: flex; } o el comportamiento que prefieras -->
 	</body>
 </html>

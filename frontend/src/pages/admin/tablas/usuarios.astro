@@ -41,76 +41,89 @@ try {
 ---
 
 <AdminLayout title="Gestión de Usuarios">
-    <h1 class="text-2xl font-bold dark:text-white">Gestión de Usuarios</h1>
-    <p class="dark:text-gray-300">
-        Aquí puedes ver todos los usuarios registrados desde la API.
-    </p>
+    <div class="p-6">
+        <h1 class="text-2xl font-bold dark:text-white">Gestión de Usuarios</h1>
+        <p class="dark:text-gray-300">
+            Aquí puedes ver todos los usuarios registrados desde la API.
+        </p>
 
-    {
-        error && (
-            <div
-                class="p-4 my-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert"
-            >
-                <span class="font-medium">¡Error de conexión!</span> {error}
-            </div>
-        )
-    }
+        {
+            error && (
+                <div
+                    class="p-4 my-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                    role="alert"
+                >
+                    <span class="font-medium">¡Error de conexión!</span> {error}
+                </div>
+            )
+        }
 
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-6">
-        <table
-            class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
-        >
-            <thead
-                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg my-6">
+            <table
+                class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
             >
-                <tr>
-                    <th scope="col" class="px-6 py-3"> ID</th>
-                    <th scope="col" class="px-6 py-3"> Nombre</th>
-                    <th scope="col" class="px-6 py-3"> Paterno</th>
-                    <th scope="col" class="px-6 py-3"> Materno</th>
-                    <th scope="col" class="px-6 py-3"> Email</th>
-                    <th scope="col" class="px-6 py-3"> Rol</th>
-                    <th scope="col" class="px-6 py-3"> Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {
-                    usuarios.length > 0 ? (
-                        usuarios.map((usuario) => (
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <th
-                                    scope="row"
-                                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                                >
-                                    {usuario.id_usuario}
-                                </th>
-                                <td class="px-6 py-4">{usuario.nombre}</td>
-                                <td class="px-6 py-4">{usuario.ap_paterno}</td>
-                                <td class="px-6 py-4">{usuario.ap_materno}</td>
-                                <td class="px-6 py-4">{usuario.correo_electronico}</td>
-                                <td class="px-6 py-4">{usuario.id_rol === '1' ? 'Administrador' : 'Usuario'}</td>
-                                <td class="px-6 py-4">
-                                    <a
-                                        href={`/admin/usuarios/${usuario.id_usuario}`}
-                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                <thead
+                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                >
+                    <tr>
+                        <th scope="col" class="px-6 py-3"> ID</th>
+                        <th scope="col" class="px-6 py-3"> Nombre</th>
+                        <th scope="col" class="px-6 py-3"> Paterno</th>
+                        <th scope="col" class="px-6 py-3"> Materno</th>
+                        <th scope="col" class="px-6 py-3"> Email</th>
+                        <th scope="col" class="px-6 py-3"> Rol</th>
+                        <th scope="col" class="px-6 py-3"> Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        usuarios.length > 0 ? (
+                            usuarios.map((usuario) => (
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <th
+                                        scope="row"
+                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                                     >
-                                        Ver Detalles
-                                    </a>
+                                        {usuario.id_usuario}
+                                    </th>
+                                    <td class="px-6 py-4">{usuario.nombre}</td>
+                                    <td class="px-6 py-4">
+                                        {usuario.ap_paterno}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {usuario.ap_materno}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {usuario.correo_electronico}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {Number(usuario.id_rol) === 1
+                                            ? "Administrador"
+                                            : "Usuario"}
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <a
+                                            href={`/admin/usuarios/${usuario.id_usuario}`}
+                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                                        >
+                                            Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td colspan="3" class="px-6 py-4 text-center">
+                                    {error
+                                        ? "Error al cargar datos."
+                                        : "No se encontraron usuarios."}
                                 </td>
                             </tr>
-                        ))
-                    ) : (
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td colspan="3" class="px-6 py-4 text-center">
-                                {error
-                                    ? "Error al cargar datos."
-                                    : "No se encontraron usuarios."}
-                            </td>
-                        </tr>
-                    )
-                }
-            </tbody>
-        </table>
+                        )
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</AdminLayout>
+    </AdminLayout>

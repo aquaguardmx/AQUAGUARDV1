@@ -34,16 +34,12 @@ class RegisterController extends Controller
             'ap_paterno' => $data['ap_paterno'],
             'ap_materno' => $data['ap_materno'] ?? null,
             'correo_electronico' => $data['correo_electronico'],
-            // Dejamos que el cast 'contrasena' => 'hashed' en el modelo haga el hash
             'contrasena' => $data['contrasena'],
         ];
 
-        // Forzar rol por defecto = 2 (ignorar valor enviado desde el frontend)
         $create['id_rol'] = 2;
 
-        // Forzar id_escuela siempre a NULL (ignorar cualquier valor enviado)
         $create['id_escuela'] = null;
-        
 
         $user = User::create($create);
 
