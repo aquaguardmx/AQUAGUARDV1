@@ -3,14 +3,50 @@
 /*sacado de mapa contaminacion para cuando se retracta el header*/
 /*se elimino ya que comparte estilos con el index y se unifico todo en un solo archivo*/
 
+/* Estilos para el juego */
+.game-header {
+    height: 80px;
+    background-color: #007BFF;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.game-logo {
+    max-height: 100%;
+    width: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.game-logo:hover {
+    transform: scale(1.05);
+}
+
+#game-container {
+    width: 100%;
+    height: calc(100vh - 80px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Resto de los estilos */
 /* Content Grid para index.html*/
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            margin: 50px 0;
-        }
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin: 50px 0;
+}
         
         .content-card {
             background: white;
@@ -157,6 +193,7 @@
             --secondary-color: #00b4d8;
             --accent-color: #90e0ef;
             --dark-color: #023047;
+            --dark-blue: #005a9c; /* agregado: color para gradiente */
             --light-color: #e6f7ff;
             --text-color: #333333;
             --light-text: #f8f9fa;
@@ -227,6 +264,17 @@
             width: auto;
             max-width: 100%;
             transition: all 0.3s ease;
+        }
+        /* Contenedor usado en páginas internas para centrar logo */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            display: inline-block;
+            height: 64px;
+            width: auto;
+            max-width: 100%;
         }
         
         /* Navigation */

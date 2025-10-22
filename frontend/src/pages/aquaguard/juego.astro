@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaGuard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    
+    <style>
+        :root {
+            --ocean-blue-deep: #000080;
+            --ocean-blue-mid: #1E90FF;
+            --ocean-blue-sky: #87CEEB;
+            --hud-bg: rgba(255, 255, 255, 0.85);
+            --text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            --box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>'), auto;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 120px);
+            top: 120px;
+            background: linear-gradient(to bottom, var(--ocean-blue-sky) 0%, var(--ocean-blue-mid) 70%, var(--ocean-blue-deep) 100%);
+            overflow: hidden;
+            transition: filter 1.5s ease;
+            box-sizing: border-box;
+        }
+        #game-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.2;
+            background: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="%23fff" fill-opacity="0.5" d="M0,160L60,154.7C120,149,240,139,360,154.7C480,171,600,213,720,218.7C840,224,960,192,1080,181.3C1200,171,1320,181,1380,186.7L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>');
+            background-repeat: repeat-x;
+            background-size: cover;
+            animation: waveMove 10s linear infinite;
+        }
+        @keyframes waveMove {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 400px; }
+        }
+        .game-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,248,255,0.9) 100%);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border-bottom: 2px solid rgba(30,144,255,0.3);
+            pointer-events: auto;
+        }
+
+        .game-title {
+            color: #003366;
+            text-shadow: var(--text-shadow);
+            margin: 0 0 5px 0;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .game-logo {
+            max-width: 80px;
+            height: auto;
+            margin: 5px 0;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            position: relative;
+            z-index: 1001;
+        }
+        .game-logo:hover {
+            transform: scale(1.05);
+        }
+        .game-subtitle {
+            color: #003366;
+            text-shadow: var(--text-shadow);
+            margin: 5px 0 0 0;
+            font-size: 0.95em;
+        }
+        .entity {
+            position: absolute;
+            transition: opacity 1.5s ease-out, top 0.5s ease-out, transform 0.2s ease;
+            will-change: transform, top, left;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: manipulation;
+            z-index: 10; /* Ensure entities appear above background elements */
+        }
+        .entity img {
+            width: 100%;
+            height: auto;
+            pointer-events: none;
+        }
+        .trash, .power-up {
+            cursor: pointer;
+        }
+        .trash:hover, .power-up:hover {
+            transform: scale(1.15) rotate(5deg) !important;
+        }
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            background-color: var(--hud-bg);
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: var(--box-shadow);
+            z-index: 100;
+        }
+        .hud-item { font-size: 1.3rem; font-weight: bold; color: #003366; }
+        #pollution-bar { transition: width 0.5s ease-in-out, background-color 0.5s; }
+        #game-over-screen, #start-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--hud-bg);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            z-index: 200;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-width: 400px;
+        }
+        .d-none { display: none !important; }
+        .click-effect {
+            position: absolute;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999;
+            animation: click-animation 0.5s ease-out forwards;
+        }
+        @keyframes click-animation {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .score-popup {
+            position: absolute;
+            color: #ffc107;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            z-index: 999;
+            animation: score-animation 1s ease-out forwards;
+        }
+        @keyframes score-animation {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-80px); opacity: 0; }
+        }
+        /* -- NUEVO: Animación para el aumento de dificultad -- */
+        #difficulty-indicator {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            background-color: rgba(255, 87, 34, 0.8);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+            z-index: 500;
+            opacity: 0;
+            animation: fade-in-out 2.5s ease-in-out;
+        }
+        @keyframes fade-in-out {
+            0%, 100% { opacity: 0; transform: translate(-50%, -20px); }
+            10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        /* Mobile responsiveness improvements */
+        @media (max-width: 768px) {
+            .game-header {
+                height: 100px;
+                padding: 8px 15px;
+            }
+            #game-container {
+                height: calc(100vh - 100px);
+                top: 100px;
+            }
+            .game-title {
+                font-size: 1.4em;
+            }
+            .game-logo {
+                max-width: 60px;
+            }
+            .hud {
+                flex-direction: column;
+                gap: 8px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+                bottom: 10px;
+            }
+            .hud-item {
+                font-size: 1rem;
+            }
+            #pollution-bar {
+                width: 200px !important;
+            }
+            .pollution-container {
+                text-align: center;
+            }
+            #game-over-screen, #start-screen {
+                min-width: 300px;
+                padding: 30px 20px;
+                margin: 0 20px;
+                max-width: calc(100vw - 40px);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-header {
+                height: 90px;
+            }
+            #game-container {
+                height: calc(100vh - 90px);
+                top: 90px;
+            }
+            .game-title {
+                font-size: 1.2em;
+            }
+            .game-subtitle {
+                font-size: 0.8em;
+            }
+            .hud-item {
+                font-size: 0.9rem;
+            }
+            #pollution-bar {
+                width: 150px !important;
+            }
+        }
+    </style>
+</head>
+<body>  
+    <div class="game-header">
+        <div class="logo-container">
+                <a href="/">
+                    <img src="/img/logo.png" alt="Logo AquaGuard" class="game-logo" id="logo-home">
+                </a>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <div class="hud">
+        <div class="hud-item">
+            <strong>Puntaje:</strong> <span id="score">0</span>
+        </div>
+        <div class="hud-item">
+            <strong>Nivel:</strong> <span id="level">1</span>
+        </div>
+        <div class="hud-item pollution-container">
+            <strong>Contaminación:</strong>
+            <div class="progress" style="height: 30px; width: 300px;">
+                <div id="pollution-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="d-none">
+        <h2>¡El Océano te necesita!</h2>
+        <p>La contaminación ha llegado a un punto crítico. Pero no te rindas.</p>
+        <p class="h4">Tu puntaje final fue: <span id="final-score" class="fw-bold">0</span></p>
+        <button class="btn btn-primary btn-lg" onclick="location.reload()">Jugar de Nuevo</button>
+    </div>
+
+    <div id="start-screen">
+        <h2>Bienvenido a el juego de AquaGuard</h2>
+        <p>Mantén el océano limpio haciendo clic en la basura. Si la barra de contaminación se llena, la vida marina sufrirá. ¡Buena suerte!</p>
+        <button id="start-button" class="btn btn-success btn-lg" disabled>Cargando...</button>
+    </div>
+
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const CONFIG = {
+                MAX_CREATURES: 15, // Aumentado de 8 a 15 peces
+                SCORE_PER_TRASH: 10,
+                POLLUTION_REDUCTION_ON_CLICK: 5,
+                POWERUP_POLLUTION_REDUCTION: 25,
+                POWERUP_CHANCE: 0.15,
+                
+                DIFFICULTY_SCORE_THRESHOLDS: [0, 50, 100, 200, 350, 500, 700, 1000, 1500, 2000],
+                
+                difficulty: {
+                    level: 1,
+                    basePollutionPerSecond: 1.2, 
+                    pollutionPerSecond: 1.2,
+                    spawnInterval: 2000,
+                    minSpawnInterval: 300, // Reducido de 500 a 300 para spawn más rápido
+                    itemBaseSpeed: 1,
+                    pollutionMultiplier: 1,
+                }
+            };
+
+            const ASSETS = {
+                creatures: [
+                    { src: 'assets/pulpo.png', size: 90 },
+                    { src: 'assets/camaron.png', size: 70 },
+                    { src: 'assets/tortuga marina.png', size: 120 },
+                    { src: 'assets/medusa.png', size: 80 },
+                    { src: 'assets/pezpayaso.png', size: 90 },
+                    { src: 'assets/pez.png', size: 85 },
+                    { src: 'assets/pecesgrupo.png', size: 110 },
+                ],
+                trash: [
+                    { src: 'assets/lata.png', size: 100 },
+                    { src: 'assets/bolsa.png', size: 120 },
+                    { src: 'assets/bota.png', size: 110 },
+                    { src: 'assets/botella.png', size: 95 },
+                    { src: 'assets/vaso.png', size: 85 },
+                    { src: 'assets/llanta.png', size: 130 },
+                    { src: 'assets/basura.png', size: 105 },
+                ],
+                powerUp: { src: 'assets/burbuja.png', size: 90 }
+            };
+
+            const DOM = {
+                gameContainer: document.getElementById('game-container'),
+                hud: document.querySelector('.hud'),
+                score: document.getElementById('score'),
+                level: document.getElementById('level'),
+                pollutionBar: document.getElementById('pollution-bar'),
+                gameOverScreen: document.getElementById('game-over-screen'),
+                finalScore: document.getElementById('final-score'),
+                startScreen: document.getElementById('start-screen'),
+                startButton: document.getElementById('start-button'),
+            };
+
+            const SOUNDS = {
+                collect: document.getElementById('collect-sound') || null,
+                powerup: document.getElementById('powerup-sound') || null,
+                gameover: document.getElementById('gameover-sound') || null,
+                bgMusic: document.getElementById('bg-music') || null
+            };
+            
+            class Entity {
+                constructor(data, className) {
+                    this.element = document.createElement('div');
+                    this.element.className = `entity ${className}`;
+                    this.element.style.width = `${data.size}px`;
+                    this.element.style.height = `${data.size}px`;
+                    this.element.innerHTML = `<img src="${data.src}" alt="${className}" style="width: 100%; height: 100%; object-fit: contain;">`;
+                    
+                    this.width = data.size;
+                    this.height = data.size;
+                    this.isMarkedForRemoval = false;
+
+                    DOM.gameContainer.appendChild(this.element);
+                }
+
+                update(deltaTime) {  }
+
+                render() {
+                    if (!this.element) return;
+                    
+                    const x = isNaN(this.x) ? 0 : this.x;
+                    const y = isNaN(this.y) ? 0 : this.y;
+                    const rotation = isNaN(this.rotation) ? 0 : this.rotation;
+                    
+                    this.element.style.left = `${x}px`;
+                    this.element.style.top = `${y}px`;
+                    this.element.style.transform = `rotate(${rotation}deg)`;
+                }
+
+                remove() {
+                    if (this.element && this.element.parentNode) {
+                        this.element.parentNode.removeChild(this.element);
+                    }
+                    this.element = null;
+                }
+            }
+
+            class Creature extends Entity {
+                constructor(data) {
+                    super(data, 'creature');
+                    const direction = Math.random() < 0.5 ? 1 : -1;
+                    
+                    this.x = direction === 1 ? -this.width/2 : window.innerWidth - this.width/2;
+                    
+                    const gameAreaTop = 50;
+                    const gameAreaHeight = window.innerHeight - 300;
+                    this.y = gameAreaTop + Math.random() * Math.max(100, gameAreaHeight - this.height);
+                    
+                    this.speedX = (Math.random() * 1.5 + 0.5) * direction;
+                    this.speedY = (Math.random() - 0.5) * 0.8;
+                    this.wavePhase = Math.random() * Math.PI * 2;
+                    this.element.style.transform = `scaleX(${direction})`;
+                    
+                    this.render();
+                }
+
+                update(deltaTime) {
+                    this.wavePhase += 0.02 * deltaTime;
+                    this.x += this.speedX * deltaTime;
+                    this.y += (Math.sin(this.wavePhase) * 0.5 + this.speedY) * deltaTime;
+
+                    const gameTopY = 0; 
+                    const gameBottomY = DOM.hud.offsetTop - 140; 
+                    const gameAreaHeight = gameBottomY - gameTopY;
+                    
+                    if ((this.speedX > 0 && this.x > window.innerWidth) || (this.speedX < 0 && this.x < -this.width)) {
+                        this.speedX *= -1;
+                        this.element.style.transform = `scaleX(${this.speedX > 0 ? 1 : -1})`;
+                        this.y = Math.random() * (gameAreaHeight - this.height);
+                    }
+                    if (this.y < gameTopY || this.y > gameBottomY - this.height) {
+                        this.speedY *= -1;
+                        this.y = Math.max(gameTopY, Math.min(this.y, gameBottomY - this.height));
+                    }
+                }
+            }
+
+            class Item extends Entity {
+                constructor(data, className, game) {
+                    super(data, className);
+                    this.game = game;
+                    
+                    this.x = Math.random() * (window.innerWidth - this.width);
+                    this.y = 50;
+                    
+                    this.speedY = Math.random() * 1 + CONFIG.difficulty.itemBaseSpeed;
+                    this.speedX = 0;
+                    this.rotation = Math.random() * 360;
+                    this.rotationSpeed = (Math.random() - 0.5) * 2;
+                    this.isFloating = false;
+
+                    this.element.addEventListener('click', (e) => this.onClick(e));
+                    this.element.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.onClick(e.touches[0] || e);
+                    }, { passive: false });
+                    
+                    this.render();
+                }
+
+                update(deltaTime) {
+                    this.rotation += this.rotationSpeed * deltaTime;
+                    
+                    const gameTopY = 0; 
+                    const gameBottomY = DOM.hud.offsetTop - 140;
+                    
+                    if (this.isFloating) {
+                        this.x += this.speedX * deltaTime;
+                        this.y += this.speedY * deltaTime;
+                        
+                        if (this.x < 0 || this.x > window.innerWidth - this.width) this.speedX *= -1;
+                        if (this.y < gameTopY || this.y > gameBottomY - this.height) this.speedY *= -1;
+                        this.y = Math.max(gameTopY, Math.min(this.y, gameBottomY - this.height));
+                    } else {
+                        this.y += this.speedY * deltaTime;
+                        if (this.y > gameBottomY - this.height) {
+                           this.onHitBottom();
+                        }
+                    }
+                }
+                
+                onClick(event) {
+                    if (this.isMarkedForRemoval) return;
+                    this.isMarkedForRemoval = true;
+                    this.element.style.opacity = '0';
+                    this.element.style.transform = 'scale(2)';
+                    createClickEffect(event.clientX, event.clientY);
+                }
+            }
+
+            class Trash extends Item {
+                constructor(data, game) {
+                    super(data, 'trash', game);
+                }
+                onHitBottom() {
+                    this.isFloating = true;
+                    this.speedX = (Math.random() - 0.5) * 2;
+                    this.speedY = (Math.random() - 0.5) * 2; 
+                }
+                onClick(event) {
+                    super.onClick(event);
+                    this.game.updateScore(CONFIG.SCORE_PER_TRASH);
+                    this.game.updatePollution(-CONFIG.POLLUTION_REDUCTION_ON_CLICK);
+                    createScorePopup(this.x + this.width / 2, this.y, `+${CONFIG.SCORE_PER_TRASH}`);
+                    playSound(SOUNDS.collect);
+                }
+            }
+
+            class PowerUp extends Item {
+                constructor(data, game) {
+                    super(data, 'power-up', game);
+                }
+                onHitBottom() {
+                    this.isMarkedForRemoval = true; 
+                    this.element.style.opacity = '0';
+                }
+                 onClick(event) {
+                    super.onClick(event);
+                    this.game.updatePollution(-CONFIG.POWERUP_POLLUTION_REDUCTION);
+                    createScorePopup(this.x + this.width / 2, this.y, '¡GENIAL!');
+                    playSound(SOUNDS.powerup);
+                }
+            }
+
+
+            
+            class Game {
+                constructor() {
+                    this.score = 0;
+                    this.pollution = 0;
+                    this.entities = [];
+                    this.lastTime = 0;
+                    this.gameRunning = false;
+                    this.animationFrameId = null;
+                    this.spawnTimeout = null;
+                    this.pollutionAccumulator = 0;
+                }
+
+                start() {
+                    this.cleanup();
+                    
+                    this.gameRunning = true;
+                    DOM.startScreen.classList.add('d-none');
+                    DOM.gameContainer.style.filter = 'none';
+
+                    this.score = 0;
+                    this.pollution = 0;
+                    this.entities = [];
+                    DOM.gameContainer.innerHTML = '';
+                    this.gameStartTime = performance.now(); // Inicializar tiempo de inicio
+                    
+                    CONFIG.difficulty.level = 1;
+                    CONFIG.difficulty.pollutionPerSecond = CONFIG.difficulty.basePollutionPerSecond;
+                    CONFIG.difficulty.pollutionMultiplier = 1;
+                    CONFIG.difficulty.spawnInterval = 2000;
+                    CONFIG.difficulty.itemBaseSpeed = 1;
+                    CONFIG.POWERUP_CHANCE = 0.15;
+                    
+                    this.updateScore(0);
+                    this.updatePollution(0);
+                    DOM.level.textContent = CONFIG.difficulty.level;
+
+                    for (let i = 0; i < CONFIG.MAX_CREATURES; i++) {
+                        const data = ASSETS.creatures[Math.floor(Math.random() * ASSETS.creatures.length)];
+                        this.entities.push(new Creature(data));
+                    }
+
+                    this.spawnItem();
+
+                    if (SOUNDS.bgMusic) {
+                        SOUNDS.bgMusic.volume = 0.3;
+                        SOUNDS.bgMusic.play().catch(e => console.error("Autoplay bloqueado"));
+                    }
+
+                    this.lastTime = performance.now();
+                    this.animationFrameId = requestAnimationFrame((timestamp) => this.mainLoop(timestamp));
+                }
+
+                mainLoop(timestamp) {
+                    if (!this.gameRunning) return;
+
+                    try {
+                        const deltaTime = (timestamp - this.lastTime) / 16.67; 
+                        this.lastTime = timestamp;
+
+                        // Sistema de dificultad basado en tiempo
+                        const gameTime = (timestamp - this.gameStartTime) / 1000; // tiempo en segundos
+                        const timeMultiplier = 1 + (gameTime / 120); // aumenta cada 2 minutos
+                        
+                        const currentPollutionRate = CONFIG.difficulty.pollutionPerSecond * CONFIG.difficulty.pollutionMultiplier * timeMultiplier;
+                        this.pollutionAccumulator += currentPollutionRate * (deltaTime / 60);
+                        if (this.pollutionAccumulator >= 1) {
+                            this.updatePollution(Math.floor(this.pollutionAccumulator));
+                            this.pollutionAccumulator -= Math.floor(this.pollutionAccumulator);
+                        }
+                        
+                        this.entities.forEach(entity => {
+                            if (entity && entity.update && entity.render) {
+                                entity.update(deltaTime);
+                                entity.render();
+                            }
+                        });
+
+                        this.entities = this.entities.filter(entity => {
+                            if (entity && entity.isMarkedForRemoval) {
+                                entity.remove();
+                                return false;
+                            }
+                            return entity !== null && entity !== undefined;
+                        });
+                        
+                        this.animationFrameId = requestAnimationFrame((t) => this.mainLoop(t));
+                    } catch (error) {
+                        console.error('Game loop error:', error);
+                        this.endGame();
+                    }
+                }
+
+                spawnItem() {
+                    if (!this.gameRunning) return;
+                    
+                    const isPowerUp = Math.random() < CONFIG.POWERUP_CHANCE;
+                    if (isPowerUp) {
+                        this.entities.push(new PowerUp(ASSETS.powerUp, this));
+                    } else {
+                        const data = ASSETS.trash[Math.floor(Math.random() * ASSETS.trash.length)];
+                        this.entities.push(new Trash(data, this));
+                    }
+                    
+                    // Acelerar spawn basado en el tiempo transcurrido
+                    const gameTime = (performance.now() - this.gameStartTime) / 1000; // tiempo en segundos
+                    const timeSpeedMultiplier = Math.min(3, 1 + (gameTime / 60)); // máximo 3x velocidad después de 2 minutos
+                    const currentSpawnInterval = Math.max(
+                        CONFIG.difficulty.minSpawnInterval,
+                        CONFIG.difficulty.spawnInterval / timeSpeedMultiplier
+                    );
+                    
+                    this.spawnTimeout = setTimeout(() => this.spawnItem(), currentSpawnInterval);
+                }
+
+
+                
+                updateScore(amount) {
+                    const oldScore = this.score;
+                    this.score += amount;
+                    DOM.score.textContent = this.score;
+                    
+                    this.checkScoreBasedDifficulty(oldScore);
+                }
+                
+                checkScoreBasedDifficulty(oldScore) {
+                    const thresholds = CONFIG.DIFFICULTY_SCORE_THRESHOLDS;
+                    let newLevel = 1;
+                    
+                    for (let i = thresholds.length - 1; i >= 0; i--) {
+                        if (this.score >= thresholds[i]) {
+                            newLevel = i + 1;
+                            break;
+                        }
+                    }
+                    
+                    if (newLevel > CONFIG.difficulty.level) {
+                        CONFIG.difficulty.level = newLevel;
+                        this.scaleDifficultyByScore();
+                        DOM.level.textContent = CONFIG.difficulty.level;
+                        showDifficultyIndicator(`¡Nivel ${CONFIG.difficulty.level}! Puntaje: ${this.score}`);
+                    }
+                }
+                
+                scaleDifficultyByScore() {
+                    const level = CONFIG.difficulty.level;
+                    
+                    CONFIG.difficulty.pollutionPerSecond = CONFIG.difficulty.basePollutionPerSecond * (1 + (level - 1) * 0.4);
+                    CONFIG.difficulty.pollutionMultiplier = 1 + (level - 1) * 0.3;
+                    
+                    CONFIG.difficulty.spawnInterval = Math.max(
+                        CONFIG.difficulty.minSpawnInterval, 
+                        2000 - (level - 1) * 200
+                    );
+                    
+                    CONFIG.difficulty.itemBaseSpeed = 1 + (level - 1) * 0.3;
+                    
+                    CONFIG.POWERUP_CHANCE = Math.min(0.25, 0.15 + (level - 1) * 0.02);
+                }
+
+                updatePollution(amount) {
+                    this.pollution += amount;
+                    this.pollution = Math.max(0, Math.min(100, this.pollution));
+                    
+                    DOM.pollutionBar.style.width = `${this.pollution}%`;
+                    DOM.pollutionBar.textContent = `${Math.round(this.pollution)}%`;
+                    DOM.pollutionBar.setAttribute('aria-valuenow', this.pollution);
+
+                    if (this.pollution < 40) DOM.pollutionBar.className = 'progress-bar bg-success';
+                    else if (this.pollution < 75) DOM.pollutionBar.className = 'progress-bar bg-warning';
+                    else DOM.pollutionBar.className = 'progress-bar bg-danger';
+                    
+                    // Efectos visuales mejorados en los peces según contaminación
+                    const pollutionEffect = this.pollution / 100;
+                    this.entities.forEach(e => {
+                        if (e instanceof Creature) {
+                            // Aumentar gradualmente grises y borrosidad
+                            const grayScale = Math.min(0.9, pollutionEffect * 1.2);
+                            const blur = Math.min(3, pollutionEffect * 4);
+                            const opacity = Math.max(0.4, 1 - (pollutionEffect * 0.6));
+                            const brightness = Math.max(0.5, 1 - (pollutionEffect * 0.5));
+                            
+                            e.element.style.filter = `grayscale(${grayScale}) blur(${blur}px) opacity(${opacity}) brightness(${brightness})`;
+                            
+                            // Reducir velocidad de peces cuando hay mucha contaminación
+                            if (pollutionEffect > 0.5) {
+                                e.speedX *= (1 - pollutionEffect * 0.3);
+                                e.speedY *= (1 - pollutionEffect * 0.3);
+                            }
+                        }
+                    });
+
+                    if (this.pollution >= 100) {
+                        this.endGame();
+                    }
+                }
+
+                cleanup() {
+                    if (this.animationFrameId) {
+                        cancelAnimationFrame(this.animationFrameId);
+                        this.animationFrameId = null;
+                    }
+                    if (this.spawnTimeout) {
+                        clearTimeout(this.spawnTimeout);
+                        this.spawnTimeout = null;
+                    }
+                    
+                    this.entities.forEach(entity => entity.remove());
+                    this.entities = [];
+                }
+
+                endGame() {
+                    if (!this.gameRunning) return;
+                    this.gameRunning = false;
+                    
+                    this.cleanup();
+
+                    DOM.finalScore.textContent = this.score;
+                    DOM.gameOverScreen.classList.remove('d-none');
+                    DOM.gameContainer.style.filter = 'blur(8px) grayscale(80%)';
+                    
+                    if (SOUNDS.bgMusic) {
+                        SOUNDS.bgMusic.pause();
+                    }
+                    playSound(SOUNDS.gameover);
+                }
+            }
+
+            function playSound(sound) {
+                try {
+                    if (sound && sound.play && typeof sound.play === 'function') {
+                        sound.currentTime = 0;
+                        sound.volume = sound.volume || 0.5;
+                        const playPromise = sound.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(e => {});
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            function createClickEffect(x, y) {
+                const effect = document.createElement('div');
+                effect.className = 'click-effect';
+                effect.style.left = `${x - 25}px`;
+                effect.style.top = `${y - 25}px`;
+                effect.style.width = '50px';
+                effect.style.height = '50px';
+                DOM.gameContainer.appendChild(effect);
+                setTimeout(() => effect.remove(), 500);
+            }
+
+            function createScorePopup(x, y, text) {
+                const popup = document.createElement('div');
+                popup.className = 'score-popup';
+                popup.textContent = text;
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+                DOM.gameContainer.appendChild(popup);
+                setTimeout(() => popup.remove(), 1000);
+            }
+            
+            function showDifficultyIndicator(text) {
+                const indicator = document.createElement('div');
+                indicator.id = 'difficulty-indicator';
+                indicator.textContent = text;
+                document.body.appendChild(indicator);
+                setTimeout(() => indicator.remove(), 2500);
+            }
+
+            function preloadAssets(callback) {
+                const allAssets = [
+                    ...ASSETS.creatures.map(a => a.src),
+                    ...ASSETS.trash.map(a => a.src),
+                    ASSETS.powerUp.src
+                ];
+                let loadedCount = 0;
+                let errorCount = 0;
+                
+                if (allAssets.length === 0) {
+                    callback();
+                    return;
+                }
+                
+                const updateProgress = () => {
+                    const total = allAssets.length;
+                    const loaded = loadedCount;
+                    const progress = Math.round((loaded / total) * 100);
+                    DOM.startButton.textContent = `Cargando... ${progress}%`;
+                };
+                
+                allAssets.forEach(src => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = () => {
+                        loadedCount++;
+                        updateProgress();
+                        if (loadedCount + errorCount === allAssets.length) {
+                            callback();
+                        }
+                    };
+                    img.onerror = (e) => {
+                        errorCount++;
+                        updateProgress();
+                        if (loadedCount + errorCount === allAssets.length) {
+                            callback();
+                        }
+                    };
+                });
+            }
+
+            preloadAssets(() => {
+                DOM.startButton.disabled = false;
+                DOM.startButton.textContent = '¡Comenzar a Limpiar!';
+                const game = new Game();
+                DOM.startButton.addEventListener('click', () => game.start());
+            });
+            
+            setTimeout(() => {
+                if (DOM.startButton.disabled) {
+                    DOM.startButton.disabled = false;
+                    DOM.startButton.textContent = '¡Comenzar a Limpiar!';
+                    const game = new Game();
+                    DOM.startButton.addEventListener('click', () => game.start());
+                }
+            }, 10000);
+            
+            // Event listener para el logo
+            const logoHome = document.getElementById('logo-home');
+            if (logoHome) {
+                logoHome.addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

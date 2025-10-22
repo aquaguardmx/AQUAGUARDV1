@@ -1,0 +1,109 @@
+---
+import "../../styles/estilos.css";
+import Header from "../../components/aquaguard-components/Header.astro";
+import Footer from "../../components/aquaguard-components/Footer.astro";
+---
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cómo usar AquaGuard</title>
+        <!--Font Awesome 6-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!--Estilos personalizados (importados por Astro en frontmatter) -->
+    </head>
+
+    <body>
+    <div class="wrapper">
+    <Header />
+        <div class="wrapper_inner">
+            <div class="hero_content">
+                <h1 >.</h1>
+                <div class="logo-container" style="text-align:center; margin-bottom:20px;">
+                    <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
+                </div>
+                <div class="section_title">
+                    <h2>¿Cómo usar AquaGuard?</h2>
+                    <p style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;">
+                        Sigue estos pasos para aprovechar todas las funciones de la plataforma:
+                    </p>
+                </div>
+            </div>
+        </div>
+     
+        <section class="features_section">
+            <div class="wrapper_inner">
+
+                <div class="features_grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- SVG icono de mapa -->
+                            <i class="fas fa-map-marked-alt" style="font-size:40px; color:#00b4d8;"></i>
+                        </div>
+                        <h3 class="feature-title">Explora el Mapa</h3>
+                        <p>Haz clic en "MAPA" para visualizar los cuerpos de agua y su calidad.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- SVG icono de lupa -->
+                            <i class="fas fa-search" style="font-size:40px; color:#00b4d8;"></i>
+                        </div>
+                        <h3 class="feature-title">Consulta Datos</h3>
+                        <p>Selecciona un cuerpo de agua en el mapa para ver información detallada sobre contaminantes y parámetros.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- SVG icono de filtro -->
+                            <i class="fas fa-filter" style="font-size:40px; color:#00b4d8;"></i>
+                        </div>
+                        <h3 class="feature-title">Recibe Recomendaciones</h3>
+                        <p>Obtén sugerencias de filtración y cuidado según los datos de calidad del agua.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- SVG icono de juego -->
+                            <i class="fas fa-gamepad" style="font-size:40px; color:#00b4d8;"></i>
+                        </div>
+                        <h3 class="feature-title">Juega y Aprende</h3>
+                        <p>Accede al juego educativo para aprender o reforzar tus conocimientos sobre el cuidado del agua.</p>
+                    </div>
+                </div>
+                <a href="mapaContaminacion.html" class="cta_button">Explorar Mapa</a>
+            </div>
+        </section>
+        <Footer />
+        
+        <div class="water-wave"></div>
+
+    </div>   
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Mobile menu toggle
+        const menuToggle = document.querySelector('.mobile_menu_button');
+        const mainMenu = document.querySelector('.main_menu');
+        if (menuToggle && mainMenu) {
+            menuToggle.addEventListener('click', function() {
+                mainMenu.style.display = mainMenu.style.display === 'flex' ? 'none' : 'flex';
+            });
+        }
+
+        // Header scroll effect
+        const header = document.querySelector('header');
+        function updateHeaderTransparency() {
+            if (window.scrollY <= 10) {
+                header.classList.add('transparent');
+            } else {
+                header.classList.remove('transparent');
+            }
+        }
+        window.addEventListener('scroll', updateHeaderTransparency);
+        updateHeaderTransparency(); // Ejecuta al cargar la página
+        
+        
+        
+    });
+    </script>
+    </body>
+</html>

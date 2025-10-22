@@ -1,0 +1,153 @@
+---
+import "../../styles/estilos.css";
+import Header from "../../components/aquaguard-components/Header.astro";
+import Footer from "../../components/aquaguard-components/Footer.astro";
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - AquaGuard | Monitoreo de Calidad del Agua</title>
+    <!--Font Awesome 6-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+ 
+</head>
+<body>
+    <div class="wrapper">
+        <Header />
+
+
+        <div class="wrapper_inner">
+            <div class="hero_content">
+                <h1>.</h1>
+                <div class="logo-container" style="text-align:center; margin-bottom:20px;">
+                    <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
+                </div>
+                <div class="section_title">
+                    <h2>Educación</h2>
+                    <p style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;">Explora, aprende y actúa para proteger nuestros cuerpos de agua.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="wrapper_inner">
+            <div class="featured-section">
+                <div class="section-header">
+                    <h2>Explora Nuestros Contenidos</h2>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="imagenes/microplasticos.jpg" alt="Microplasticos">
+                        </div>
+                        <div class="card-content">
+                            <h3>Que son los microplasticos y como contaminan el agua</h3>
+                            <p>Descubre qué son los microplásticos, sus fuentes, impacto en ecosistemas acuáticos y estrategias para combatir su contaminación en el agua.</p>
+                            <a href="que-son-microplasticos-y-como-contaminan-agua.html" class="read-more">Leer Mas</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="imagenes/parametros-agua.jpg" alt="Parámetros de Control del Agua Potable">
+                        </div>
+                        <div class="card-content">
+                            <h3>Parámetros de control del agua potable</h3>
+                            <p> La vigilancia de la calidad del agua para el abastecimiento a la población, comienza en el origen de la misma, es decir, en embalses, ríos y pozos, continúa durante su tratamiento en las estaciones de tratamiento de agua potable (ETAP) y a través de su paso por la red de distribución hasta que llega al consumidor.</p>
+                            <a href="parametros-de-control-del-agua-potable.html" class="read-more">Leer Mas</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="imagenes/contaminacion-agua.jpg" alt="Contaminación del agua">
+                        </div>
+                        <div class="card-content">
+                            <h3>Contaminación del agua</h3>
+                            <p>La contaminación del agua: cómo no poner en peligro nuestra fuente de vida</p>
+                            <a href="contaminacion-del-agua.html" class="read-more">Leer Mas</a>
+                        </div>
+                    </div>
+                    
+                    <!--Divs para futuros contenidos-->
+                    <!--<div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Juego" alt="Juego Educativo">
+                        </div>
+                        <div class="card-content">
+                            <h3>Juego Educativo</h3>
+                            <p>Aprende sobre conservación del agua de forma interactiva y divertida.</p>
+                            <a href="juego.html" class="read-more">Jugar ahora</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Contaminantes" alt="Contaminantes">
+                        </div>
+                        <div class="card-content">
+                            <h3>Contaminantes del Agua</h3>
+                            <p>Conoce los principales contaminantes y sus efectos en la salud y el medio ambiente.</p>
+                            <a href="contaminantes.html" class="read-more">Saber más</a>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-image">
+                            <img src="https://via.placeholder.com/400x200?text=Soluciones" alt="Soluciones">
+                        </div>
+                        <div class="card-content">
+                            <h3>Soluciones y Recomendaciones</h3>
+                            <p>Descubre recomendaciones personalizadas de filtración según parámetros de calidad.</p>
+                            <a href="soluciones.html" class="read-more">Ver soluciones</a>
+                        </div>
+                    </div>-->
+
+                </div>
+            </div>
+        </div>
+
+        <section class="newsletter-section">
+            <div class="wrapper_inner">
+                <h2>Mantente Informado</h2>
+                <p>Suscríbete a nuestro boletín para recibir actualizaciones sobre calidad del agua y tips para su conservación.</p>
+                
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Tu correo electrónico" required>
+                    <button type="submit">Suscribirme</button>
+                </form>
+            </div>
+        </section>
+
+        <Footer />
+    </div>
+
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Mobile menu toggle
+        const menuToggle = document.querySelector('.mobile_menu_button');
+        const mainMenu = document.querySelector('.main_menu');
+        if (menuToggle && mainMenu) {
+            menuToggle.addEventListener('click', function() {
+                mainMenu.style.display = mainMenu.style.display === 'flex' ? 'none' : 'flex';
+            });
+        }
+
+        // Header scroll effect
+        const header = document.querySelector('header');
+        function updateHeaderTransparency() {
+            if (window.scrollY <= 10) {
+                header.classList.add('transparent');
+            } else {
+                header.classList.remove('transparent');
+            }
+        }
+        window.addEventListener('scroll', updateHeaderTransparency);
+        updateHeaderTransparency(); // Ejecuta al cargar la página
+    });
+    </script>
+</body>
+</html>
