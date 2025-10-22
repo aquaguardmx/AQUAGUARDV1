@@ -1,0 +1,99 @@
+---
+// Este componente es puro HTML y JS del lado del cliente.
+// No necesita props por ahora.
+---
+
+<div class="w-full max-w-2xl mx-auto">
+  <div class="flex items-center justify-between p-2 border border-gray-200 rounded-t-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+    <div class="flex flex-wrap items-center space-x-1 rtl:space-x-reverse">
+      <button type="button" data-format="bold" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 1H9a4 4 0 0 0-4 4v9a4 4 0 0 0 4 4h9a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4Z"/>
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.5 13.5v-7A1.5 1.5 0 0 1 13 5h.01"/>
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h5m-5 3.5h5"/>
+        </svg>
+        <span class="sr-only">Bold</span>
+      </button>
+
+      <button type="button" data-format="italic" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.5 4h-5L9 16h5l-1.5-12Z"/>
+        </svg>
+        <span class="sr-only">Italic</span>
+      </button>
+
+      <button type="button" data-format="underline" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5v7a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3V5M4 19h12"/>
+        </svg>
+        <span class="sr-only">Underline</span>
+      </button>
+
+      <button type="button" data-format="insertUnorderedList" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 6.5h11M4.5 10.5h11M4.5 14.5h11M1.5 6.5h.01M1.5 10.5h.01M1.5 14.5h.01"/>
+        </svg>
+        <span class="sr-only">Lista</span>
+      </button>
+
+      <button type="button" data-format="insertOrderedList" class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1.5 6.5h.01M1.5 10.5h.01M1.5 14.5h.01M4.5 6.5h11M4.5 10.5h11M4.5 14.5h11"/>
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4S2 4 2 5v.01S2 6 3 6m-2 4S2 10 2 11v.01S2 12 3 12m-2 4S2 14 2 15v.01S2 16 3 16"/>
+        </svg>
+        <span class="sr-only">Numeración</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
+    <label for="editor" class="sr-only">Escribe aquí</label>
+    <div
+      id="editor"
+      role="textbox"
+      contenteditable="true"
+      class="block w-full min-h-[150px] p-0 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400"
+    >
+      <p>Comienza a escribir aquí...</p>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Espera a que el DOM esté completamente cargado
+  document.addEventListener("DOMContentLoaded", () => {
+    // Selecciona todos los botones de formato
+    const formatButtons = document.querySelectorAll("button[data-format]");
+    
+    // Selecciona el área editable
+    const editor = document.getElementById("editor");
+
+    // Agrega un listener a cada botón
+    formatButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        // Obtiene el comando del atributo data-format (ej: "bold", "italic")
+        const command = button.dataset.format;
+        
+        // Ejecuta el comando de formato en el texto seleccionado
+        // Nota: execCommand es un método antiguo pero el más simple para esto.
+        document.execCommand(command, false, null);
+        
+        // Vuelve a enfocar el editor después de hacer clic en un botón
+        editor.focus();
+      });
+    });
+
+    // Pequeña mejora:
+    // Asegurarse de que al pegar, se pegue como texto plano (opcional)
+    editor.addEventListener("paste", (e) => {
+        // Cancela el evento de pegado por defecto
+        e.preventDefault();
+        
+        // Obtiene el texto plano del portapapeles
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        
+        // Inserta el texto plano en la posición actual
+        document.execCommand('insertText', false, text);
+    });
+  });
+</script>
