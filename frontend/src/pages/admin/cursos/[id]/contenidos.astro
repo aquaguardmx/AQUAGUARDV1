@@ -17,29 +17,35 @@ type Curso = {
     nombre_curso: string;
     descripcion: string;
     nivel_dificultad: string;
-    contenidos?: Contenido[]; 
+    contenidos?: Contenido[];
 };
 
 const { id: id_curso } = Astro.params;
+console.log("ID del curso desde la URL:", id_curso);
 let curso: Curso | null = null;
 let error: string | null = null;
 
 try {
-    const response = await fetch(`http://localhost:8000/api/cursos/${id_curso}`);
-    
+    const response = await fetch(
+        `http://localhost:8000/api/cursos/${id_curso}`,
+    );
     if (!response.ok) {
         throw new Error(`Error al obtener el curso: ${response.statusText}`);
     }
 
     const responseData = await response.json();
 
-    if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
-        // Si la API envuelve la respuesta en { data: {...} }
+    if (
+        responseData &&
+        typeof responseData === "object" &&
+        !Array.isArray(responseData)
+    ) {
         curso = responseData.data ? responseData.data : responseData;
     } else {
-         throw new Error("La respuesta de la API no tiene el formato esperado para un solo curso.");
+        throw new Error(
+            "La respuesta de la API no tiene el formato esperado para un solo curso.",
+        );
     }
-    
 } catch (e) {
     console.error(e);
     error = "No se pudo cargar la información del curso. Verifica la API.";
@@ -48,22 +54,38 @@ try {
 const contenidos = curso?.contenidos || [];
 ---
 
-<!-- 5. Aquí empieza tu HTML, pero DENTRO del Layout de Astro -->
-<AdminLayout title={`Contenidos de ${curso?.nombre_curso || 'Curso'}`}>
+<AdminLayout title={`Contenidos de ${curso?.nombre_curso || "Curso"}`}>
     <div class="p-6">
-        <!-- Encabezado y Botón de Volver -->
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                     Gestión de Contenido
                 </h1>
-                <p class="mt-1 text-lg font-normal text-gray-500 dark:text-gray-400">
-                    Curso: <span class="font-medium">{curso?.nombre_curso || 'Cargando...'}</span>
+                <p
+                    class="mt-1 text-lg font-normal text-gray-500 dark:text-gray-400"
+                >
+                    Curso: <span class="font-medium"
+                        >{curso?.nombre_curso || "Cargando..."}</span
+                    >
                 </p>
             </div>
-            <a href="../../../admin/formularios/formularioAgregarContenido" class="text-blue-600 dark:text-blue-500 hover:underline flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                Regresar
+            <a
+                href="../../../admin/formularios/formularioAgregarContenido"
+                class="text-blue-600 dark:text-blue-500 hover:underline flex items-center"
+            >
+                <svg
+                    class="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    ><path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7"></path></svg
+                >
+                                Regresar
             </a>
         </div>
 
@@ -73,33 +95,90 @@ const contenidos = curso?.contenidos || [];
                     class="p-4 my-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400"
                     role="alert"
                 >
+                                       {" "}
                     <span class="font-medium">¡Error de conexión!</span> {error}
+                                   {" "}
                 </div>
             )
         }
 
-        <!-- Botón para abrir el Modal -->
         <div class="py-4">
             <button
+
+
+
+
+
+
+
+
                 data-modal-target="add-content-modal"
+
+
+
+
+
+
+
+
                 data-modal-toggle="add-content-modal"
+
+
+
+
+
+
+
+
                 class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+
+
+
+
+
+
+
+
                 type="button"
+
+
+
+
+
+
             >
-                <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"></path></svg>
-                Añadir Nuevo Contenido
+                <svg
+                    class="h-3.5 w-3.5 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    ><path
+                        clip-rule="evenodd"
+                        fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    ></path></svg
+                >
+                                Añadir Nuevo Contenido
             </button>
         </div>
 
-        <!-- Tabla de Contenidos -->
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <table
+                class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
+            >
+                <thead
+                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+                >
                     <tr>
-                        <th scope="col" class="px-6 py-3">Nombre del Contenido</th>
+                        <th scope="col" class="px-6 py-3"
+                            >Nombre del Contenido</th
+                        >
                         <th scope="col" class="px-6 py-3">Tipo</th>
                         <th scope="col" class="px-6 py-3">ID</th>
-                        <th scope="col" class="px-6 py-3 text-right">Acciones</th>
+                        <th scope="col" class="px-6 py-3 text-right"
+                            >Acciones</th
+                        >
                     </tr>
                 </thead>
                 <tbody>
@@ -107,31 +186,75 @@ const contenidos = curso?.contenidos || [];
                         contenidos.length > 0 ? (
                             contenidos.map((item) => (
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {item.titulo_leccion}
+                                                                       {" "}
+                                    <th
+                                        scope="row"
+                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                                    >
+                                                                               {" "}
+                                        {item.titulo_leccion}                   
+                                                       {" "}
                                     </th>
+                                                        S            {" "}
                                     <td class="px-6 py-4">
-                                        <!-- Estilo simple para el tipo -->
+                                                                               {" "}
                                         <span class="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300">
-                                            {item.contenido_leccion}
+                                                                               
+                                                    {item.contenido_leccion}   
+                                                                               {" "}
                                         </span>
+                                                                           {" "}
                                     </td>
+                                                                       {" "}
                                     <td class="px-6 py-4">{item.id_leccion}</td>
+                                                                       {" "}
                                     <td class="px-6 py-4 text-right">
+                                                                               {" "}
                                         <div class="flex justify-end space-x-2">
-                                            <a href="#" class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline">Editar</a>
-                                            <button type="button" class="font-medium text-red-600 dark:text-red-500 hover:underline btn-delete-content" data-content-id={item.id_leccion}>
-                                                Eliminar
+                                                                               
+                                                   {" "}
+                                            <a
+                                                href="#"
+                                                class="font-medium text-yellow-600 dark:text-yellow-500 hover:underline"
+                                            >
+                                                Editar
+                                            </a>
+                                                                               
+                                                   {" "}
+                                            <button
+                                                type="button"
+                                                class="font-medium text-red-600 dark:text-red-500 hover:underline btn-delete-content"
+                                                data-content-id={
+                                                    item.id_leccion
+                                                }
+                                            >
+                                                                               
+                                                                Eliminar        
+                                                                               
+                                                   {" "}
                                             </button>
+                                                                               
+                                               {" "}
                                         </div>
+                                                                         {" "}
                                     </td>
+                                                                   {" "}
                                 </tr>
                             ))
                         ) : (
-                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                                    {error ? "Error al cargar." : "No se encontraron contenidos para este curso."}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                               {" "}
+                                <td
+                                    colspan="4"
+                                    class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                                >
+                                                                       {" "}
+                                    {error
+                                        ? "Error al cargar."
+                                        : "No se encontraron contenidos para este curso."}
+                                                                   {" "}
                                 </td>
+                                                           {" "}
                             </tr>
                         )
                     }
@@ -140,51 +263,294 @@ const contenidos = curso?.contenidos || [];
         </div>
     </div>
 
-    <!-- Modal para Añadir Contenido -->
-    <div id="add-content-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full">
-            <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <!-- Modal header -->
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        Agregar Nuevo Contenido
+    <div
+        id="add-content-modal"
+        tabindex="-1"
+        aria-hidden="true"
+        class="hidden overflow-hidden fixed inset-0 z-50 w-full h-full"
+    >
+        <div class="relative w-full h-full">
+            <div
+                class="relative bg-white dark:bg-gray-700 w-full h-full flex flex-col"
+            >
+                <div
+                    class="flex items-center justify-between p-4 md:p-5 border-b dark:border-gray-600 flex-shrink-0"
+                >
+                    <h3
+                        class="text-lg font-semibold text-gray-900 dark:text-white"
+                    >
+                        Agregar Nueva Lección
                     </h3>
-                    <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="add-content-modal">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path></svg>
+                    <button
+                        type="button"
+                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                        data-modal-toggle="add-content-modal"
+                    >
+                        <svg
+                            class="w-3 h-3"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 14 14"
+                            ><path
+                                stroke="currentColor"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                            ></path></svg
+                        >
                         <span class="sr-only">Cerrar modal</span>
                     </button>
                 </div>
-                <!-- Modal body -->
-                <form class="p-4 md:p-5" id="add-content-form">
-                    <!-- Mensaje de error del formulario -->
-                    <div id="form-error" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400" role="alert">
+                <form
+                    class="flex flex-col flex-grow overflow-hidden"
+                    id="add-content-form"
+                >
+                    <div class="flex-grow overflow-y-auto p-4 md:p-5">
+                        <input
+                            type="text"
+                            name="id_curso"
+                            id="id_curso_hidden"
+                            value={id_curso}
+                            class="hidden"
+                        />
+
+                        <div
+                            id="form-error"
+                            class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400"
+                            role="alert"
+                        >
+                        </div>
+
+                        <div class="grid gap-4 mb-4 grid-cols-2">
+                            <div class="col-span-2">
+                                <label
+                                    for="titulo_leccion"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >Nombre de la Lección</label
+                                >
+                                <input
+                                    type="text"
+                                    name="titulo_leccion"
+                                    id="titulo_leccion"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="Ej: Introducción a Astro"
+                                    required
+                                />
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="video"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >URL del Video (Opcional)</label
+                                >
+                                <input
+                                    type="url"
+                                    name="video"
+                                    id="video"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    for="orden"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >Orden</label
+                                >
+                                <input
+                                    type="number"
+                                    name="orden"
+                                    id="orden"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                    placeholder="1"
+                                    required
+                                />
+                            </div>
+
+                            <div class="col-span-2">
+                                <label
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >Contenido</label
+                                >
+                                <div id="editor-toolbar" class="..."></div>
+
+                                <div
+
+
+
+
+
+
+
+
+                                    id="editor-div"
+
+
+
+
+
+
+
+
+                                    role="textbox"
+
+
+
+
+
+
+
+
+                                    contenteditable="true"
+
+
+
+
+
+
+
+
+                                    class="..."
+
+
+
+
+
+
+
+                                >
+                                    <p>
+                                        Escribe aquí el contenido de la
+                                        lección...
+                                    </p>
+                                </div>
+
+                                <textarea
+                                    id="contenido"
+                                    name="contenido_leccion"
+                                    class="hidden"></textarea>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid gap-4 mb-4 grid-cols-2">
-                        <div class="col-span-2">
-                            <label for="nombre_contenido" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
-                            <input type="text" name="nombre_contenido" id="nombre_contenido" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Ej: Introducción a Astro" required>
-                        </div>
-                        <div class="col-span-2">
-                            <label for="tipo" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tipo de Contenido</label>
-                            <select id="tipo" name="tipo" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                                <option value="" selected disabled>Selecciona un tipo</option>
-                                <option value="Video">Video</option>
-                                <option value="Lectura">Lectura</option>
-                                <option value="Quiz">Quiz</option>
-                                <option value="Recurso">Recurso</option>
-                            </select>
-                        </div>
+                    <div
+                        class="p-4 md:p-5 border-t dark:border-gray-600 flex-shrink-0"
+                    >
+                        <button type="submit" id="btn-submit-form" class="...">
+                            <span id="btn-submit-text">Guardar Lección</span>
+                            <span id="btn-submit-loading" class="hidden"
+                                >Guardando...</span
+                            >
+                        </button>
                     </div>
-                    <button type="submit" id="btn-submit-form" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <svg class="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
-                        Guardar Contenido
-                    </button>
                 </form>
             </div>
         </div>
-    </div> 
+    </div>
 
+    <script is:inline>
+        document.addEventListener("DOMContentLoaded", () => {
+            const modal = document.getElementById("add-content-modal");
+            if (modal) {
+                const editor = modal.querySelector("#editor-div");
+                const toolbar = modal.querySelector("#editor-toolbar");
+                const form = modal.querySelector("#add-content-form");
+                const hiddenTextarea = modal.querySelector("#contenido");
+
+                // Elementos del formulario para UX
+                const errorDiv = modal.querySelector("#form-error");
+                const submitButton = modal.querySelector("#btn-submit-form");
+                const buttonText = modal.querySelector("#btn-submit-text");
+                const buttonLoading = modal.querySelector(
+                    "#btn-submit-loading",
+                ); // 1. Lógica para los botones del editor (sin cambios)
+                const formatButtons = toolbar.querySelectorAll(
+                    "button[data-format]",
+                );
+                formatButtons.forEach((button) => {
+                    button.addEventListener("click", () => {
+                        const command = button.dataset.format;
+                        document.execCommand(command, false, null);
+                        editor.focus();
+                    });
+                }); // 2. Lógica de envío del formulario (¡MODIFICADA!)
+
+                form.addEventListener("submit", async (e) => {
+                    // Previene el envío tradicional del formulario
+                    e.preventDefault();
+
+                    // --- INICIO DE CAMBIOS ---
+
+                    // Pone el estado de "Cargando"
+                    submitButton.disabled = true;
+                    buttonText.classList.add("hidden");
+                    buttonLoading.classList.remove("hidden");
+                    errorDiv.classList.add("hidden");
+                    errorDiv.textContent = ""; // Copia el HTML del editor al textarea oculto
+
+                    hiddenTextarea.value = editor.innerHTML;
+                    // Crea un objeto FormData a partir del formulario
+                    const formData = new FormData(form);
+
+                    // Convierte FormData a un objeto simple para enviar como JSON
+                    const data = Object.fromEntries(formData.entries());
+
+                    // Define la URL de tu API (basado en tu código de Astro)
+                    // Tu ruta de Laravel es Route::post('/lecciones', ...)
+                    const API_URL = "http://localhost:8000/api/lecciones";
+
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
+                                // Si tienes autenticación (ej. Sanctum), añade el token aquí
+                                // 'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(data),
+                        });
+
+                        if (!response.ok) {
+                            // Si la API devuelve un error (ej. 422 Validación)
+                            const errorData = await response.json();
+                            let errorMessage =
+                                errorData.message || "Error desconocido.";
+
+                            // Manejo de errores de validación de Laravel
+                            if (errorData.errors) {
+                                errorMessage = Object.values(errorData.errors)
+                                    .flat()
+                                    .join(" ");
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        // Si todo fue bien (respuesta 200, 201)
+                        const result = await response.json();
+                        console.log("Lección guardada:", result);
+
+                        // Cierra el modal (Flowbite usa data-modal-toggle, la forma más fácil es recargar)
+                        // Recarga la página para mostrar la nueva lección en la tabla.
+                        // Esto es más simple que actualizar la tabla dinámicamente.
+                        location.reload();
+                    } catch (error) {
+                        // Muestra el error en el div de errores
+                        console.error("Error al enviar el formulario:", error);
+                        errorDiv.textContent = error.message;
+                        errorDiv.classList.remove("hidden");
+                    } finally {
+                        // Vuelve a habilitar el botón
+                        submitButton.disabled = false;
+                        buttonText.classList.remove("hidden");
+                        buttonLoading.classList.add("hidden");
+                    }
+
+                    // --- FIN DE CAMBIOS ---
+                });
+            }
+        });
+    </script>
 </AdminLayout>
-
