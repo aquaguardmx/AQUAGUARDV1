@@ -4,7 +4,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
 <AdminLayout title="Gestión de Usuarios">
     <div class="p-6">
-        <form class="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+        <form id="cursoForm" class="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
             <h2
                 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6"
             >
@@ -13,14 +13,14 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
             <div class="mb-5">
                 <label
-                    for="email"
+                    for="nombre_curso"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >Nombre Curso</label
                 >
                 <input
                     type="text"
                     id="nombre_curso"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    name="nombre_curso" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Nombre del curso"
                     required
                 />
@@ -34,20 +34,20 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 >
                 <textarea
                     id="descripcion"
-                    rows="4"
+                    name="descripcion" rows="4"
                     class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Escribe la descripción del curso aquí..."></textarea>
             </div>
 
             <div class="mb-5">
-                <label 
+                <label
                     for="nivel_dificultad"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Nivel de Dificultad</label>
-
+                    >Nivel de Dificultad</label
+                >
                 <select
                     id="nivel_dificultad"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    name="nivel_dificultad" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 >
                     <option value="" disabled selected>Selecciona un nivel</option>
                     <option value="principiante">Principiante</option>
@@ -56,6 +56,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 </select>
             </div>
 
+            <div id="responseMessage" class="mt-4 mb-4 text-sm"></div>
+
             <button
                 type="submit"
                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -63,4 +65,150 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
             >
         </form>
     </div>
+
+    <script>
+        // 1. Obtener el token (esto está bien, lo necesitamos para la autorización)
+        const authToken =
+            localStorage.getItem("authToken") ||
+            sessionStorage.getItem("authToken");
+
+        console.log("Token de autenticación encontrado:", authToken);
+
+        // Si no hay token, no podemos hacer nada.
+        if (!authToken) {
+            console.error("No se encontró token. El usuario debe iniciar sesión.");
+            const messageDiv = document.getElementById("responseMessage");
+            if (messageDiv) {
+                messageDiv.textContent = "Error: No estás autenticado. Por favor, inicia sesión.";
+                messageDiv.style.color = "red";
+            }
+            // Opcionalmente, deshabilita el formulario
+            document.querySelector<HTMLFormElement>("#cursoForm")?.setAttribute("disabled", "true");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 2. Apuntar al ID del nuevo formulario: "cursoForm"
+            const form = document.querySelector<HTMLFormElement>("#cursoForm");
+            let messageDiv = document.getElementById("responseMessage");
+
+            if (!form) {
+                console.error(
+                    'No se encontró el formulario con id "cursoForm".',
+                );
+                return;
+            }
+
+            // Si no se encontró el div de mensajes antes, búscalo de nuevo (aunque ya lo hicimos arriba)
+            if (!messageDiv) {
+                messageDiv = document.createElement("div");
+                messageDiv.id = "responseMessage";
+                messageDiv.className = "mt-4 mb-4 text-sm";
+                form.appendChild(messageDiv);
+            }
+            
+            const messageEl = messageDiv as HTMLElement;
+
+
+            // 3. Actualizar el texto original del botón
+            const submitButton = form.querySelector<HTMLButtonElement>(
+                'button[type="submit"]',
+            );
+            const originalButtonHTML = submitButton
+                ? submitButton.innerHTML
+                : "Agregar Curso"; // <-- Texto cambiado
+
+            // La función setLoading es reutilizable y está perfecta
+            function setLoading(isLoading: boolean) {
+                if (!submitButton) return;
+                if (isLoading) {
+                    submitButton.disabled = true;
+                    submitButton.setAttribute("aria-busy", "true");
+                    submitButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
+                            <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
+                            <path d="M22 12a10 10 0 0 0-10-10" />
+                        </svg>
+                        <span>Guardando...</span>
+                    `;
+                    submitButton.classList.add("opacity-70", "cursor-not-allowed");
+                } else {
+                    submitButton.disabled = false;
+                    submitButton.removeAttribute("aria-busy");
+                    submitButton.innerHTML = originalButtonHTML;
+                    submitButton.classList.remove("opacity-70", "cursor-not-allowed");
+                }
+            }
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                if (submitButton && submitButton.disabled) return;
+                if (!authToken) {
+                    messageEl.textContent = "Error: No estás autenticado.";
+                    messageEl.style.color = "red";
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                // 4. Eliminar lógica de "rememberMe" (no aplica aquí)
+                
+                console.log("Enviando datos del curso:", data);
+                setLoading(true);
+                messageEl.textContent = ""; // Limpiar mensajes previos
+
+                try {
+                    // 5. Cambiar el endpoint a la API de cursos
+                    const response = await fetch("http://127.0.0.1:8000/api/cursos", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                            // 6. Añadir el token de autorización
+                            "Authorization": `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        // La lógica de manejo de errores de validación es reutilizable
+                        let errorMessage = `Error (${response.status}): `;
+                        if (result && typeof result.errors === "object") {
+                            // Errores de validación de Laravel
+                            const messages = Object.values(result.errors).flat();
+                            errorMessage += messages.join(" | ");
+                        } else if (result.message) {
+                             errorMessage += result.message;
+                        } else {
+                            errorMessage += "No se pudo agregar el curso.";
+                        }
+                        
+                        messageEl.textContent = errorMessage;
+                        messageEl.style.color = "red";
+                    } else {
+                        // 7. Cambiar la lógica de éxito
+                        
+                        // Ya no guardamos token ni usuario, ¡solo mostramos éxito!
+                        messageEl.textContent = "¡Curso agregado exitosamente!";
+                        messageEl.style.color = "green";
+
+                        // Limpiamos el formulario
+                        form.reset();
+
+                        // Ya no redirigimos, el admin puede querer agregar otro curso
+                        console.log("Curso agregado:", result);
+                    }
+                } catch (error) {
+                    console.error("Error de conexión:", error);
+                    messageEl.textContent = "No se pudo conectar con el servidor.";
+                    messageEl.style.color = "red";
+                } finally {
+                    setLoading(false);
+                }
+            });
+        });
+    </script>
 </AdminLayout>

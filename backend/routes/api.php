@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
-
+use App\Http\Controllers\Api\ContentController;
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -98,3 +98,9 @@ Route::post('/cursos', [CourseController::class, 'store']);
 Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
 Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
+
+// API PARA CONTENIDOS
+
+Route::get('/lecciones', [ContentController::class, 'index']);
+
+Route::post('/lecciones', [ContentController::class, 'store']);

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Contenido;
+
 class Curso extends Model
 {
     /** @use HasFactory<\Database\Factories\CursoFactory> */
@@ -24,4 +26,9 @@ class Curso extends Model
         'descripcion',
         'nivel_dificultad',
     ];
+
+    public function contenidos()
+    {
+        return $this->hasMany(Contenido::class, 'id_curso');
+    }
 }

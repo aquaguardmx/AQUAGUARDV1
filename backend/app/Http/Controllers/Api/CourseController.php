@@ -22,18 +22,20 @@ class CourseController extends Controller
             'status' => 200
         ];
 
-        return response()->json($data, 200);
+        return response()->json($cursos);
     } 
 
-    public function show($id)
+    public function show(string $id)
     {
-        $curso = Curso::find($id);
+        // Usamos with() para cargar la relación 'contenidos'
+        // El nombre 'contenidos' DEBE COINCIDIR con la función del Paso 1.
+        $curso = Curso::with('contenidos')->find($id); // O findOrFail($id)
 
         if (!$curso) {
             return response()->json(['message' => 'Curso no encontrado'], 404);
         }
-
-        return response()->json(['curso' => $curso], 200);
+    
+        return $curso; // O return new CursoResource($curso);
     }
 
     public function store(Request $request)
@@ -68,5 +70,10 @@ class CourseController extends Controller
         $curso->delete();
 
         return response()->json(['message' => 'Curso eliminado exitosamente'], 200);
+    }
+
+    public function showContents() 
+    {
+        
     }
 }

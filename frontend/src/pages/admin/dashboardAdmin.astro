@@ -19,7 +19,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
             // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
             if (!userString) {
-                window.location.href = "/login";
+                window.location.href = "../../pages/auth/login.astro";
                 return; // Detenemos la ejecución del script
             }
 
@@ -38,7 +38,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 );
                 localStorage.clear();
                 sessionStorage.clear(); // Limpia ambos también
-                window.location.href = "/login";
+                window.location.href = "../../pages/auth/login.astro";
             }
         });
     </script>

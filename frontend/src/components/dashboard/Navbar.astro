@@ -113,6 +113,7 @@
     // --- AQUÍ ESTÁ LA SOLUCIÓN ---
     // Esta es la función que faltaba para el botón "Sign out"
     function handleLogout() {
+        console.log("Iniciando proceso de logout...");
         // ¡DEBES BORRAR AMBAS CLAVES!
         localStorage.removeItem("userData");
         localStorage.removeItem("authToken");
@@ -123,7 +124,7 @@
 
         console.log("Usuario deslogueado correctamente.");
 
-        window.location.href = "/login";
+        window.location.href = "../../auth/login";
     }
     // --- FIN DE LA SOLUCIÓN ---
 
@@ -132,7 +133,7 @@
         localStorage.removeItem("authToken");
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("userData");
-        window.location.href = "/login";
+        window.location.href = "../../auth/login";
     }
 
     // Este script se ejecuta en el cliente apenas carga la página
@@ -148,7 +149,7 @@
 
         // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
         if (!userString) {
-            window.location.href = "/login";
+            window.location.href = "../../pages/auth/login";
             return; // Detenemos la ejecución del script
         }
 
@@ -165,7 +166,7 @@
             console.error("Error al procesar los datos del usuario:", error);
             localStorage.clear();
             sessionStorage.clear(); // Limpia ambos también
-            window.location.href = "/login";
+            window.location.href = "../../auth/login";
         }
     });
 </script>
