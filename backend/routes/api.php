@@ -8,6 +8,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CourseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,3 +90,11 @@ Route::put('/usuarios/{id}', [UserController::class, 'update']);
 
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 
+// API PARA CURSOS
+Route::get('/cursos', [CourseController::class, 'index']);
+
+Route::post('/cursos', [CourseController::class, 'store']);
+
+Route::get('/cursos/{id}', [CourseController::class, 'show']);
+
+Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
