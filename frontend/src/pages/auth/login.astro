@@ -150,7 +150,7 @@ import "tailwindcss/tailwind.css";
         console.log("Usuario ya autenticado. Redirigiendo a /home...");
 
         // 3. Redirige inmediatamente al panel principal.
-        window.location.href = "/home";
+        window.location.href = "../admin/dashboardAdmin";
       }
 
       if (!document.getElementById("register-spinner-style")) {
@@ -274,7 +274,7 @@ import "tailwindcss/tailwind.css";
                   return;
                 } else {
                   console.log("Redirigiendo al panel de usuario...");
-                  window.location.href = "/home";
+                  window.location.href = "/usuario/home";
                   return;
                 }
                 
