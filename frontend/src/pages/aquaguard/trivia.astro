@@ -1,0 +1,771 @@
+---
+import "../../styles/estilos.css";
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia del Agua - Cultura Hídrica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen" class="screen active">
+            <div class="logo-container" style="text-align:center; margin-bottom:20px;">
+                <a href="/">
+                <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
+            </div>
+
+            <h1>🌊 Trivia del Agua 💧</h1>
+            <p>¿Qué tanto sabes sobre el cuidado del agua? ¡Ponte a prueba!</p>
+            <input type="text" id="name-input" class="name-input" placeholder="Escribe tu nombre aquí">
+            
+            <div class="difficulty-selection" style="margin: 20px 0;">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #005a9c;">Selecciona la modalidad:</label>
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <button class="difficulty-btn" data-questions="5" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                        Rápido (5 preguntas)
+                    </button>
+                    <button class="difficulty-btn selected" data-questions="10" style="padding: 10px 15px; border: 2px solid #66a6ff; background: #66a6ff; color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                        Normal (10 preguntas)
+                    </button>
+                    <button class="difficulty-btn" data-questions="15" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                        Experto (15 preguntas)
+                    </button>
+                </div>
+            </div>
+            
+            <button id="start-button">Comenzar</button>
+        </div>
+
+        <div id="question-screen" class="screen">
+            <div class="progress-container" style="margin-bottom: 20px;">
+                <div id="question-counter" style="text-align: center; font-weight: bold; color: #005a9c; margin-bottom: 10px;">Pregunta 1 de 10</div>
+                <div class="progress-bar-container" style="background-color: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div id="progress-bar" style="background: linear-gradient(90deg, #66a6ff, #89f7fe); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+            <div id="question-container">
+                <h2 id="question-text"></h2>
+                <div id="answer-buttons" class="btn-grid"></div>
+            </div>
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <h2>Resultados Finales</h2>
+            <p>Obtuviste <span id="score"></span> de <span id="total-questions"></span> preguntas correctas.</p>
+            <p id="result-message"></p>
+            <button id="restart-button" class="no-print">Intentar de Nuevo</button>
+            <button id="home-button">Salir</button>
+        </div>
+        
+        <div id="certificate-screen" class="screen">
+            <div class="certificate-container">
+                <h2>¡Felicidades!</h2>
+                <div class="logo-container">
+                    <a href="/">
+                    <img src="/img/logo.png" alt="Logo AquaGuard" class="game-logo" id="logo-home">
+                    </a>
+                </div>
+
+                <p class="certificate-text">
+                    Se otorga este reconocimiento como
+                </p>
+                <p class="certificate-title">Guardián del Agua</p>
+                <p>a:</p>
+                <span id="certificate-name"></span>
+                <p class="certificate-text">
+                    por haber demostrado un conocimiento
+                    excepcional sobre la cultura hídrica y los Objetivos de Desarrollo Sostenible.
+                </p>
+                <p class="certificate-score-text">
+                    Puntaje obtenido: <span id="certificate-score" style="font-weight: bold; color: #007bff;"></span>
+                </p>
+                
+                <p class="certificate-date" id="certificate-date-text"></p>
+            </div>
+            <button id="print-button" class="no-print">Imprimir Certificado</button>
+            <button id="restart-button-cert" class="no-print">Volver a Jugar</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButton = document.getElementById('start-button');
+            const restartButton = document.getElementById('restart-button');
+            const restartButtonCert = document.getElementById('restart-button-cert');
+            const homeButton = document.getElementById('home-button');
+            homeButton.addEventListener('click', () => window.location.href = '/');
+            const printButton = document.getElementById('print-button');
+
+            const nameInput = document.getElementById('name-input');
+            const startScreen = document.getElementById('start-screen');
+            const questionScreen = document.getElementById('question-screen');
+            const resultScreen = document.getElementById('result-screen');
+            const certificateScreen = document.getElementById('certificate-screen');
+
+            const questionText = document.getElementById('question-text');
+            const answerButtons = document.getElementById('answer-buttons');
+            const feedback = document.getElementById('feedback');
+            
+            const scoreSpan = document.getElementById('score');
+            const totalQuestionsSpan = document.getElementById('total-questions');
+            const resultMessage = document.getElementById('result-message');
+            const certificateDateText = document.getElementById('certificate-date-text');
+            const certificateName = document.getElementById('certificate-name');
+
+            let currentQuestionIndex, score, playerName, selectedQuestions, maxQuestions;
+
+            // Configuración dinámica
+            const TOTAL_QUESTIONS_TO_SHOW = 10; // Puedes cambiar este número
+            const SHUFFLE_ANSWERS = true; // Mezclar respuestas
+            const SHUFFLE_QUESTIONS = true; // Mezclar preguntas
+
+            // Funciones para aleatorización
+            function shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            function selectRandomQuestions(questionsArray, count) {
+                const shuffled = shuffleArray(questionsArray);
+                return shuffled.slice(0, Math.min(count, questionsArray.length));
+            }
+
+            function prepareQuestionsForQuiz(questionsArray) {
+                // Seleccionar preguntas aleatorias si está habilitado
+                let questionsToUse = SHUFFLE_QUESTIONS ? 
+                    selectRandomQuestions(questionsArray, TOTAL_QUESTIONS_TO_SHOW) : 
+                    questionsArray.slice(0, TOTAL_QUESTIONS_TO_SHOW);
+
+                // Mezclar respuestas si está habilitado
+                if (SHUFFLE_ANSWERS) {
+                    questionsToUse = questionsToUse.map(question => {
+                        const shuffledAnswers = shuffleArray(question.answers);
+                        return {
+                            ...question,
+                            answers: shuffledAnswers
+                        };
+                    });
+                }
+
+                return questionsToUse;
+            }
+
+            function prepareQuestionsForQuizWithCount(questionsArray, count) {
+                // Seleccionar preguntas aleatorias si está habilitado
+                let questionsToUse = SHUFFLE_QUESTIONS ? 
+                    selectRandomQuestions(questionsArray, count) : 
+                    questionsArray.slice(0, count);
+
+                // Mezclar respuestas si está habilitado
+                if (SHUFFLE_ANSWERS) {
+                    questionsToUse = questionsToUse.map(question => {
+                        const shuffledAnswers = shuffleArray(question.answers);
+                        return {
+                            ...question,
+                            answers: shuffledAnswers
+                        };
+                    });
+                }
+
+                return questionsToUse;
+            }
+
+            const questions = [
+            {
+                question: "Según la ONU, ¿qué porcentaje de las aguas residuales domésticas a nivel mundial NO se tratan de forma segura?",
+                answers: [
+                { text: "Cerca del 20%", correct: false },
+                { text: "Alrededor del 30%", correct: false },
+                { text: "42%", correct: true },
+                { text: "Más del 80%", correct: false }
+                ]
+            },
+            {
+                question: "¿Cuántas personas en el mundo, según datos de la ONU, carecen de acceso a servicios de agua potable gestionados de forma segura?",
+                answers: [
+                { text: "500 millones", correct: false },
+                { text: "1,200 millones", correct: false },
+                { text: "2,200 millones", correct: true },
+                { text: "3,500 millones", correct: false }
+                ]
+            },          
+            {
+                question: "La ONU promueve la 'gestión integrada de los recursos hídricos'. ¿Qué significa esto?",
+                answers: [
+                { text: "Usar solo agua embotellada.", correct: false },
+                { text: "Que cada país gestione su agua sin cooperación.", correct: false },
+                { text: "Un enfoque coordinado que considera el agua, la tierra y los recursos relacionados.", correct: true },
+                { text: "Privatizar todos los servicios de agua.", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué porcentaje de la población mundial carece de servicios básicos de higiene, como un lugar para lavarse las manos con agua y jabón?",
+                answers: [
+                { text: "Aproximadamente 1 de cada 10 personas", correct: false },
+                { text: "Aproximadamente 1 de cada 4 personas (25%)", correct: true },
+                { text: "Aproximadamente la mitad de la población", correct: false },
+                { text: "Menos del 5%", correct: false }
+                ]
+            },
+            {
+                question: "En México, ¿qué porcentaje del agua se pierde en fugas en los sistemas de distribución municipales?",
+                answers: [
+                { text: "Alrededor del 10%", correct: false },
+                { text: "Cerca del 25%", correct: false },
+                { text: "Aproximadamente el 40%", correct: true },
+                { text: "Más del 60%", correct: false }
+                ]
+            },
+            {
+                question: "¿Cuál es el principal uso del agua en México, consumiendo más del 70% del total?",
+                answers: [
+                { text: "Industria", correct: false },
+                { text: "Abastecimiento público", correct: false },
+                { text: "Generación de energía", correct: false },
+                { text: "Agricultura", correct: true }
+                ]
+            },
+            {
+                question: "Según el derecho humano al agua, ¿cuántos litros por persona al día se consideran suficientes para cubrir necesidades básicas?",
+                answers: [
+                { text: "Entre 50 y 100 litros", correct: true },
+                { text: "20 litros", correct: false },
+                { text: "200 litros", correct: false },
+                { text: "No hay una cantidad definida", correct: false }
+                ]
+            },
+            {
+                question: "En México, ¿qué institución es la máxima autoridad federal en la administración de las 'Aguas Nacionales'?",
+                answers: [
+                { text: "La Comisión Nacional del Agua (CONAGUA)", correct: true },
+                { text: "La Secretaría de Medio Ambiente y Recursos Naturales (SEMARNAT)", correct: false },
+                { text: "La Comisión Nacional de los Derechos Humanos (CNDH)", correct: false },
+                { text: "La Secretaría de Salud", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué es la 'huella hídrica'?",
+                answers: [
+                { text: "La cantidad de agua que llueve en un año.", correct: false },
+                { text: "El volumen total de agua dulce usada para producir bienes y servicios.", correct: true },
+                { text: "La profundidad de un río.", correct: false },
+                { text: "La marca que deja el agua en el suelo.", correct: false }
+                ]
+            },
+            {
+                question: "A nivel mundial, ¿cuántos niños menores de cinco años mueren cada día por enfermedades relacionadas con agua y saneamiento inseguros?",
+                answers: [
+                { text: "Alrededor de 100", correct: false },
+                { text: "Cerca de 500", correct: false },
+                { text: "Aproximadamente 1,000", correct: true },
+                { text: "Más de 5,000", correct: false }
+                ]
+            },
+            {
+                question: "En la legislación mexicana, las Aguas Nacionales son inalienables. ¿Qué significa esto?",
+                answers: [
+                { text: "Que se pueden vender libremente.", correct: false },
+                { text: "Que no se pueden vender o ceder permanentemente.", correct: true },
+                { text: "Que su uso es exclusivo del gobierno.", correct: false },
+                { text: "Que no pagan impuestos.", correct: false }
+                ]
+            },
+        {
+            question: "¿Qué es un acuífero sobreexplotado?",
+            answers: [
+            { text: "Un acuífero con agua de muy buena calidad.", correct: false },
+            { text: "Un acuífero del que se extrae más agua de la que se recarga naturalmente.", correct: true },
+            { text: "Un río subterráneo muy grande.", correct: false },
+            { text: "Un acuífero que se comparte entre dos países.", correct: false }
+            ]
+        },
+        {
+            question: "Según UNICEF, ¿qué porcentaje de las escuelas en México NO ofrecía agua potable para beber a sus estudiantes?",
+            answers: [
+            { text: "15%", correct: false },
+            { text: "32%", correct: false },
+            { text: "58%", correct: true },
+            { text: "80%", correct: false }
+            ]
+        },
+        {
+            question: "El concepto de huella hídrica se divide en tres colores. ¿Qué representa el 'agua gris'?",
+            answers: [
+            { text: "El agua de lluvia.", correct: false },
+            { text: "El agua extraída de ríos y acuíferos.", correct: false },
+            { text: "El volumen de agua para diluir contaminantes.", correct: true },
+            { text: "El agua almacenada en glaciares.", correct: false }
+            ]
+        },
+        {
+            question: "¿Cuál es la Norma Oficial Mexicana que establece los límites de contaminantes en las descargas de aguas residuales a cuerpos de agua nacionales?",
+            answers: [
+                { text: "NOM-001-SEMARNAT-1996", correct: true },
+                { text: "NOM-002-SEMARNAT-1996", correct: false },
+                { text: "NOM-003-SEMARNAT-1996", correct: false },
+                { text: "NOM-004-SEMARNAT-1996", correct: false }
+            ]
+        },
+        {
+            question: "A nivel mundial, ¿en quién recae principalmente la responsabilidad de recolectar agua en los hogares sin acceso directo?",
+            answers: [
+                { text: "Las mujeres", correct: true },
+                { text: "Los niños", correct: false },
+                { text: "Los ancianos", correct: false },
+                { text: "Los hombres", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué porcentaje de toda el agua de la Tierra es salada?",
+            answers: [
+            { text: "Alrededor del 50%", correct: false },
+            { text: "Cerca del 75%", correct: false },
+            { text: "El 97.5%", correct: true },
+            { text: "El 85%", correct: false }
+            ]
+        },
+        {
+            question: "En México, ¿quién es responsable de reparar las fugas de agua en las redes de distribución de las ciudades?",
+            answers: [
+            { text: "CONAGUA", correct: false },
+            { text: "Los organismos operadores de cada municipio.", correct: true },
+            { text: "El gobierno federal.", correct: false },
+            { text: "Cada ciudadano en su calle.", correct: false }
+            ]
+        },
+        {
+            question: "¿Cuántas personas en el mundo todavía practican la defecación al aire libre?",
+            answers: [
+            { text: "Menos de 100 millones", correct: false },
+            { text: "419 millones", correct: true },
+            { text: "Cerca de 1,000 millones", correct: false },
+            { text: "Más de 2,000 millones", correct: false }
+            ]
+        },
+        {
+            question: "El cambio climático está afectando los recursos hídricos de México. ¿Cuál es una de las consecuencias directas?",
+            answers: [
+            { text: "El aumento del nivel de los lagos.", correct: false },
+            { text: "La desaparición acelerada de los glaciares.", correct: true },
+            { text: "Lluvias más suaves y constantes.", correct: false },
+            { text: "Menos huracanes en las costas.", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué programa de la UNESCO se dedica a la investigación, gestión y educación sobre los recursos hídricos?",
+            answers: [
+            { text: "El Programa Hidrológico Internacional (PHI)", correct: true },
+            { text: "El Programa de las Naciones Unidas para el Desarrollo (PNUD)", correct: false },
+            { text: "El Programa de las Naciones Unidas para el Medio Ambiente (PNUMA)", correct: false },
+            { text: "El Fondo Mundial para la Naturaleza (WWF)", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué porcentaje de las aguas residuales municipales se trata en México?",
+            answers: [
+            { text: "Casi el 100%", correct: false },
+            { text: "Alrededor del 50%", correct: true },
+            { text: "Menos del 20%", correct: false },
+            { text: "El 75%", correct: false }
+            ]
+        },
+        {
+            question: "Para lograr el ODS 6 en 2030, ¿cuántas veces se necesita acelerar el ritmo de progreso actual para el agua potable gestionada de forma segura?",
+            answers: [
+            { text: "2 veces", correct: false },
+            { text: "6 veces", correct: true },
+            { text: "10 veces", correct: false },
+            { text: "No se necesita acelerar", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué es el 'agua virtual'?",
+            answers: [
+            { text: "Agua creada en un laboratorio.", correct: false },
+            { text: "El agua utilizada a lo largo de toda la cadena de producción de un artículo.", correct: true },
+            { text: "Agua que se vende por internet.", correct: false },
+            { text: "Un tipo de agua purificada.", correct: false }
+            ]
+        },
+        {
+            question: "En zonas de conflicto, los niños tienen casi 3 veces más probabilidades de morir por enfermedades diarreicas que por...",
+            answers: [
+                { text: "Desnutrición", correct: true },
+                { text: "Violencia", correct: false },
+                { text: "Falta de atención médica", correct: false },
+                { text: "Contaminación", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué región de México presenta el mayor grado de presión hídrica, superando el 130%?",
+            answers: [
+                { text: "Noroeste", correct: true },
+                { text: "Centro", correct: false },
+                { text: "Oeste", correct: false },
+                { text: "Este", correct: false }
+            ]
+        },
+        {
+            question: "¿Cuántos litros de agua se necesitan para producir los alimentos que una persona consume en un día?",
+            answers: [
+            { text: "Entre 100 y 200 litros", correct: false },
+            { text: "Entre 2,000 y 5,000 litros", correct: true },
+            { text: "Menos de 50 litros", correct: false },
+            { text: "Más de 10,000 litros", correct: false }
+            ]
+        },
+        {
+            question: "Verdadero o Falso: Desperdiciar comida también significa desperdiciar agua.",
+            answers: [
+            { text: "Verdadero", correct: true },
+            { text: "Falso", correct: false }
+            ]
+        },
+        {
+            question: "¿Cuántas personas viven en países con estrés hídrico?",
+            answers: [
+            { text: "Alrededor de 500 millones", correct: false },
+            { text: "Más de 2,000 millones", correct: true },
+            { text: "Menos de 100 millones", correct: false },
+            { text: "Casi toda la población mundial", correct: false }
+            ]
+        },
+        {
+            question: "Para obtener legalmente el derecho a usar 'Aguas Nacionales' en México, un particular necesita un...",
+            answers: [
+                { text: "Permiso de la CONAGUA", correct: true },
+                { text: "Título de propiedad", correct: false },
+                { text: "Licencia de uso de suelo", correct: false },
+                { text: "Ninguno", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué porcentaje de la lluvia en México regresa a la atmósfera por evapotranspiración?",
+            answers: [
+            { text: "Cerca del 21%", correct: false },
+            { text: "Aproximadamente el 72.5%", correct: true },
+            { text: "Menos del 10%", correct: false },
+            { text: "El 50%", correct: false }
+            ]
+        },
+        {
+            question: "Según UNICEF, ¿qué porcentaje de las escuelas en México carecía de inodoros suficientes para sus alumnos?",
+            answers: [
+            { text: "5%", correct: false },
+            { text: "19%", correct: true },
+            { text: "35%", correct: false },
+            { text: "50%", correct: false }
+            ]
+        },
+        {
+            question: "El derecho humano al agua establece que el tiempo para recolectarla no debe exceder los...",
+            answers: [
+            { text: "10 minutos", correct: false },
+            { text: "30 minutos", correct: true },
+            { text: "60 minutos", correct: false },
+            { text: "2 horas", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué significa el acrónimo WASH?",
+            answers: [
+                { text: "Agua, Saneamiento e Higiene", correct: true },
+                { text: "Wellness y Salud", correct: false },
+                { text: "Agua y Saneamiento", correct: false },
+                { text: "Ninguna de las anteriores", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué es la 'Cultura del Agua' promovida por CONAGUA?",
+            answers: [
+            { text: "Un festival anual sobre el agua.", correct: false },
+            { text: "Un programa para fomentar el uso responsable y ahorro del agua.", correct: true },
+            { text: "Una ley que prohíbe el desperdicio.", correct: false },
+            { text: "Un impuesto sobre el consumo de agua.", correct: false }
+            ]
+        },
+        {
+            question: "A nivel mundial, ¿qué porcentaje de las extracciones de agua dulce son para uso industrial?",
+            answers: [
+            { text: "5%", correct: false },
+            { text: "16%", correct: true },
+            { text: "30%", correct: false },
+            { text: "50%", correct: false }
+            ]
+        },
+        {
+            question: "La NOM-001-SEMARNAT-2021 cambió el indicador de coliformes fecales por uno más preciso, que es...",
+            answers: [
+            { text: "Amoniaco", correct: false },
+            { text: "Escherichia coli", correct: true },
+            { text: "Cloro residual", correct: false },
+            { text: "Plomo", correct: false }
+        ]
+        },
+        {
+            question: "¿Cuántas personas en el mundo carecen de acceso a saneamiento gestionado de forma segura?",
+            answers: [
+            { text: "1,000 millones", correct: false },
+            { text: "3,500 millones", correct: true },
+            { text: "500 millones", correct: false },
+            { text: "5,000 millones", correct: false }
+        ]
+        },
+        {
+            question: "Aproximadamente, ¿qué porcentaje del territorio de México se considera árido o semiárido?",
+            answers: [
+            { text: "25% (un cuarto)", correct: false },
+            { text: "67% (dos terceras partes)", correct: true },
+            { text: "10% (una décima parte)", correct: false },
+            { text: "90% (casi todo)", correct: false }
+            ]
+        },
+        {
+            question: "Por cada dólar invertido en agua y saneamiento, ¿cuál es el retorno económico promedio?",
+            answers: [
+            { text: "1 dólar", correct: false },
+            { text: "4.3 dólares", correct: true },
+            { text: "10 dólares", correct: false },
+            { text: "No hay retorno económico", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué es la recarga de un acuífero?",
+            answers: [
+            { text: "Ponerle una tapa al pozo.", correct: false },
+            { text: "El proceso por el cual el agua se infiltra y rellena el acuífero.", correct: true },
+            { text: "Pagar los derechos de agua.", correct: false },
+            { text: "Medir la profundidad del agua.", correct: false }
+            ]
+        },
+        {
+            question: "En México, ¿qué tipo de instrumento otorga CONAGUA a un municipio para el servicio de agua potable?",
+            answers: [
+            { text: "Una Concesión", correct: false },
+            { text: "Una Asignación", correct: true },
+            { text: "Un Contrato", correct: false },
+            { text: "Una Licencia", correct: false }
+            ]
+        },
+        {
+            question: "A nivel mundial, 1 de cada 4 centros de salud carece de...",
+            answers: [
+                { text: "Agua potable", correct: true },
+                { text: "Saneamiento", correct: false },
+                { text: "Electricidad", correct: false },
+                { text: "Personal médico", correct: false }
+            ]
+        },
+        {
+            question: "El aumento de la temperatura global provoca que el agua de lagos y embalses retenga menos...",
+            answers: [
+                { text: "Oxígeno", correct: false },
+                { text: "Nutrientes", correct: true },
+                { text: "Contaminantes", correct: false },
+                { text: "Calor", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué porcentaje de la población mundial tenía acceso a saneamiento gestionado de forma segura en 2022?",
+            answers: [
+            { text: "85%", correct: false },
+            { text: "57%", correct: true },
+            { text: "73%", correct: false },
+            { text: "41%", correct: false }
+            ]
+        },
+        {
+            question: "La falta de instalaciones sanitarias adecuadas en las escuelas afecta especialmente a...",
+            answers: [
+            { text: "Los maestros.", correct: false },
+            { text: "Las adolescentes durante su menstruación.", correct: true },
+            { text: "Los niños más pequeños.", correct: false },
+            { text: "El personal de limpieza.", correct: false }
+            ]
+        },
+        {
+            question: "¿Qué porcentaje del agua dulce de la Tierra es utilizable y disponible para el ser humano?",
+            answers: [
+            { text: "10%", correct: false },
+            { text: "0.5%", correct: true },
+            { text: "5%", correct: false },                
+            { text: "2.5%", correct: false }
+            ]
+        }
+    ];
+
+            // Manejo de botones de dificultad
+            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            let selectedDifficulty = 10; // Por defecto normal
+
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remover selección anterior
+                    difficultyButtons.forEach(btn => {
+                        btn.classList.remove('selected');
+                        btn.style.background = 'white';
+                        btn.style.color = '#66a6ff';
+                    });
+                    
+                    // Seleccionar nuevo
+                    button.classList.add('selected');
+                    button.style.background = '#66a6ff';
+                    button.style.color = 'white';
+                    
+                    selectedDifficulty = parseInt(button.dataset.questions);
+                });
+            });
+
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', startGame);
+            restartButtonCert.addEventListener('click', startGame);
+            printButton.addEventListener('click', () => window.print());
+
+            function startGame() {
+                playerName = nameInput.value || "Héroe Anónimo"; // Guarda el nombre o usa uno por defecto
+                
+                // Usar la dificultad seleccionada
+                const questionsToShow = selectedDifficulty;
+                
+                // Preparar preguntas dinámicas
+                selectedQuestions = prepareQuestionsForQuizWithCount(questions, questionsToShow);
+                maxQuestions = selectedQuestions.length;
+                
+                currentQuestionIndex = 0;
+                score = 0;
+                startScreen.classList.remove('active');
+                resultScreen.classList.remove('active');
+                certificateScreen.classList.remove('active');
+                questionScreen.classList.add('active');
+                
+                // Actualizar contador total de preguntas en la interfaz
+                updateQuestionCounter();
+                showNextQuestion();
+            }
+
+            function showNextQuestion() {
+                resetState();
+                if (currentQuestionIndex < selectedQuestions.length) {
+                    showQuestion(selectedQuestions[currentQuestionIndex]);
+                    updateQuestionCounter();
+                } else {
+                    showResults();
+                }
+            }
+
+            function updateQuestionCounter() {
+                const questionCounter = document.getElementById('question-counter');
+                const progressBar = document.getElementById('progress-bar');
+                
+                if (questionCounter && selectedQuestions) {
+                    questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedQuestions.length}`;
+                }
+                
+                if (progressBar && selectedQuestions) {
+                    const progress = ((currentQuestionIndex + 1) / selectedQuestions.length) * 100;
+                    progressBar.style.width = `${progress}%`;
+                }
+            }
+
+            function showQuestion(question) {
+                questionText.innerText = question.question;
+                question.answers.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.innerText = answer.text;
+                    button.classList.add('btn');
+                    if (answer.correct) {
+                        button.dataset.correct = answer.correct;
+                    }
+                    button.addEventListener('click', selectAnswer);
+                    answerButtons.appendChild(button);
+                });
+            }
+
+            function resetState() {
+                feedback.innerText = '';
+                while (answerButtons.firstChild) {
+                    answerButtons.removeChild(answerButtons.firstChild);
+                }
+            }
+
+            function selectAnswer(e) {
+                const selectedButton = e.target;
+                const correct = selectedButton.dataset.correct === 'true';
+
+                if (correct) {
+                    score++;
+                    feedback.innerText = "¡Correcto! ✔️";
+                    feedback.style.color = '#28a745';
+                } else {
+                    feedback.innerText = "Incorrecto. ❌";
+                    feedback.style.color = '#dc3545';
+                }
+
+                Array.from(answerButtons.children).forEach(button => {
+                    setStatusClass(button, button.dataset.correct === 'true');
+                    button.disabled = true;
+                });
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    showNextQuestion();
+                }, 2000);
+            }
+
+            function setStatusClass(element, correct) {
+                if (correct) {
+                    element.classList.add('correct');
+                } else {
+                    element.classList.add('wrong');
+                }
+            }
+
+            function showResults() {
+                questionScreen.classList.remove('active');
+                
+                const percentage = (score / selectedQuestions.length) * 100;
+                
+                // Otorgar certificado si responde correctamente 80% o más
+                if (percentage >= 80) {
+                    certificateScreen.classList.add('active');
+                    certificateName.innerText = playerName;
+                    const today = new Date();
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    certificateDateText.innerText = `Otorgado el ${today.toLocaleDateString('es-MX', options)}`;
+                    
+                    // Actualizar el texto del certificado con el porcentaje obtenido
+                    const certificateScore = document.getElementById('certificate-score');
+                    if (certificateScore) {
+                        certificateScore.innerText = `${score}/${selectedQuestions.length} preguntas correctas (${Math.round(percentage)}%)`;
+                    }
+                } else {
+                    resultScreen.classList.add('active');
+                    scoreSpan.innerText = score;
+                    totalQuestionsSpan.innerText = selectedQuestions.length;
+
+                    let message = "";
+                    if (percentage >= 70) {
+                        message = `¡Muy cerca! Obtuviste ${Math.round(percentage)}%. Necesitas 80% para obtener el certificado. ¡Inténtalo de nuevo! 🎯`;
+                    } else if (percentage >= 50) {
+                        message = `¡Bien hecho! Obtuviste ${Math.round(percentage)}%. Sigue aprendiendo para obtener el certificado (80%). 😊`;
+                    } else {
+                        message = `Obtuviste ${Math.round(percentage)}%. Hay oportunidad para aprender más sobre este vital recurso. ¡No te rindas! 🌱`;
+                    }
+                    resultMessage.innerText = message;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

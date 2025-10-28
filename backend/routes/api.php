@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\ContentController;
+
+use App\Http\Controllers\Api\MapController;
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -104,3 +106,9 @@ Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
 Route::get('/lecciones', [ContentController::class, 'index']);
 
 Route::post('/lecciones', [ContentController::class, 'store']);
+
+//API PARA CARGAR DATOS DEL MAPA
+Route::get('/mapa', [MapController::class, 'mapData']);
+
+// Si quieres el resource completo:
+//Route::apiResource('mapa', MapController::class)->except(['index']);  // Excluye index, usa mapData para /mapa
