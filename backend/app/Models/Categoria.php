@@ -5,34 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\Contenido;
-
 class Curso extends Model
 {
     /** @use HasFactory<\Database\Factories\CursoFactory> */
     use HasFactory;
 
-    protected $table = 'cursos'; // <-- AÑADE ESTA LÍNEA
+    protected $table = 'categorias';
 
-    // La llave primaria no es `id` sino `id_curso` según la migración
-    protected $primaryKey = 'id_curso';
+    protected $primaryKey = 'id';
 
     // Es una clave autoincremental entera
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
-        'titulo',
-        'descripcion',
-        'portada_url',
-        'tiempo_estimado_min',
-        'autor_id',
-        'categoria_id',
-        'publicado',
+        'nombre',
+        'slug',
     ];
 
     public function contenidos()
     {
-        return $this->hasMany(Contenido::class, 'id_curso');
+        return $this->hasMany(Contenido::class, 'id');
     }
 }

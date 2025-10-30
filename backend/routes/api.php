@@ -3,13 +3,14 @@
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\RegisterController;
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 
+use App\Models\User;
+
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
-use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\CategoryController;
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -91,16 +92,6 @@ Route::put('/usuarios/{id}', [UserController::class, 'update']);
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 
 // API PARA CURSOS
+Route::get('/categorias', [CategoryController::class, 'index']);
+
 Route::get('/cursos', [CourseController::class, 'index']);
-
-Route::post('/cursos', [CourseController::class, 'store']);
-
-Route::get('/cursos/{id}', [CourseController::class, 'show']);
-
-Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
-
-// API PARA CONTENIDOS
-
-Route::get('/lecciones', [ContentController::class, 'index']);
-
-Route::post('/lecciones', [ContentController::class, 'store']);
