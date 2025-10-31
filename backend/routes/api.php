@@ -93,16 +93,23 @@ Route::put('/usuarios/{id}', [UserController::class, 'update']);
 
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 
-// API PARA CURSOS
-Route::get('/categorias', [CategoryController::class, 'index']);
+// API PARA CATEGORIAS
+Route::get('/categorias', function() {
+    return 'Lista de Categorias';
+});
 
+// API PARA CURSOS
 Route::get('/cursos', [CourseController::class, 'index']);
 
 Route::post('/cursos', [CourseController::class, 'store']);
 
 Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
+Route::put('/cursos/{id}', [CourseController::class, 'update']);
+
 Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
+
+
 
 // API PARA CONTENIDOS
 
