@@ -29,7 +29,9 @@ try {
     const responseCursos = await fetch("http://localhost:8000/api/cursos/");
 
     if (!responseCursos.ok) {
-        throw new Error(`Error al obtener los cursos: ${responseCursos.statusText}`);
+        throw new Error(
+            `Error al obtener los cursos: ${responseCursos.statusText}`,
+        );
     }
 
     const responseDataCursos = await responseCursos.json();
@@ -48,19 +50,20 @@ try {
     }
 
     // --- 2. OBTENEMOS LOS CONTENIDOS PARA CADA CURSO ---
-    
+
     // Creamos un array de promesas. Cada una buscará el contenido de UN curso
     const promesasDeContenido = cursosBase.map(async (curso) => {
-        
         // !!! AJUSTA ESTA URL a tu API de contenidos !!!
         const responseContenido = await fetch(
-            `http://localhost:8000/api/lecciones` 
+            `http://localhost:8000/api/lecciones`,
             // O quizás es: `http://localhost:8000/api/contenidos?curso=${curso.id_curso}`
             // ¡Verifica tu ruta!
         );
 
         if (!responseContenido.ok) {
-            console.warn(`No se pudo cargar contenido para el curso ID: ${curso.id_curso}`);
+            console.warn(
+                `No se pudo cargar contenido para el curso ID: ${curso.id_curso}`,
+            );
             return { ...curso, contenidos: [] }; // Devuelve el curso con contenidos vacíos si falla
         }
 
@@ -70,7 +73,10 @@ try {
         let contenidosDelCurso: Contenido[] = [];
         if (Array.isArray(responseDataContenido)) {
             contenidosDelCurso = responseDataContenido;
-        } else if (responseDataContenido && Array.isArray(responseDataContenido.data)) {
+        } else if (
+            responseDataContenido &&
+            Array.isArray(responseDataContenido.data)
+        ) {
             contenidosDelCurso = responseDataContenido.data;
         }
 
@@ -82,7 +88,7 @@ try {
     });
 
     // --- 3. ESPERAMOS A QUE TODAS LAS PETICIONES TERMINEN ---
-    
+
     // Promise.all ejecuta todas las promesas del array en paralelo
     // 'cursos' ahora será el array de cursos, cada uno con su propiedad 'contenidos'
     cursos = await Promise.all(promesasDeContenido);
@@ -92,7 +98,6 @@ try {
         "Datos COMPLETOS (Cursos + Contenidos):",
         JSON.stringify(cursos, null, 2),
     );
-
 } catch (e) {
     console.error(e);
     error =
@@ -187,7 +192,9 @@ try {
                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
                 >
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-center">Nombre del Curso</th>
+                        <th scope="col" class="px-6 py-3 text-center"
+                            >Nombre del Curso</th
+                        >
                         <th scope="col" class="px-6 py-3 text-center">Nivel</th>
                         <th scope="col" class="px-6 py-3 text-center">ID</th>
                         <th scope="col" class="px-6 py-3 text-center"
@@ -223,15 +230,16 @@ try {
                                             </span>
                                         )}
                                     </td>
-                                    <td class="px-6 py-4 text-center">{curso.id_curso}</td>
                                     <td class="px-6 py-4 text-center">
-                                            <a
-                                                href={`/admin/cursos/${curso.id_curso}/contenidos`}
-                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline text-center"
-                                            >
-                                                Contenido
-                                            </a>
-                                        
+                                        {curso.id_curso}
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a
+                                            href={`/admin/cursos/${curso.id_curso}/crearCurso`}
+                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline text-center"
+                                        >
+                                            Contenido
+                                        </a>
                                     </td>
                                 </tr>
                             ))
@@ -261,7 +269,7 @@ try {
                 button.addEventListener("click", async (e) => {
                     const target = e.target as HTMLButtonElement;
                     const id = target.dataset.cursoId;
-                    
+
                     // Opcional: Pedir confirmación
                     // if (!confirm(`¿Estás seguro de que quieres eliminar el curso con ID ${id}?`)) {
                     //    return;
@@ -280,7 +288,10 @@ try {
                             target.closest("tr")?.remove();
                         } else {
                             const errorData = await response.json();
-                            console.error("Error al eliminar:", errorData.message);
+                            console.error(
+                                "Error al eliminar:",
+                                errorData.message,
+                            );
                             // Aquí podrías mostrar un modal de error
                         }
                     } catch (error) {
