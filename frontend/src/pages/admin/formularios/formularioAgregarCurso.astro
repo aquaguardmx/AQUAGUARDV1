@@ -1,214 +1,562 @@
 ---
-import AdminLayout from "../../../layouts/AdminLayout.astro";
+// --- Datos de Ejemplo ---
+const autores = [
+  { id: 1, nombre: "Juan Pérez" },
+  { id: 2, nombre: "Ana Gómez (Tú)" },
+  { id: 3, nombre: "Carlos Ruiz" },
+];
+const categorias = [
+  { id: 1, nombre: "Programación" },
+  { id: 2, nombre: "Diseño Web" },
+  { id: 3, nombre: "Marketing Digital" },
+  { id: 4, nombre: "Idiomas" },
+];
+
+if (Astro.request.method === "POST") {
+  // console.log("Formulario recibido:", await Astro.request.formData());
+}
 ---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agregar Nuevo Curso</title>
 
-<AdminLayout title="Gestión de Usuarios">
-    <div class="p-6">
-        <form id="cursoForm" class="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-            <h2
-                class="text-2xl font-semibold text-gray-900 dark:text-white mb-6"
-            >
-                Agregar Nuevo Curso
-            </h2>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-            <div class="mb-5">
-                <label
-                    for="nombre_curso"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Nombre Curso</label
-                >
-                <input
-                    type="text"
-                    id="nombre_curso"
-                    name="nombre_curso" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Nombre del curso"
-                    required
-                />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+    }
+
+    .form-section {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid #f1f5f9;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .editor-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+
+    .editor-container:focus-within {
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      border-color: #3b82f6;
+    }
+
+    .ql-toolbar.ql-snow {
+      background-color: #f8fafc;
+      border: none;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.75rem;
+    }
+
+    .ql-container.ql-snow {
+      border: none;
+    }
+
+    .ql-editor {
+      min-height: 180px;
+      padding: 1rem;
+    }
+
+    .form-input-flowbite {
+      background: white;
+      border: 1px solid #d1d5db;
+      color: #374151;
+      font-size: 0.875rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 0 2px transparent;
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .form-input-flowbite:focus {
+      box-shadow: 0 0 0 2px #3b82f6;
+      border-color: #3b82f6;
+      outline: none;
+    }
+
+    .form-label-flowbite {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .btn-primary {
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(to right, #2563eb, #4f46e5);
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:focus {
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+
+    .btn-secondary {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+
+    .btn-back {
+      padding: 0.625rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7280;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-back:hover {
+      background: #f9fafb;
+      color: #374151;
+      transform: translateX(-2px);
+    }
+
+    h1 {
+      background: linear-gradient(to right, #2563eb, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .file-upload-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 8rem;
+      border: 2px dashed #d1d5db;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      background: #f9fafb;
+      transition: all 0.2s;
+    }
+
+    .file-upload-area:hover {
+      background: #f3f4f6;
+    }
+
+    .file-upload-area.dragover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .help-text {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5rem;
+      margin-top: 2rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    /* Estilos para el toggle - SIN @apply */
+    .toggle-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .toggle-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      width: 2.75rem;
+      height: 1.5rem;
+      background-color: #d1d5db;
+      border-radius: 9999px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      background-color: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-input:checked + .toggle-slider {
+      background-color: #2563eb;
+    }
+
+    .toggle-input:checked + .toggle-slider::before {
+      transform: translateX(1.25rem);
+    }
+
+    .toggle-input:focus + .toggle-slider {
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+
+    /* Header styles */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+    <main class="w-full max-w-4xl">
+      <!-- Header con botón Regresar -->
+       <a href="#" class="btn-back" onclick="history.back()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Regresar
+        </a>
+      <div class="page-header">
+        <div class="text-center flex-1">
+          <h1 class="text-4xl font-bold mb-3">Crear Nuevo Curso</h1>
+          <p class="text-gray-600 max-w-2xl mx-auto">Completa la información a continuación para crear un nuevo curso educativo. Todos los campos marcados con * son obligatorios.</p>
+        </div>
+        <div class="w-24"></div> <!-- Espacio para balancear el layout -->
+      </div>
+
+      <form 
+        method="POST" 
+        enctype="multipart/form-data" 
+        class="space-y-8"
+      >
+        <!-- Información Básica -->
+        <div class="form-section">
+          <h2 class="section-title">Información Básica</h2>
+          
+          <!-- Título -->
+          <div class="mb-6">
+            <label for="titulo" class="form-label-flowbite">Título del Curso *</label>
+            <input 
+              type="text" 
+              id="titulo" 
+              name="titulo" 
+              class="form-input-flowbite" 
+              placeholder="Ej: Introducción a JavaScript Moderno" 
+              required 
+            />
+          </div>
+
+          <!-- Descripción -->
+          <div class="mb-6">
+            <label class="form-label-flowbite">Descripción del Curso *</label>
+            <div class="editor-container">
+              <div id="toolbar-container">
+                <span class="ql-formats">
+                  <select class="ql-header">
+                    <option value="1">Título 1</option>
+                    <option value="2">Título 2</option>
+                    <option selected>Normal</option>
+                  </select>
+                </span>
+                <span class="ql-formats">
+                  <button class="ql-bold"></button>
+                  <button class="ql-italic"></button>
+                  <button class="ql-underline"></button>
+                </span>
+                <span class="ql-formats">
+                  <button class="ql-list" value="ordered"></button>
+                  <button class="ql-list" value="bullet"></button>
+                </span>
+                <span class="ql-formats"><button class="ql-link"></button></span>
+                <span class="ql-formats"><button class="ql-clean"></button></span>
+              </div>
+              <div id="editor">
+                <p>Escribe la descripción <strong>detallada</strong> aquí...</p>
+              </div>
+            </div>
+            <textarea name="descripcion" id="descripcion-oculta" class="hidden"></textarea>
+            <p class="help-text">Describe detalladamente el contenido y propósito del curso.</p>
+          </div>
+        </div>
+
+        <!-- Detalles del Curso -->
+        <div class="form-section">
+          <h2 class="section-title">Detalles del Curso</h2>
+          <div class="form-grid">
+            <!-- Autor -->
+            <div>
+              <label for="autor_id" class="form-label-flowbite">Autor del Curso *</label>
+              <select id="autor_id" name="autor_id" class="form-input-flowbite" required>
+                <option selected disabled value="">Selecciona un autor</option>
+                {autores.map(autor => (
+                  <option value={autor.id}>{autor.nombre}</option>
+                ))}
+              </select>
             </div>
 
-            <div class="mb-5">
-                <label
-                    for="descripcion"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Descripcion</label
-                >
-                <textarea
-                    id="descripcion"
-                    name="descripcion" rows="4"
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Escribe la descripción del curso aquí..."></textarea>
+            <!-- Categoría -->
+            <div>
+              <label for="categoria_id" class="form-label-flowbite">Categoría *</label>
+              <select id="categoria_id" name="categoria_id" class="form-input-flowbite" required>
+                <option selected disabled value="">Selecciona una categoría</option>
+                {categorias.map(cat => (
+                  <option value={cat.id}>{cat.nombre}</option>
+                ))}
+              </select>
             </div>
 
-            <div class="mb-5">
-                <label
-                    for="nivel_dificultad"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                    >Nivel de Dificultad</label
-                >
-                <select
-                    id="nivel_dificultad"
-                    name="nivel_dificultad" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                >
-                    <option value="" disabled selected>Selecciona un nivel</option>
-                    <option value="principiante">Principiante</option>
-                    <option value="intermedio">Intermedio</option>
-                    <option value="avanzado">Avanzado</option>
-                </select>
+            <!-- Tiempo -->
+            <div>
+              <label for="tiempo_estimado_min" class="form-label-flowbite">
+                Tiempo Estimado (minutos)
+              </label>
+              <input 
+                type="number" 
+                id="tiempo_estimado_min" 
+                name="tiempo_estimado_min"
+                class="form-input-flowbite" 
+                placeholder="Ej: 120" 
+                min="0"
+              />
+              <p class="help-text">Tiempo aproximado para completar el curso.</p>
             </div>
 
-            <div id="responseMessage" class="mt-4 mb-4 text-sm"></div>
+            <!-- Portada -->
+            <div>
+              <label class="form-label-flowbite" for="portada_url">Subir Portada</label>
+              <div class="file-upload-area" id="file-upload-area">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                  <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Haz clic para subir</span> o arrastra y suelta</p>
+                  <p class="text-xs text-gray-500">PNG, JPG o WEBP (MAX. 800x400px)</p>
+                </div>
+                <input 
+                  class="hidden" 
+                  id="portada_url" 
+                  name="portada_url"
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <button
-                type="submit"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >Agregar Curso</button
-            >
-        </form>
-    </div>
+        <!-- Objetivos de Aprendizaje -->
+        <div class="form-section">
+          <h2 class="section-title">Objetivos de Aprendizaje</h2>
+          <div>
+            <label for="objetivos" class="form-label-flowbite">Lo que el estudiante aprenderá *</label>
+            <textarea 
+              id="objetivos" 
+              name="objetivos" 
+              rows="4" 
+              class="form-input-flowbite" 
+              placeholder="Escribe un objetivo por línea:&#10;- Comprender los fundamentos de...&#10;- Desarrollar habilidades en..."
+              required
+            ></textarea>
+            <p class="help-text">Cada línea se guardará como un objetivo separado. Escribe al menos 3 objetivos claros.</p>
+          </div>
+        </div>
 
-    <script>
-        // 1. Obtener el token (esto está bien, lo necesitamos para la autorización)
-        const authToken =
-            localStorage.getItem("authToken") ||
-            sessionStorage.getItem("authToken");
+        <!-- Configuración de Publicación -->
+        <div class="form-section">
+          <h2 class="section-title">Configuración de Publicación</h2>
+          <div class="flex items-center mb-2">
+            <label class="toggle-wrapper">
+              <input type="checkbox" name="publicado" value="true" class="toggle-input">
+              <div class="toggle-slider"></div>
+              <span class="ml-3 text-sm font-medium text-gray-900">
+                Publicar curso inmediatamente
+              </span>
+            </label>
+          </div>
+          <p class="help-text mt-2">Si no seleccionas esta opción, el curso se guardará como borrador.</p>
+        </div>
 
-        console.log("Token de autenticación encontrado:", authToken);
+        <!-- Botones de Acción -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary">Guardar como borrador</button>
+          <button type="submit" class="btn-primary">Publicar Curso</button>
+        </div>
+      </form>
+    </main>
+  </div>
 
-        // Si no hay token, no podemos hacer nada.
-        if (!authToken) {
-            console.error("No se encontró token. El usuario debe iniciar sesión.");
-            const messageDiv = document.getElementById("responseMessage");
-            if (messageDiv) {
-                messageDiv.textContent = "Error: No estás autenticado. Por favor, inicia sesión.";
-                messageDiv.style.color = "red";
-            }
-            // Opcionalmente, deshabilita el formulario
-            document.querySelector<HTMLFormElement>("#cursoForm")?.setAttribute("disabled", "true");
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", () => {
+      initFlowbite();
+      
+      // Inicializar editor Quill
+      const quillOptions = { 
+        modules: { 
+          toolbar: "#toolbar-container" 
+        }, 
+        theme: "snow" 
+      };
+      const editor = new Quill("#editor", quillOptions);
+      const hiddenTextarea = document.querySelector("#descripcion-oculta");
+
+      if (hiddenTextarea.value) editor.root.innerHTML = hiddenTextarea.value;
+      
+      editor.on("text-change", () => {
+        hiddenTextarea.value = editor.root.innerHTML;
+      });
+      
+      document.querySelector("form").addEventListener("submit", () => {
+        hiddenTextarea.value = editor.root.innerHTML;
+      });
+
+      // Mejorar la experiencia de subida de archivos
+      const fileUploadArea = document.getElementById('file-upload-area');
+      const fileInput = document.getElementById('portada_url');
+      
+      fileUploadArea.addEventListener('click', () => {
+        fileInput.click();
+      });
+      
+      fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+      });
+      
+      fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('dragover');
+      });
+      
+      fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          updateFileUploadText(e.dataTransfer.files[0].name);
         }
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          updateFileUploadText(e.target.files[0].name);
+        }
+      });
+      
+      function updateFileUploadText(fileName) {
+        const uploadText = fileUploadArea.querySelector('p');
+        uploadText.textContent = fileName;
+        uploadText.classList.add('text-blue-600', 'font-medium');
+      }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // 2. Apuntar al ID del nuevo formulario: "cursoForm"
-            const form = document.querySelector<HTMLFormElement>("#cursoForm");
-            let messageDiv = document.getElementById("responseMessage");
+      // Debug para el toggle
+      const toggle = document.querySelector('.toggle-input');
+      toggle.addEventListener('change', function() {
+        console.log('Toggle estado:', this.checked);
+      });
 
-            if (!form) {
-                console.error(
-                    'No se encontró el formulario con id "cursoForm".',
-                );
-                return;
-            }
-
-            // Si no se encontró el div de mensajes antes, búscalo de nuevo (aunque ya lo hicimos arriba)
-            if (!messageDiv) {
-                messageDiv = document.createElement("div");
-                messageDiv.id = "responseMessage";
-                messageDiv.className = "mt-4 mb-4 text-sm";
-                form.appendChild(messageDiv);
-            }
-            
-            const messageEl = messageDiv as HTMLElement;
-
-
-            // 3. Actualizar el texto original del botón
-            const submitButton = form.querySelector<HTMLButtonElement>(
-                'button[type="submit"]',
-            );
-            const originalButtonHTML = submitButton
-                ? submitButton.innerHTML
-                : "Agregar Curso"; // <-- Texto cambiado
-
-            // La función setLoading es reutilizable y está perfecta
-            function setLoading(isLoading: boolean) {
-                if (!submitButton) return;
-                if (isLoading) {
-                    submitButton.disabled = true;
-                    submitButton.setAttribute("aria-busy", "true");
-                    submitButton.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
-                            <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
-                            <path d="M22 12a10 10 0 0 0-10-10" />
-                        </svg>
-                        <span>Guardando...</span>
-                    `;
-                    submitButton.classList.add("opacity-70", "cursor-not-allowed");
-                } else {
-                    submitButton.disabled = false;
-                    submitButton.removeAttribute("aria-busy");
-                    submitButton.innerHTML = originalButtonHTML;
-                    submitButton.classList.remove("opacity-70", "cursor-not-allowed");
-                }
-            }
-
-            form.addEventListener("submit", async (event) => {
-                event.preventDefault();
-
-                if (submitButton && submitButton.disabled) return;
-                if (!authToken) {
-                    messageEl.textContent = "Error: No estás autenticado.";
-                    messageEl.style.color = "red";
-                    return;
-                }
-
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                
-                // 4. Eliminar lógica de "rememberMe" (no aplica aquí)
-                
-                console.log("Enviando datos del curso:", data);
-                setLoading(true);
-                messageEl.textContent = ""; // Limpiar mensajes previos
-
-                try {
-                    // 5. Cambiar el endpoint a la API de cursos
-                    const response = await fetch("http://127.0.0.1:8000/api/cursos", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Accept: "application/json",
-                            // 6. Añadir el token de autorización
-                            "Authorization": `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify(data),
-                    });
-
-                    const result = await response.json();
-                    
-                    if (!response.ok) {
-                        // La lógica de manejo de errores de validación es reutilizable
-                        let errorMessage = `Error (${response.status}): `;
-                        if (result && typeof result.errors === "object") {
-                            // Errores de validación de Laravel
-                            const messages = Object.values(result.errors).flat();
-                            errorMessage += messages.join(" | ");
-                        } else if (result.message) {
-                             errorMessage += result.message;
-                        } else {
-                            errorMessage += "No se pudo agregar el curso.";
-                        }
-                        
-                        messageEl.textContent = errorMessage;
-                        messageEl.style.color = "red";
-                    } else {
-                        // 7. Cambiar la lógica de éxito
-                        
-                        // Ya no guardamos token ni usuario, ¡solo mostramos éxito!
-                        messageEl.textContent = "¡Curso agregado exitosamente!";
-                        messageEl.style.color = "green";
-
-                        // Limpiamos el formulario
-                        form.reset();
-
-                        // Ya no redirigimos, el admin puede querer agregar otro curso
-                        console.log("Curso agregado:", result);
-                    }
-                } catch (error) {
-                    console.error("Error de conexión:", error);
-                    messageEl.textContent = "No se pudo conectar con el servidor.";
-                    messageEl.style.color = "red";
-                } finally {
-                    setLoading(false);
-                }
-            });
-        });
-    </script>
-</AdminLayout>
+      // Función para el botón regresar
+      const backButton = document.querySelector('.btn-back');
+      backButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Puedes cambiar esta URL por la que necesites
+        window.location.href = '../../admin/dashboardAdmin'; // o la página anterior
+      });
+    });
+  </script>
+</body>
+</html>

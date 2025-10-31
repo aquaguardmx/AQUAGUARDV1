@@ -10,9 +10,7 @@ use App\Models\User;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
-use App\Http\Controllers\Api\ContentController;
-
-use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Api\CategoryController;
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -110,7 +108,8 @@ Route::get('/lecciones', [ContentController::class, 'index']);
 
 Route::post('/lecciones', [ContentController::class, 'store']);
 
-//API PARA  MAPA 
+//API PARA CARGAR DATOS DEL MAPA
 Route::get('/mapa', [MapController::class, 'mapData']);
 
 //hola 
+>>>>>>> ee770727f602afa90a1aa344809260a5a2d50dde
