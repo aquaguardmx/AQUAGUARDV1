@@ -10,6 +10,7 @@ use App\Models\User;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ContentController;
 
 use App\Http\Controllers\Api\MapController;
@@ -94,9 +95,15 @@ Route::put('/usuarios/{id}', [UserController::class, 'update']);
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 
 // API PARA CATEGORIAS
-Route::get('/categorias', function() {
-    return 'Lista de Categorias';
-});
+Route::get('/categorias', [CategoryController::class, 'index']);
+
+Route::get('/categorias/{id}', [CategoryController::class, 'show']);
+
+Route::post('/categorias', [CategoryController::class, 'store']);
+
+Route::put('/categorias/{id}', [CategoryController::class, 'update']);
+
+Route::delete('/categorias/{id}', [CategoryController::class, 'destroy']);
 
 // API PARA CURSOS
 Route::get('/cursos', [CourseController::class, 'index']);
@@ -108,8 +115,6 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
 Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
-
-
 
 // API PARA CONTENIDOS
 
