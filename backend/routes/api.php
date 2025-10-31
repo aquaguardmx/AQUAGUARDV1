@@ -97,8 +97,6 @@ Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 Route::get('/categorias', [CategoryController::class, 'index']);
 
 Route::get('/cursos', [CourseController::class, 'index']);
-<<<<<<< HEAD
-=======
 
 Route::post('/cursos', [CourseController::class, 'store']);
 
@@ -115,5 +113,4 @@ Route::post('/lecciones', [ContentController::class, 'store']);
 //API PARA  MAPA 
 Route::get('/mapa', [MapController::class, 'mapData']);
 
-// Si quieres el resource completo:
-//Route::apiResource('mapa', MapController::class)->except(['index']);  // Excluye index, usa mapData para /mapa
+//hola 
