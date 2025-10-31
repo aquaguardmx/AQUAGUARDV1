@@ -1,91 +1,38 @@
----
-// CUANDO EL USUARIO AGREGUE EL NOMBRE DEL MODULO SE CREARA ---
-export const prerender = false;
-
-// --- TIPOS DE DATOS MEJORADOS ---
-// Estructura más lógica: Curso -> Modulo -> Leccion
-
-type Leccion = {
-  id_leccion: number;
-  titulo_leccion: string;
-  orden: number;
-};
-
-type Modulo = {
-  id_modulo: number;
-  nombre_modulo: string;
-  orden: number;
-  lecciones: Leccion[];
-};
-
-type Curso = {
-  id_curso: number | string;
-  nombre_curso: string;
-  descripcion: string;
-  nivel_dificultad: string;
-  modulos?: Modulo[]; // El curso ahora contiene una lista de módulos
-};
-
-// --- OBTENCIÓN DE DATOS ---
-const { id: id_curso } = Astro.params;
-let curso: Curso | null = null;
-let error: string | null = null;
-
-try {
-  const response = await fetch(`http://localhost:8000/api/cursos/${id_curso}`);
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
-  }
-
-  const responseData = await response.json();
-
-  if (responseData && (responseData.data || typeof responseData === 'object')) {
-    curso = responseData.data || responseData;
-
-    // Opcional: Ordenar los módulos y lecciones si la API no lo hace
-    if (curso?.modulos) {
-      curso.modulos.sort((a, b) => a.orden - b.orden);
-      curso.modulos.forEach(modulo => {
-        modulo.lecciones?.sort((a, b) => a.orden - b.orden);
-      });
-    }
-  } else {
-    throw new Error("La respuesta de la API no tiene el formato esperado.");
-  }
-} catch (e) {
-  console.error(e);
-  error = e.message || "No se pudo cargar la información del curso. Verifica la API.";
-}
-
-// Determina si el curso tiene módulos para mostrar el placeholder correcto
-const tieneModulos = curso?.modulos && curso.modulos.length > 0;
----
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <link rel="icon" type="image/svg+xml" href="/img/logo.png" />
   <meta name="viewport" content="width=device-width" />
-  <meta name="generator" content={Astro.generator} />
-  <title>
-    {curso ? `Editando: ${curso.nombre_curso}` : "Panel de Curso"} - AquaLearn
-  </title>
+  <meta name="generator" content="Astro" />
+  <title>Modo Edición: El Ciclo del Agua - AquaLearn</title>
 
-  <script
-    is:inline
-    src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"
-  ></script>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css"
+    rel="stylesheet"
+  />
+  
+  <!-- Quill Editor CSS -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
+  
   <nav class="bg-white border-gray-200 dark:bg-gray-800 border-b sticky top-0 z-50">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <div
+      class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
+    >
       <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img class="h-8" src="/img/logo.png" alt="AquaLearn Logo" />
-        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-          AquaLearn
-        </span>
+        <span
+          class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
+          >AquaLearn</span
+        >
       </a>
-      <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+      <div
+        class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"
+      >
         <button
           type="button"
           class="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
@@ -95,26 +42,45 @@ const tieneModulos = curso?.modulos && curso.modulos.length > 0;
           data-dropdown-placement="bottom"
         >
           <span class="sr-only">Abrir menú de usuario</span>
-          <div class="relative w-8 h-8 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
-            <svg class="absolute w-10 h-10 text-gray-400 -left-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+          <div
+            class="relative w-8 h-8 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600"
+          >
+            <svg
+              class="absolute w-10 h-10 text-gray-400 -left-1"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                clip-rule="evenodd"></path>
             </svg>
           </div>
         </button>
-        <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600" id="user-dropdown">
+        <div
+          class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
+          id="user-dropdown"
+        >
           <div class="px-4 py-3">
-            <span class="block text-sm text-gray-900 dark:text-white">Nombre de Usuario</span>
+            <span class="block text-sm text-gray-900 dark:text-white"
+              >Administrador</span
+            >
           </div>
           <ul class="py-2" aria-labelledby="user-menu-button">
             <li>
-              <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                Mi Panel
-              </a>
+              <a
+                href="/dashboard"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                >Panel de Cursos</a
+              >
             </li>
             <li>
-              <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                Cerrar sesión
-              </a>
+              <a
+                href="/logout"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                >Cerrar sesión</a
+              >
             </li>
           </ul>
         </div>
@@ -126,312 +92,519 @@ const tieneModulos = curso?.modulos && curso.modulos.length > 0;
           aria-expanded="false"
         >
           <svg class="w-5 h-5" aria-hidden="true" fill="none" viewBox="0 0 17 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"></path>
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M1 1h15M1 7h15M1 13h15"></path>
           </svg>
         </button>
       </div>
-      <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-user">
+      <div
+        class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+        id="navbar-user"
+      >
         <span class="text-lg font-semibold dark:text-white hidden md:block">
-          {curso?.nombre_curso || "Cargando..."}
+          Editando: El Ciclo del Agua
         </span>
       </div>
     </div>
   </nav>
 
-  <div class="max-w-screen-xl mx-auto p-4">
-
-    {error && (
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
-        <strong class="font-bold">Error al cargar: </strong>
-        <span class="block sm:inline">{error}</span>
-      </div>
-    )}
-
-    {curso && (
-      <>
-        <div class="mb-4">
-          <a
-            href="../../../admin/formularios/formularioAgregarContenido"
-            class="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400"
+  <div
+    class="max-w-screen-xl mx-auto p-4 md:flex md:gap-8"
+  >
+    <aside
+      class="w-full md:w-80 lg:w-96 md:flex-shrink-0 md:order-1 order-2 mt-8 md:mt-0"
+    >
+      <div
+        class="sticky top-24"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2
+            class="text-xl font-semibold text-gray-900 dark:text-white"
           >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Regresar a Dashboard
+            Contenido del Curso
+          </h2>
+          <a
+            href="/admin/modulos/nuevo"
+            class="inline-flex items-center p-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+            <span class="sr-only">Añadir Módulo</span>
           </a>
         </div>
         
-        <div class="md:flex md:gap-8">
-          
-          <aside class="w-full md:w-80 lg:w-96 md:flex-shrink-0 md:order-1 order-2 mt-8 md:mt-0">
-            <div class="sticky top-24">
-              <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                Contenido del Curso
-              </h2>
-
-              <div id="accordion-modules">
-                {tieneModulos ? (
-                  curso.modulos.map((modulo, index) => (
-                    <div class:list={[
-                      "border border-gray-200 dark:border-gray-700",
-                      index === 0 ? "rounded-t-lg" : "",
-                      index === curso.modulos.length - 1 ? "" : "border-b-0"
-                    ]}>
-                      <h2 id={`accordion-heading-${modulo.id_modulo}`}>
-                        <button
-                          type="button"
-                          class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
-                          data-accordion-target={`#accordion-body-${modulo.id_modulo}`}
-                          aria-expanded={index === 0} aria-controls={`#accordion-body-${modulo.id_modulo}`}
-                        >
-                          <span>{modulo.nombre_modulo}</span>
-                          <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5 5 1 1 5"></path>
-                          </svg>
-                        </button>
-                      </h2>
-                      <div id={`accordion-body-${modulo.id_modulo}`} class:list={[ index !== 0 && "hidden" ]} aria-labelledby={`accordion-heading-${modulo.id_modulo}`}>
-                        <div class="p-5 border-t border-gray-200 dark:border-gray-700">
-                          <ul class="space-y-4">
-                            {modulo.lecciones && modulo.lecciones.length > 0 ? (
-                              modulo.lecciones.map(leccion => (
-                                <li>
-                                  <a
-                                    href={`/admin/curso/${curso.id_curso}/leccion/${leccion.id_leccion}`}
-                                    class="flex items-center text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                                  >
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    {leccion.titulo_leccion}
-                                  </a>
-                                </li>
-                              ))
-                            ) : (
-                              <li class="text-sm text-gray-500 italic">No hay lecciones en este módulo.</li>
-                            )}
-                            
-                            <li>
-                              <a
-                                href={`/admin/curso/${curso.id_curso}/modulo/${modulo.id_modulo}/crear-leccion`}
-                                class="w-full text-left flex items-center p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
-                              >
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Agregar Lección
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div class="p-4 text-center bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      Este curso aún no tiene módulos.
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              <button
-                id="openModalBtn"
-                type="button"
-                class="w-full mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center justify-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        <div
+          id="accordion-course-content"
+          data-accordion="collapse"
+          data-active-classes="bg-blue-50 dark:bg-gray-800 text-blue-600 dark:text-white"
+        >
+          <h2 id="accordion-heading-1">
+            <button
+              type="button"
+              class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-600 border border-b-0 border-gray-200 rounded-t-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 dark:border-gray-700 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-800 gap-3"
+              data-accordion-target="#accordion-body-1"
+              aria-expanded="true"
+              aria-controls="accordion-body-1"
+            >
+              <span class="flex-1 text-left">Módulo 1: Fundamentos</span>
+              <a href="/admin/modulos/1/editar" class="text-gray-500 hover:text-blue-600 p-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
+                <span class="sr-only">Editar Módulo 1</span>
+              </a>
+              <svg
+                data-accordion-icon
+                class="w-3 h-3 rotate-180 shrink-0"
+                aria-hidden="true"
+                fill="none"
+                viewBox="0 0 10 6"
               >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Agregar Módulo
-              </button>
-            </div>
-          </aside>
-
-          <section class="flex-1 min-w-0 md:order-2 order-1">
-            <div class="w-full h-full flex flex-col items-center justify-center text-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-12 min-h-[400px] md:min-h-[600px]">
-              <svg class="mx-auto h-16 w-16 text-blue-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"></path>
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5 5 1 1 5"></path>
               </svg>
-              <h1 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                {tieneModulos ? "Selecciona una lección" : "¡Bienvenido al panel de creación!"}
-              </h1>
-              <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-                {tieneModulos ? "Elige una lección de la barra lateral para ver o editar su contenido." : "Para comenzar, agrega tu primer módulo usando el botón en la barra lateral."}
-              </p>
+            </button>
+          </h2>
+          <div
+            id="accordion-body-1"
+            class="hidden"
+            aria-labelledby="accordion-heading-1"
+          >
+            <div
+              class="p-5 border border-b-0 border-gray-200 dark:border-gray-700"
+            >
+              <ul class="space-y-4 mb-4">
+                <li>
+                  <a
+                    href="/admin/lecciones/1/editar"
+                    class="flex items-center justify-between text-blue-600 dark:text-blue-400 font-semibold"
+                  >
+                    <span class="flex items-center">
+                      <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path></svg>
+                      1.1 Evaporación y Condensación
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/admin/lecciones/2/editar"
+                    class="flex items-center justify-between text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                  >
+                    <span class="flex items-center">
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      1.2 Precipitación y Recolección
+                    </span>
+                  </a>
+                </li>
+              </ul>
+              <a
+                href="/admin/modulos/1/lecciones/nuevo"
+                class="inline-flex items-center py-2 px-3 text-xs font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700"
+              >
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                Añadir Lección
+              </a>
             </div>
-          </section>
+          </div>
+
+          <h2 id="accordion-heading-2">
+            <button
+              type="button"
+              class="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-600 border border-gray-200 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 dark:border-gray-700 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-800 gap-3"
+              data-accordion-target="#accordion-body-2"
+              aria-expanded="false"
+              aria-controls="accordion-body-2"
+            >
+              <span class="flex-1 text-left">Módulo 2: Ecosistemas y Agua</span>
+              <a href="/admin/modulos/2/editar" class="text-gray-500 hover:text-blue-600 p-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
+                <span class="sr-only">Editar Módulo 2</span>
+              </a>
+              <svg
+                data-accordion-icon
+                class="w-3 h-3 shrink-0"
+                aria-hidden="true"
+                fill="none"
+                viewBox="0 0 10 6"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5 5 1 1 5"></path>
+              </svg>
+            </button>
+          </h2>
+          <div
+            id="accordion-body-2"
+            class="hidden"
+            aria-labelledby="accordion-heading-2"
+          >
+            <div class="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+               <ul class="space-y-4 mb-4">
+                 <li>
+                    <a
+                      href="/admin/lecciones/3/editar"
+                      class="flex items-center justify-between text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                    >
+                      <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        2.1 La importancia de los Humedales
+                      </span>
+                    </a>
+                  </li>
+               </ul>
+               <a
+                href="/admin/modulos/2/lecciones/nuevo"
+                class="inline-flex items-center py-2 px-3 text-xs font-medium text-center text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700"
+              >
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                Añadir Lección
+              </a>
+            </div>
+          </div>
         </div>
-      </>
-    )}
+      </div>
+    </aside>
+
+    <section class="flex-1 min-w-0 md:order-2 order-1">
+      
+      <form action="/api/lecciones/1" method="POST" enctype="multipart/form-data" id="lesson-form">
+        
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+          <ol
+            class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse"
+          >
+            <li class="inline-flex items-center">
+              <a
+                href="/dashboard"
+                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"
+                >Mis Cursos</a
+              >
+            </li>
+            <li>
+              <div class="flex items-center">
+                <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" fill="none" viewBox="0 0 6 10"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path></svg>
+                <a
+                  href="#"
+                  class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white"
+                  >El Ciclo del Agua</a
+                >
+              </div>
+            </li>
+            <li aria-current="page">
+              <div class="flex items-center">
+                <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" fill="none" viewBox="0 0 6 10"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path></svg>
+                <span
+                  class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400"
+                  >Editando Módulo 1</span
+                >
+              </div>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="mb-6">
+          <label for="lesson_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Título de la Lección</label>
+          <input 
+            type="text" 
+            id="lesson_title" 
+            name="lesson_title" 
+            class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-3xl font-extrabold focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+            value="1.1 Evaporación y Condensación" 
+            required 
+          />
+        </div>
+
+        <div class="mb-6">
+          <label for="content_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tipo de Contenido</label>
+          <select id="content_type" name="content_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="video">Video</option>
+            <option value="text">Texto</option>
+          </select>
+        </div>
+
+        <div class="mb-6" id="video-content">
+          <label for="video_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enlace del Video (Vimeo, YouTube, etc.)</label>
+          <input type="url" id="video_url" name="video_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="https://vimeo.com/..." />
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Opcionalmente, puedes subir un archivo de video:</p>
+          <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 mt-2" id="video_file" name="video_file" type="file" accept="video/*">
+        </div>
+
+        <div class="hidden mb-6" id="text-content">
+          <label for="text_content" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contenido de Texto</label>
+          <div id="text-editor" style="height: 300px;"></div>
+          <input type="hidden" id="text_content" name="text_content">
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-between gap-4 mb-8">
+          <button
+            type="submit"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+            Guardar Cambios de Lección
+          </button>
+          
+          <button
+            type="button"
+            id="delete-lesson-btn"
+            class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-700"
+          >
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+            Eliminar esta Lección
+          </button>
+        </div>
+
+        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+          <ul
+            class="flex flex-wrap -mb-px text-sm font-medium text-center"
+            id="lesson-tabs"
+            data-tabs-toggle="#lesson-tabs-content"
+            role="tablist"
+          >
+            <li class="me-2" role="presentation">
+              <button
+                class="inline-block p-4 border-b-2 rounded-t-lg border-blue-600 text-blue-600"
+                id="descripcion-tab"
+                data-tabs-target="#descripcion"
+                type="button"
+                role="tab"
+                aria-controls="descripcion"
+                aria-selected="true"
+                >Descripción</button
+              >
+            </li>
+            <li class="me-2" role="presentation">
+              <button
+                class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent"
+                id="recursos-tab"
+                data-tabs-target="#recursos"
+                type="button"
+                role="tab"
+                aria-controls="recursos"
+                aria-selected="false">Recursos</button
+              >
+            </li>
+          </ul>
+        </div>
+        <div id="lesson-tabs-content">
+          
+          <div
+            class="p-4 rounded-lg bg-white dark:bg-gray-800"
+            id="descripcion"
+            role="tabpanel"
+            aria-labelledby="descripcion-tab"
+          >
+            <label for="lesson_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contenido de la Lección</label>
+            <div id="description-editor" style="height: 400px;"></div>
+            <input type="hidden" id="lesson_description" name="lesson_description">
+          </div>
+          
+          <div
+            class="hidden p-4 rounded-lg bg-white dark:bg-gray-800"
+            id="recursos"
+            role="tabpanel"
+            aria-labelledby="recursos-tab"
+          >
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Añadir/Editar Recursos</h3>
+            <div id="resource-container" class="space-y-4">
+              <div class="p-4 border rounded-lg dark:border-gray-700 resource-item">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="resource_title_1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Título del Recurso</label>
+                    <input type="text" id="resource_title_1" name="resource_title[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="Glosario de Términos (PDF)">
+                  </div>
+                  <div>
+                    <label for="resource_url_1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enlace o Archivo</label>
+                    <div class="flex gap-2">
+                      <input type="text" id="resource_url_1" name="resource_url[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="#">
+                      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" name="resource_file[]" type="file">
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="mt-2 text-red-600 hover:text-red-800 remove-resource-btn inline-flex items-center text-sm">
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                  Eliminar recurso
+                </button>
+              </div>
+              <div class="p-4 border rounded-lg dark:border-gray-700 resource-item">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="resource_title_2" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Título del Recurso</label>
+                    <input type="text" id="resource_title_2" name="resource_title[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="Diagrama del Ciclo del Agua (PNG)">
+                  </div>
+                  <div>
+                    <label for="resource_url_2" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enlace o Archivo</label>
+                    <div class="flex gap-2">
+                      <input type="text" id="resource_url_2" name="resource_url[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="#">
+                      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" name="resource_file[]" type="file">
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="mt-2 text-red-600 hover:text-red-800 remove-resource-btn inline-flex items-center text-sm">
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                  Eliminar recurso
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              id="add-resource-btn"
+              class="mt-4 text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700"
+            >
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+              Añadir otro recurso
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </section>
   </div>
 
   <footer class="bg-white dark:bg-gray-800 border-t mt-16">
     <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
       <div class="sm:flex sm:items-center sm:justify-between">
-        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">
-          © 2025 <a href="/" class="hover:underline">AquaLearn™</a>. Todos los derechos reservados.
+        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400"
+          >© 2025 <a href="/" class="hover:underline">AquaLearn™</a>. Todos los
+          derechos reservados.
         </span>
       </div>
     </div>
   </footer>
+  
+  <!-- Quill Editor JS -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  
+  <script>
+    // Inicializar Quill Editor para la descripción
+    const descriptionEditor = new Quill('#description-editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'indent': '-1'}, { 'indent': '+1' }],
+          ['link', 'image', 'video'],
+          ['clean']
+        ]
+      },
+      placeholder: 'Escribe aquí la descripción de la lección...'
+    });
+    
+    // Inicializar Quill Editor para contenido de texto
+    const textEditor = new Quill('#text-editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'indent': '-1'}, { 'indent': '+1' }],
+          ['link', 'image', 'video'],
+          ['clean']
+        ]
+      },
+      placeholder: 'Escribe aquí el contenido de texto de la lección...'
+    });
+    
+    // Establecer contenido inicial para los editores
+    descriptionEditor.root.innerHTML = `¡Bienvenido al primer módulo! En esta lección, exploraremos los dos motores principales del ciclo del agua: la evaporación y la condensación.
 
-  {curso && (
-    <div
-      id="modal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-in-out bg-black bg-opacity-60 invisible opacity-0"
-    >
-      <div class="relative w-full max-w-md p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
-        <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+<p>La <strong>evaporación</strong> es el proceso por el cual el agua líquida de la superficie (como océanos, ríos y lagos) se convierte en vapor de agua (un gas) debido al calor del sol.</p>
 
-        <form id="moduleForm" data-curso-id={curso.id_curso}>
-          <div class="mt-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Crear Nuevo Módulo
-            </h3>
-            <div class="mt-4">
-              <label for="moduleName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Nombre del módulo
-              </label>
-              <input
-                type="text"
-                id="moduleName"
-                name="moduleName"
-                class="w-full px-3 py-2 mt-2 text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                placeholder="Ej: Módulo de Tareas"
-                required
-              />
+<p>La <strong>condensación</strong> es el proceso opuesto. Ocurre cuando el vapor de agua en el aire se enfría y se transforma nuevamente en líquido, formando las nubes.</p>
+
+<h4>Puntos Clave:</h4>
+<ul>
+  <li>El sol es la fuente de energía principal.</li>
+  <li>La evaporación "limpia" el agua, dejando atrás sales y minerales.</li>
+  <li>Las nubes son colecciones de millones de diminutas gotas de agua.</li>
+</ul>`;
+    
+    // Manejar cambio de tipo de contenido
+    document.getElementById('content_type').addEventListener('change', function() {
+      const videoContent = document.getElementById('video-content');
+      const textContent = document.getElementById('text-content');
+      
+      if (this.value === 'video') {
+        videoContent.classList.remove('hidden');
+        textContent.classList.add('hidden');
+      } else {
+        videoContent.classList.add('hidden');
+        textContent.classList.remove('hidden');
+      }
+    });
+    
+    // Manejar envío del formulario
+    document.getElementById('lesson-form').addEventListener('submit', function(e) {
+      // Guardar contenido de los editores en campos ocultos
+      document.getElementById('lesson_description').value = descriptionEditor.root.innerHTML;
+      document.getElementById('text_content').value = textEditor.root.innerHTML;
+    });
+    
+    // Manejar eliminación de lección
+    document.getElementById('delete-lesson-btn').addEventListener('click', function() {
+      if (confirm('¿Estás seguro de que deseas eliminar esta lección? Esta acción no se puede deshacer.')) {
+        // Aquí iría la lógica para eliminar la lección
+        alert('Lección eliminada (simulación)');
+      }
+    });
+    
+    // Manejar adición de recursos
+    let resourceCounter = 2;
+    document.getElementById('add-resource-btn').addEventListener('click', function() {
+      resourceCounter++;
+      const resourceContainer = document.getElementById('resource-container');
+      const newResource = document.createElement('div');
+      newResource.className = 'p-4 border rounded-lg dark:border-gray-700 resource-item';
+      newResource.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="resource_title_${resourceCounter}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Título del Recurso</label>
+            <input type="text" id="resource_title_${resourceCounter}" name="resource_title[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Título del recurso">
+          </div>
+          <div>
+            <label for="resource_url_${resourceCounter}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enlace o Archivo</label>
+            <div class="flex gap-2">
+              <input type="text" id="resource_url_${resourceCounter}" name="resource_url[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="URL o nombre de archivo">
+              <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" name="resource_file[]" type="file">
             </div>
           </div>
-
-          <div class="flex justify-end mt-6 space-x-3">
-            <button
-              id="cancelBtn"
-              type="button"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none disabled:bg-blue-400 dark:disabled:bg-blue-800"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )}
-
-  <script>
-    console.log("Script del cliente cargado.");
-
-    // --- Lógica del Modal ---
-    const modal = document.getElementById("modal");
-    const openModalBtn = document.getElementById("openModalBtn");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-
-    const openModal = () => {
-      if (modal) {
-        modal.classList.remove("invisible", "opacity-0");
-      }
-    };
-
-    const closeModal = () => {
-      if (modal) {
-        modal.classList.add("invisible", "opacity-0");
-      }
-    };
-
-    // Asignar listeners solo si los elementos existen
-    if (openModalBtn) {
-      openModalBtn.addEventListener("click", openModal);
-    }
-    if (closeModalBtn) {
-      closeModalBtn.addEventListener("click", closeModal);
-    }
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", closeModal);
-    }
-    if (modal) {
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) {
-          closeModal();
+        </div>
+        <button type="button" class="mt-2 text-red-600 hover:text-red-800 remove-resource-btn inline-flex items-center text-sm">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+          Eliminar recurso
+        </button>
+      `;
+      resourceContainer.appendChild(newResource);
+      
+      // Agregar evento al nuevo botón de eliminar
+      newResource.querySelector('.remove-resource-btn').addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que deseas eliminar este recurso?')) {
+          newResource.remove();
         }
       });
-    }
-
-    // --- Lógica del Formulario (MEJORADA) ---
-    const moduleForm = document.getElementById("moduleForm") as HTMLFormElement;
-    if (moduleForm) {
-      moduleForm.addEventListener("submit", async (event) => {
-        event.preventDefault(); // Evita que la página se recargue
-
-        const moduleNameInput = document.getElementById("moduleName") as HTMLInputElement;
-        const submitButton = moduleForm.querySelector('button[type="submit"]') as HTMLButtonElement;
-        
-        // Corrección: Obtener el valor
-        const moduleName = moduleNameInput.value.trim();
-        
-        // Obtenemos el id_curso desde el data-attribute del formulario
-        const cursoId = moduleForm.dataset.cursoId;
-
-        if (!moduleName || !cursoId) {
-          alert("Error: No se pudo obtener el nombre del módulo o el ID del curso.");
-          return;
-        }
-
-        // Deshabilitar el botón para evitar doble envío
-        if (submitButton) {
-          submitButton.disabled = true;
-          submitButton.textContent = "Guardando...";
-        }
-
-        try {
-          // Lógica de fetch POST para crear el módulo
-          const response = await fetch('http://localhost:8000/api/modulos', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              nombre_modulo: moduleName,
-              id_curso: cursoId 
-            }),
-          });
-
-          if (response.ok) {
-            // Éxito:
-            closeModal();
-            moduleNameInput.value = ""; // Limpia el input
-            // Recarga la página para ver el nuevo módulo
-            window.location.reload(); 
-          } else {
-            // Maneja el error de la API
-            const errorData = await response.json();
-            console.error("Error al crear el módulo:", errorData);
-            alert(`Error al crear el módulo: ${errorData.message || response.statusText}`);
-          }
-        } catch (error) {
-          // Maneja el error de red
-          console.error("Error de red:", error);
-          alert("Error de red al intentar crear el módulo.");
-        } finally {
-          // Vuelve a habilitar el botón
-          if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent = "Guardar";
-          }
+    });
+    
+    // Agregar eventos a los botones de eliminar recursos existentes
+    document.querySelectorAll('.remove-resource-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que deseas eliminar este recurso?')) {
+          this.closest('.resource-item').remove();
         }
       });
-    }
+    });
   </script>
 </body>
 </html>

@@ -10,13 +10,7 @@ use App\Models\User;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
-<<<<<<< HEAD
 use App\Http\Controllers\Api\CategoryController;
-=======
-use App\Http\Controllers\Api\ContentController;
-
-use App\Http\Controllers\Api\MapController;
->>>>>>> 9b974f071f008eae6af5822198bfe20a30ff1297
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -101,24 +95,3 @@ Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 Route::get('/categorias', [CategoryController::class, 'index']);
 
 Route::get('/cursos', [CourseController::class, 'index']);
-<<<<<<< HEAD
-=======
-
-Route::post('/cursos', [CourseController::class, 'store']);
-
-Route::get('/cursos/{id}', [CourseController::class, 'show']);
-
-Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
-
-// API PARA CONTENIDOS
-
-Route::get('/lecciones', [ContentController::class, 'index']);
-
-Route::post('/lecciones', [ContentController::class, 'store']);
-
-//API PARA CARGAR DATOS DEL MAPA
-Route::get('/mapa', [MapController::class, 'mapData']);
-
-// Si quieres el resource completo:
-//Route::apiResource('mapa', MapController::class)->except(['index']);  // Excluye index, usa mapData para /mapa
->>>>>>> 9b974f071f008eae6af5822198bfe20a30ff1297
