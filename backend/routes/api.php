@@ -107,8 +107,6 @@ Route::get('/lecciones', [ContentController::class, 'index']);
 
 Route::post('/lecciones', [ContentController::class, 'store']);
 
-//API PARA CARGAR DATOS DEL MAPA
+//API PARA  MAPA 
 Route::get('/mapa', [MapController::class, 'mapData']);
 
-// Si quieres el resource completo:
-//Route::apiResource('mapa', MapController::class)->except(['index']);  // Excluye index, usa mapData para /mapa
