@@ -5,397 +5,459 @@ const autores = [
   { id: 2, nombre: "Ana Gómez (Tú)" },
   { id: 3, nombre: "Carlos Ruiz" },
 ];
-const categorias = [
+
+interface Categoria {
+  id: number;
+  nombre: string;
+  slug?: string;
+}
+
+const res = await fetch("http://localhost:8000/api/categorias");
+const categorias: Categoria[] = await res.json();
+
+/* const categorias = [
   { id: 1, nombre: "Programación" },
   { id: 2, nombre: "Diseño Web" },
   { id: 3, nombre: "Marketing Digital" },
   { id: 4, nombre: "Idiomas" },
 ];
+*/
 
 if (Astro.request.method === "POST") {
   // console.log("Formulario recibido:", await Astro.request.formData());
 }
 ---
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agregar Nuevo Curso</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar Nuevo Curso</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-    }
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      }
 
-    .form-section {
-      background: white;
-      border-radius: 1rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-      border: 1px solid #f1f5f9;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s ease;
-    }
+      .form-section {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border: 1px solid #f1f5f9;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+      }
 
-    .form-section:hover {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-    }
+      .form-section:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
 
-    .editor-container {
-      border: 1px solid #e2e8f0;
-      border-radius: 0.75rem;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      background-color: white;
-      transition: all 0.3s ease;
-    }
+      .editor-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        background-color: white;
+        transition: all 0.3s ease;
+      }
 
-    .editor-container:focus-within {
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-      border-color: #3b82f6;
-    }
+      .editor-container:focus-within {
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+      }
 
-    .ql-toolbar.ql-snow {
-      background-color: #f8fafc;
-      border: none;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 0.75rem;
-    }
+      .ql-toolbar.ql-snow {
+        background-color: #f8fafc;
+        border: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem;
+      }
 
-    .ql-container.ql-snow {
-      border: none;
-    }
+      .ql-container.ql-snow {
+        border: none;
+      }
 
-    .ql-editor {
-      min-height: 180px;
-      padding: 1rem;
-    }
+      .ql-editor {
+        min-height: 180px;
+        padding: 1rem;
+      }
 
-    .form-input-flowbite {
-      background: white;
-      border: 1px solid #d1d5db;
-      color: #374151;
-      font-size: 0.875rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 0 2px transparent;
-      display: block;
-      width: 100%;
-      padding: 0.75rem;
-      transition: all 0.2s ease-in-out;
-    }
+      .form-input-flowbite {
+        background: white;
+        border: 1px solid #d1d5db;
+        color: #374151;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0 2px transparent;
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        transition: all 0.2s ease-in-out;
+      }
 
-    .form-input-flowbite:focus {
-      box-shadow: 0 0 0 2px #3b82f6;
-      border-color: #3b82f6;
-      outline: none;
-    }
+      .form-input-flowbite:focus {
+        box-shadow: 0 0 0 2px #3b82f6;
+        border-color: #3b82f6;
+        outline: none;
+      }
 
-    .form-label-flowbite {
-      display: block;
-      margin-bottom: 0.75rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #374151;
-    }
+      .form-label-flowbite {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+      }
 
-    .btn-primary {
-      padding: 0.875rem 2rem;
-      font-size: 1rem;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(to right, #2563eb, #4f46e5);
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      transition: all 0.2s;
-    }
+      .btn-primary {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(to right, #2563eb, #4f46e5);
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+      }
 
-    .btn-primary:hover {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-    }
+      .btn-primary:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
 
-    .btn-primary:focus {
-      box-shadow: 0 0 0 2px #3b82f6;
-    }
+      .btn-primary:focus {
+        box-shadow: 0 0 0 2px #3b82f6;
+      }
 
-    .btn-secondary {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #374151;
-      background: white;
-      border: 1px solid #d1d5db;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      transition: all 0.2s;
-    }
+      .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+      }
 
-    .btn-secondary:hover {
-      background: #f9fafb;
-    }
+      .btn-secondary:hover {
+        background: #f9fafb;
+      }
 
-    .btn-back {
-      padding: 0.625rem 1.25rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #6b7280;
-      background: white;
-      border: 1px solid #d1d5db;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-    }
+      .btn-back {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
 
-    .btn-back:hover {
-      background: #f9fafb;
-      color: #374151;
-      transform: translateX(-2px);
-    }
+      .btn-back:hover {
+        background: #f9fafb;
+        color: #374151;
+        transform: translateX(-2px);
+      }
 
-    h1 {
-      background: linear-gradient(to right, #2563eb, #4f46e5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 700;
-    }
+      h1 {
+        background: linear-gradient(to right, #2563eb, #4f46e5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+      }
 
-    .section-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #f3f4f6;
-    }
+      .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f3f4f6;
+      }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-
-    @media (min-width: 768px) {
       .form-grid {
-        grid-template-columns: 1fr 1fr;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
       }
-    }
 
-    .file-upload-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 8rem;
-      border: 2px dashed #d1d5db;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      background: #f9fafb;
-      transition: all 0.2s;
-    }
+      @media (min-width: 768px) {
+        .form-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
 
-    .file-upload-area:hover {
-      background: #f3f4f6;
-    }
-
-    .file-upload-area.dragover {
-      border-color: #3b82f6;
-      background: #eff6ff;
-    }
-
-    .help-text {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 1.5rem;
-      margin-top: 2rem;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    /* Estilos para el toggle - SIN @apply */
-    .toggle-wrapper {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .toggle-input {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      width: 2.75rem;
-      height: 1.5rem;
-      background-color: #d1d5db;
-      border-radius: 9999px;
-      position: relative;
-      transition: all 0.3s ease;
-    }
-
-    .toggle-slider::before {
-      content: '';
-      position: absolute;
-      top: 0.125rem;
-      left: 0.125rem;
-      width: 1.25rem;
-      height: 1.25rem;
-      background-color: white;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .toggle-input:checked + .toggle-slider {
-      background-color: #2563eb;
-    }
-
-    .toggle-input:checked + .toggle-slider::before {
-      transform: translateX(1.25rem);
-    }
-
-    .toggle-input:focus + .toggle-slider {
-      box-shadow: 0 0 0 2px #3b82f6;
-    }
-
-    /* Header styles */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    @media (max-width: 768px) {
-      .page-header {
+      .file-upload-area {
+        display: flex;
         flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 8rem;
+        border: 2px dashed #d1d5db;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        background: #f9fafb;
+        transition: all 0.2s;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div class="min-h-screen p-4 md:p-8 flex flex-col items-center">
-    <main class="w-full max-w-4xl">
-      <!-- Header con botón Regresar -->
-       <a href="#" class="btn-back" onclick="history.back()">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      .file-upload-area:hover {
+        background: #f3f4f6;
+      }
+
+      .file-upload-area.dragover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+      }
+
+      .help-text {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1.5rem;
+        margin-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      /* Estilos para el toggle - SIN @apply */
+      .toggle-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .toggle-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        width: 2.75rem;
+        height: 1.5rem;
+        background-color: #d1d5db;
+        border-radius: 9999px;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .toggle-slider::before {
+        content: "";
+        position: absolute;
+        top: 0.125rem;
+        left: 0.125rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        background-color: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      .toggle-input:checked + .toggle-slider {
+        background-color: #2563eb;
+      }
+
+      .toggle-input:checked + .toggle-slider::before {
+        transform: translateX(1.25rem);
+      }
+
+      .toggle-input:focus + .toggle-slider {
+        box-shadow: 0 0 0 2px #3b82f6;
+      }
+
+      /* Header styles */
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      @media (max-width: 768px) {
+        .page-header {
+          flex-direction: column;
+          gap: 1rem;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+      <main class="w-full max-w-4xl">
+        <!-- Header con botón Regresar -->
+        <a href="#" class="btn-back" onclick="history.back()">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           Regresar
         </a>
-      <div class="page-header">
-        <div class="text-center flex-1">
-          <h1 class="text-4xl font-bold mb-3">Crear Nuevo Curso</h1>
-          <p class="text-gray-600 max-w-2xl mx-auto">Completa la información a continuación para crear un nuevo curso educativo. Todos los campos marcados con * son obligatorios.</p>
-        </div>
-        <div class="w-24"></div> <!-- Espacio para balancear el layout -->
-      </div>
-
-      <form 
-        method="POST" 
-        enctype="multipart/form-data" 
-        class="space-y-8"
-      >
-        <!-- Información Básica -->
-        <div class="form-section">
-          <h2 class="section-title">Información Básica</h2>
-          
-          <!-- Título -->
-          <div class="mb-6">
-            <label for="titulo" class="form-label-flowbite">Título del Curso *</label>
-            <input 
-              type="text" 
-              id="titulo" 
-              name="titulo" 
-              class="form-input-flowbite" 
-              placeholder="Ej: Introducción a JavaScript Moderno" 
-              required 
-            />
+        <div class="page-header">
+          <div class="text-center flex-1">
+            <h1 class="text-4xl font-bold mb-3">Crear Nuevo Curso</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+              Completa la información a continuación para crear un nuevo curso
+              educativo. Todos los campos marcados con * son obligatorios.
+            </p>
           </div>
-
-          <!-- Descripción -->
-          <div class="mb-6">
-            <label class="form-label-flowbite">Descripción del Curso *</label>
-            <div class="editor-container">
-              <div id="toolbar-container">
-                <span class="ql-formats">
-                  <select class="ql-header">
-                    <option value="1">Título 1</option>
-                    <option value="2">Título 2</option>
-                    <option selected>Normal</option>
-                  </select>
-                </span>
-                <span class="ql-formats">
-                  <button class="ql-bold"></button>
-                  <button class="ql-italic"></button>
-                  <button class="ql-underline"></button>
-                </span>
-                <span class="ql-formats">
-                  <button class="ql-list" value="ordered"></button>
-                  <button class="ql-list" value="bullet"></button>
-                </span>
-                <span class="ql-formats"><button class="ql-link"></button></span>
-                <span class="ql-formats"><button class="ql-clean"></button></span>
-              </div>
-              <div id="editor">
-                <p>Escribe la descripción <strong>detallada</strong> aquí...</p>
-              </div>
-            </div>
-            <textarea name="descripcion" id="descripcion-oculta" class="hidden"></textarea>
-            <p class="help-text">Describe detalladamente el contenido y propósito del curso.</p>
-          </div>
+          <div class="w-24"></div>
+          <!-- Espacio para balancear el layout -->
         </div>
 
-        <!-- Detalles del Curso -->
-        <div class="form-section">
-          <h2 class="section-title">Detalles del Curso</h2>
-          <div class="form-grid">
-            <!-- Autor -->
-            <div>
-              <label for="autor_id" class="form-label-flowbite">Autor del Curso *</label>
-              <select id="autor_id" name="autor_id" class="form-input-flowbite" required>
-                <option selected disabled value="">Selecciona un autor</option>
-                {autores.map(autor => (
-                  <option value={autor.id}>{autor.nombre}</option>
-                ))}
-              </select>
+        <form id="addCourse" class="space-y-8">
+          <!-- Información Básica -->
+          <div class="form-section">
+            <h2 class="section-title">Información Básica</h2>
+
+            <!-- Título -->
+            <div class="mb-6">
+              <label for="titulo" class="form-label-flowbite"
+                >Título del Curso *</label
+              >
+              <input
+                type="text"
+                id="titulo"
+                name="titulo"
+                class="form-input-flowbite"
+                placeholder="Ej: Introducción a JavaScript Moderno"
+                required
+              />
             </div>
 
-            <!-- Categoría -->
-            <div>
-              <label for="categoria_id" class="form-label-flowbite">Categoría *</label>
-              <select id="categoria_id" name="categoria_id" class="form-input-flowbite" required>
-                <option selected disabled value="">Selecciona una categoría</option>
-                {categorias.map(cat => (
-                  <option value={cat.id}>{cat.nombre}</option>
-                ))}
-              </select>
+            <!-- Descripción -->
+            <div class="mb-6">
+              <label class="form-label-flowbite">Descripción del Curso *</label>
+              <div class="editor-container">
+                <div id="toolbar-container">
+                  <span class="ql-formats">
+                    <select class="ql-header">
+                      <option value="1">Título 1</option>
+                      <option value="2">Título 2</option>
+                      <option selected>Normal</option>
+                    </select>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-underline"></button>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-list" value="bullet"></button>
+                  </span>
+                  <span class="ql-formats"
+                    ><button class="ql-link"></button></span
+                  >
+                  <span class="ql-formats"
+                    ><button class="ql-clean"></button></span
+                  >
+                </div>
+                <div id="editor">
+                  <p>
+                    Escribe la descripción <strong>detallada</strong> aquí...
+                  </p>
+                </div>
+              </div>
+              <textarea
+                name="descripcion"
+                id="descripcion-oculta"
+                class="hidden"></textarea>
+              <p class="help-text">
+                Describe detalladamente el contenido y propósito del curso.
+              </p>
+            </div>
+          </div>
+
+          <!-- Detalles del Curso -->
+          <div class="form-section">
+            <h2 class="section-title">Detalles del Curso</h2>
+            <div class="form-grid">
+              <!-- Autor -->
+              <div>
+                <label for="autor_id" class="form-label-flowbite"
+                  >Autor del Curso *</label
+                >
+                <input
+                  type="text"
+                  id="autor_id"
+                  name="autor_id"
+                  class="form-input-flowbite"
+                  placeholder="{}"
+                  list="autores-list"
+                  required
+                  readonly
+                />
+              </div>
+
+              <!-- Categoría -->
+              <div>
+                <label for="categoria_id" class="form-label-flowbite">
+                  Categoría *
+                </label>
+                <select
+                  id="categoria_id"
+                  name="categoria_id"
+                  class="form-input-flowbite"
+                  required
+                >
+                  <option selected disabled value=""
+                    >Selecciona una categoría</option
+                  >
+
+                  {
+                    categorias.map((cat) => (
+                      <option value={cat.id}>{cat.nombre}</option>
+                    ))
+                  }
+                </select>
+              </div>
             </div>
 
             <!-- Tiempo -->
@@ -403,160 +465,306 @@ if (Astro.request.method === "POST") {
               <label for="tiempo_estimado_min" class="form-label-flowbite">
                 Tiempo Estimado (minutos)
               </label>
-              <input 
-                type="number" 
-                id="tiempo_estimado_min" 
+              <input
+                type="number"
+                id="tiempo_estimado_min"
                 name="tiempo_estimado_min"
-                class="form-input-flowbite" 
-                placeholder="Ej: 120" 
+                class="form-input-flowbite"
+                placeholder="Ej: 120"
                 min="0"
               />
-              <p class="help-text">Tiempo aproximado para completar el curso.</p>
+              <p class="help-text">
+                Tiempo aproximado para completar el curso.
+              </p>
             </div>
 
             <!-- Portada -->
             <div>
-              <label class="form-label-flowbite" for="portada_url">Subir Portada</label>
+              <label class="form-label-flowbite" for="portada_url"
+                >Subir Portada</label
+              >
               <div class="file-upload-area" id="file-upload-area">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                <div
+                  class="flex flex-col items-center justify-center pt-5 pb-6"
+                >
+                  <svg
+                    class="w-8 h-8 mb-3 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    ></path>
                   </svg>
-                  <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Haz clic para subir</span> o arrastra y suelta</p>
-                  <p class="text-xs text-gray-500">PNG, JPG o WEBP (MAX. 800x400px)</p>
+                  <p class="mb-2 text-sm text-gray-500">
+                    <span class="font-semibold">Haz clic para subir</span> o arrastra
+                    y suelta
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    PNG, JPG o WEBP (MAX. 800x400px)
+                  </p>
                 </div>
-                <input 
-                  class="hidden" 
-                  id="portada_url" 
+                <input
+                  class="hidden"
+                  id="portada_url"
                   name="portada_url"
                   type="file"
                   accept="image/png, image/jpeg, image/webp"
-                >
+                />
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Objetivos de Aprendizaje -->
-        <div class="form-section">
-          <h2 class="section-title">Objetivos de Aprendizaje</h2>
-          <div>
-            <label for="objetivos" class="form-label-flowbite">Lo que el estudiante aprenderá *</label>
-            <textarea 
-              id="objetivos" 
-              name="objetivos" 
-              rows="4" 
-              class="form-input-flowbite" 
-              placeholder="Escribe un objetivo por línea:&#10;- Comprender los fundamentos de...&#10;- Desarrollar habilidades en..."
-              required
-            ></textarea>
-            <p class="help-text">Cada línea se guardará como un objetivo separado. Escribe al menos 3 objetivos claros.</p>
+          <!-- Objetivos de Aprendizaje 
+          <div class="form-section">
+            <h2 class="section-title">Objetivos de Aprendizaje</h2>
+            <div>
+              <label for="objetivos" class="form-label-flowbite"
+                >Lo que el estudiante aprenderá *</label
+              >
+              <textarea
+                id="objetivos"
+                name="objetivos"
+                rows="4"
+                class="form-input-flowbite"
+                placeholder="Escribe un objetivo por línea:
+- Comprender los fundamentos de...
+- Desarrollar habilidades en..."
+                required></textarea>
+              <p class="help-text">
+                Cada línea se guardará como un objetivo separado. Escribe al
+                menos 3 objetivos claros.
+              </p>
+            </div>
           </div>
-        </div>
+        -->
 
-        <!-- Configuración de Publicación -->
-        <div class="form-section">
-          <h2 class="section-title">Configuración de Publicación</h2>
-          <div class="flex items-center mb-2">
-            <label class="toggle-wrapper">
-              <input type="checkbox" name="publicado" value="true" class="toggle-input">
-              <div class="toggle-slider"></div>
-              <span class="ml-3 text-sm font-medium text-gray-900">
-                Publicar curso inmediatamente
-              </span>
-            </label>
+          <!-- Configuración de Publicación -->
+          <div class="form-section">
+            <h2 class="section-title">Configuración de Publicación</h2>
+            <div class="flex items-center mb-2">
+              <label class="toggle-wrapper">
+                <input
+                  type="checkbox"
+                  name="publicado"
+                  value="true"
+                  class="toggle-input"
+                />
+                <div class="toggle-slider"></div>
+                <span class="ml-3 text-sm font-medium text-gray-900">
+                  Publicar curso inmediatamente
+                </span>
+              </label>
+            </div>
+            <p class="help-text mt-2">
+              Si no seleccionas esta opción, el curso se guardará como borrador.
+            </p>
           </div>
-          <p class="help-text mt-2">Si no seleccionas esta opción, el curso se guardará como borrador.</p>
-        </div>
 
-        <!-- Botones de Acción -->
-        <div class="form-actions">
-          <button type="button" class="btn-secondary">Guardar como borrador</button>
-          <button type="submit" class="btn-primary">Publicar Curso</button>
-        </div>
-      </form>
-    </main>
-  </div>
+          <!-- Botones de Acción -->
+          <div class="form-actions">
+            <button type="button" class="btn-secondary"
+              >Guardar como borrador</button
+            >
+            <button type="submit" class="btn-primary">Publicar Curso</button>
+          </div>
+        </form>
+      </main>
+    </div>
+  </body>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"
+  ></script>
   <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
   <script is:inline>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       initFlowbite();
-      
+
+      // --- CORRECCIÓN 1: 'user' se define aquí ---
+      let user = null; // Definida aquí para que esté disponible en todo el script
+
       // Inicializar editor Quill
-      const quillOptions = { 
-        modules: { 
-          toolbar: "#toolbar-container" 
-        }, 
-        theme: "snow" 
+      const quillOptions = {
+        modules: {
+          toolbar: "#toolbar-container",
+        },
+        theme: "snow",
       };
       const editor = new Quill("#editor", quillOptions);
       const hiddenTextarea = document.querySelector("#descripcion-oculta");
 
       if (hiddenTextarea.value) editor.root.innerHTML = hiddenTextarea.value;
-      
+
       editor.on("text-change", () => {
         hiddenTextarea.value = editor.root.innerHTML;
       });
-      
+
       document.querySelector("form").addEventListener("submit", () => {
         hiddenTextarea.value = editor.root.innerHTML;
       });
 
       // Mejorar la experiencia de subida de archivos
-      const fileUploadArea = document.getElementById('file-upload-area');
-      const fileInput = document.getElementById('portada_url');
-      
-      fileUploadArea.addEventListener('click', () => {
+      const fileUploadArea = document.getElementById("file-upload-area");
+      const fileInput = document.getElementById("portada_url");
+
+      fileUploadArea.addEventListener("click", () => {
         fileInput.click();
       });
-      
-      fileUploadArea.addEventListener('dragover', (e) => {
+
+      fileUploadArea.addEventListener("dragover", (e) => {
         e.preventDefault();
-        fileUploadArea.classList.add('dragover');
+        fileUploadArea.classList.add("dragover");
       });
-      
-      fileUploadArea.addEventListener('dragleave', () => {
-        fileUploadArea.classList.remove('dragover');
+
+      fileUploadArea.addEventListener("dragleave", () => {
+        fileUploadArea.classList.remove("dragover");
       });
-      
-      fileUploadArea.addEventListener('drop', (e) => {
+
+      fileUploadArea.addEventListener("drop", (e) => {
         e.preventDefault();
-        fileUploadArea.classList.remove('dragover');
+        fileUploadArea.classList.remove("dragover");
         if (e.dataTransfer.files.length) {
           fileInput.files = e.dataTransfer.files;
           updateFileUploadText(e.dataTransfer.files[0].name);
         }
       });
-      
-      fileInput.addEventListener('change', (e) => {
+
+      fileInput.addEventListener("change", (e) => {
         if (e.target.files.length) {
           updateFileUploadText(e.target.files[0].name);
         }
       });
-      
+
       function updateFileUploadText(fileName) {
-        const uploadText = fileUploadArea.querySelector('p');
+        const uploadText = fileUploadArea.querySelector("p");
         uploadText.textContent = fileName;
-        uploadText.classList.add('text-blue-600', 'font-medium');
+        uploadText.classList.add("text-blue-600", "font-medium");
       }
 
       // Debug para el toggle
-      const toggle = document.querySelector('.toggle-input');
-      toggle.addEventListener('change', function() {
-        console.log('Toggle estado:', this.checked);
+      const toggle = document.querySelector(".toggle-input");
+      toggle.addEventListener("change", function () {
+        console.log("Toggle estado:", this.checked);
       });
 
       // Función para el botón regresar
-      const backButton = document.querySelector('.btn-back');
-      backButton.addEventListener('click', function(e) {
+      const backButton = document.querySelector(".btn-back");
+      backButton.addEventListener("click", function (e) {
         e.preventDefault();
-        // Puedes cambiar esta URL por la que necesites
-        window.location.href = '../../admin/dashboardAdmin'; // o la página anterior
+        window.location.href = "../../admin/dashboardAdmin";
+      });
+
+      // --- CORRECCIÓN 2: Rellenar la variable 'user' ---
+      const userString =
+        localStorage.getItem("userData") || sessionStorage.getItem("userData");
+
+      console.log("Dashboard check:", userString);
+      if (userString) {
+        user = JSON.parse(userString); // Asigna el valor a la variable 'user' global
+        const autorInput = document.getElementById("autor_id");
+        autorInput.value = `${user.nombre} (Tú)`; // Esto solo actualiza el campo de TEXTO
+      }
+
+      // --- SELECCIÓN DE ELEMENTOS DEL FORMULARIO ---
+      const cursoForm = document.getElementById("addCourse");
+      const tituloInput = document.getElementById("titulo");
+      const tiempo_estimado_minInput = document.getElementById(
+        "tiempo_estimado_min",
+      );
+      const categoria_idInput = document.getElementById("categoria_id");
+      const publicadoInput = document.querySelector('input[name="publicado"]');
+
+      // --- EVENTO SUBMIT DEL FORMULARIO ---
+      cursoForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData();
+
+        // 1. Agregar el archivo
+        if (fileInput.files.length > 0) {
+          formData.append("portada_url", fileInput.files[0]);
+        } else {
+          alert("Por favor, selecciona una imagen de portada.");
+          return; // Detiene el envío
+        }
+
+        // 2. Agregar los otros campos
+        formData.append("titulo", tituloInput.value);
+        formData.append("tiempo_estimado_min", tiempo_estimado_minInput.value);
+        formData.append("categoria_id", categoria_idInput.value);
+        formData.append("publicado", publicadoInput.checked ? "1" : "0");
+
+        // 3. Agregar contenido de Quill
+        const descripcionContenido = editor.root.innerHTML;
+        formData.append("descripcion", descripcionContenido);
+
+        // --- CORRECCIÓN 3: LÓGICA DEL autor_id ---
+        // Aquí es donde usamos la variable 'user' y su propiedad 'id_usuario'
+        if (user && user.id_usuario) {
+          formData.append("autor_id", user.id_usuario); // ¡Envía el NÚMERO ID!
+        } else {
+          alert(
+            "Error: No se pudo encontrar el ID del autor. Inicia sesión de nuevo.",
+          );
+          return; // Detiene el envío
+        }
+
+        // 4. Enviar a la API
+        console.log("Enviando datos:", Object.fromEntries(formData.entries()));
+
+        // ¡¡RECUERDA CAMBIAR ESTA URL POR LA DE TU API REAL!!
+        const apiUrl = "http://127.0.0.1:8000/api/cursos"; // URL de ejemplo
+
+        try {
+          const submitButton = cursoForm.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+          submitButton.textContent = "Guardando...";
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            body: formData,
+            // headers: {
+            //   'Authorization': `Bearer ${tu_token_de_auth}` // Descomenta si usas auth
+            // }
+          });
+
+          submitButton.disabled = false;
+          submitButton.textContent = "Guardar Curso";
+
+          if (response.ok) {
+            const result = await response.json();
+            alert("Curso creado exitosamente");
+            cursoForm.reset(); // Limpia el formulario
+            editor.root.innerHTML = ""; // Limpia el editor de Quill
+          } else {
+            // Manejo de errores de Laravel (ej. Validación 422)
+            const errorData = await response.json();
+            console.error("Error del servidor:", errorData);
+            if (errorData.errors) {
+              let errorMsg = "Error de validación:\n";
+              for (const key in errorData.errors) {
+                errorMsg += `- ${errorData.errors[key].join(", ")}\n`;
+              }
+              alert(errorMsg);
+            } else {
+              alert(`Error: ${errorData.message}`);
+            }
+          }
+        } catch (error) {
+          console.error("Error de red:", error);
+          alert("No se pudo conectar con el servidor.");
+          const submitButton = cursoForm.querySelector('button[type="submit"]');
+          submitButton.disabled = false;
+          submitButton.textContent = "Guardar Curso";
+        }
       });
     });
   </script>
-</body>
 </html>

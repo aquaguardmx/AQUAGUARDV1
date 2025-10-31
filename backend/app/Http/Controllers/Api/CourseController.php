@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -40,23 +41,39 @@ class CourseController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'titulo' => 'required|string|max:255',
-            'portada_url' => 'nullable|url',
+            'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Correcto
             'descripcion' => 'required|string',
             'tiempo_estimado_min' => 'nullable|integer',
-            'autor_id' => 'required|integer|exists:usuarios,id_usuario',
+            'autor_id' => 'required|integer|exists:usuarios,id_usuario', // Correcto
             'categoria_id' => 'required|integer|exists:categorias,id',
             'publicado' => 'required|boolean',
-            // Agrega otras reglas de validación según los campos del curso
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+        
+        $urlDeLaPortada = null; // 1. Inicializa la variable
+
+        if ($request->hasFile('portada_url')) {
+            // 2. Guarda el archivo en 'storage/app/public/portadas'
+            $path = $request->file('portada_url')->store('portadas', 'public');
+
+            // 3. Obtiene la URL pública
+            $urlDeLaPortada = Storage::url($path);
+        }
+        
+        // --- FIN DE LA CORRECCIÓN ---
+
         $curso = Curso::create([
             'titulo' => $request->input('titulo'),
             'descripcion' => $request->input('descripcion'),
-            'portada_url' => $request->input('portada_url'),
+            
+            // 4. Asigna la URL generada
+            'portada_url' => $urlDeLaPortada, 
+            
             'tiempo_estimado_min' => $request->input('tiempo_estimado_min'),
             'autor_id' => $request->input('autor_id'),
             'categoria_id' => $request->input('categoria_id'),
@@ -77,7 +94,7 @@ class CourseController extends Controller
         // 🔹 Validaciones: todos los campos son opcionales ("sometimes")
         $validator = Validator::make($request->all(), [
             'titulo' => 'sometimes|string|max:255',
-            'portada_url' => 'sometimes|nullable|url',
+            'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             'descripcion' => 'sometimes|string',
             'tiempo_estimado_min' => 'sometimes|nullable|integer',
             'autor_id' => 'sometimes|integer|exists:usuarios,id_usuario',
