@@ -39,22 +39,39 @@ class ModuleController extends Controller
 
     public function store(Request $request)
     {
+        // 1. VALIDACIÓN
+        //    Quitamos 'orden' de los campos requeridos.
         $validator = Validator::make($request->all(), [
             'curso_id' => 'required|integer|exists:cursos,id_curso',
-            'titulo' => 'required|string|max:255',
-            'orden' => 'required|integer',
+            'titulo'   => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // 2. OBTENER DATOS
+        //    Obtenemos solo los datos validados del request.
+        $curso_id = $request->input('curso_id');
+        $titulo = $request->input('titulo');
+
+        // 3. --- LÓGICA CLAVE (MÉTODO 1) ---
+        //  Contamos cuántos módulos existen para este curso_id
+        $conteoActual = Modulo::where('curso_id', $curso_id)->count();
+
+        //    Calculamos el nuevo orden (conteo + 1)
+        $nuevoOrden = $conteoActual + 1;
+
+        // 4. CREAR EL MÓDULO
+        //    Usamos las variables, incluyendo nuestro 'nuevoOrden' calculado
         $modulo = Modulo::create([
-            'curso_id' => $request->input('curso_id'),
-            'titulo' => $request->input('titulo'),
-            'orden' => $request->input('orden'),
+            'curso_id' => $curso_id,
+            'titulo'   => $titulo,
+            'orden'    => $nuevoOrden, // <-- Aquí usamos el orden calculado
         ]);
 
+        // 5. RESPUESTA
+        //  Devolvemos el módulo recién creado
         return response()->json($modulo, 201);
     }
 
@@ -92,4 +109,6 @@ class ModuleController extends Controller
 
         return response()->json(['message' => 'Módulo eliminado correctamente']);
     }
+
+    
 }

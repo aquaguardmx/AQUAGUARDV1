@@ -136,4 +136,18 @@ class CourseController extends Controller
 
         return response()->json(['message' => 'Curso eliminado correctamente']);
     }
+
+    public function getModulosPorCurso(Curso $curso)
+    {
+        // 1. Laravel ya encontró el curso y lo inyectó en la variable $curso.
+        //    Si no lo encuentra, automáticamente devuelve un 404. ¡Magia!
+
+        // 2. Gracias a la relación "modulos()" que definimos en el Modelo,
+        //    podemos acceder a ellos como una propiedad.
+        //    Eloquent/Laravel se encarga de hacer la consulta.
+        $modulos = $curso->modulos;
+
+        // 3. Devolvemos los módulos como JSON.
+        return response()->json($modulos, 200);
+    }
 }

@@ -1,0 +1,496 @@
+---
+// Componente: CourseSidebar.astro
+
+const { id } = Astro.params;
+
+// Interfaces para las props
+export interface Leccion {
+  id: number;
+  titulo: string;
+  activa?: boolean;
+  completada?: boolean;
+  url: string;
+}
+
+export interface Modulo {
+  id: number;
+  titulo: string;
+  lecciones: Leccion[];
+  expandido?: boolean;
+}
+
+export interface Props {
+  modulos: Modulo[];
+  cursoId?: string;
+}
+
+// Props por defecto
+const { modulos = [], cursoId = "1" } = Astro.props;
+
+// Debug: ver qué estamos recibiendo
+console.log('Modulos recibidos en el componente:', modulos);
+
+// Normalizar los datos para asegurar que siempre tengamos la estructura correcta
+const modulosNormalizados = Array.isArray(modulos) 
+  ? modulos.map((modulo, index) => {
+      // Si el módulo no tiene ID, usar el índice como fallback
+      const moduloId = modulo.id || index + 1;
+      console.log(`Módulo ${index}:`, { id: modulo.id, titulo: modulo.titulo, lecciones: modulo.lecciones?.length });
+      
+      return {
+        id: moduloId,
+        titulo: modulo.titulo || 'Sin título',
+        lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
+        expandido: modulo.expandido || false
+      };
+    })
+  : [];
+
+console.log('Módulos normalizados:', modulosNormalizados);
+---
+
+<aside class="lg:w-80 xl:w-96 flex-shrink-0">
+    <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24"
+    >
+        <!-- Header del Sidebar -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                Contenido del Curso
+            </h2>
+            <button
+                type="button"
+                class="inline-flex items-center p-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                id="add-module-btn"
+            >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        fill-rule="evenodd"
+                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span class="sr-only">Añadir Módulo</span>
+            </button>
+        </div>
+
+        <!-- Lista de Módulos -->
+        <div class="space-y-3" id="modules-list">
+            {modulosNormalizados.length === 0 ? (
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400 mb-2">No hay módulos creados</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500">Comienza añadiendo tu primer módulo</p>
+                </div>
+            ) : (
+                modulosNormalizados.map((modulo, index) => {
+                  console.log(`Renderizando módulo ${index}:`, modulo);
+                  return (
+                    <div
+                        class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container"
+                        data-module-container={modulo.id}
+                    >
+                        <button
+                            class="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors module-toggle"
+                            data-module-id={modulo.id}
+                            type="button"
+                        >
+                            <span
+                                class="font-semibold text-gray-900 dark:text-white text-left"
+                            >
+                                {modulo.titulo}
+                            </span>
+                            <svg
+                                class="w-4 h-4 text-gray-500 transition-transform module-arrow"
+                                data-arrow-id={modulo.id}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="m19 9-7 7-7-7"
+                                ></path>
+                            </svg>
+                        </button>
+                        <div
+                            class="bg-gray-50 dark:bg-gray-700/50 module-content"
+                            id={`module-${modulo.id}-content`}
+                            data-module-content={modulo.id}
+                            style={modulo.expandido ? '' : 'display: none;'}
+                        >
+                            <div class="p-4 space-y-3">
+                                {modulo.lecciones.length > 0 ? (
+                                    modulo.lecciones.map((leccion) => (
+                                        <a
+                                            href={leccion.url}
+                                            class={`flex items-center justify-between p-3 ${leccion.activa ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600'} rounded-lg transition-colors`}
+                                            data-leccion-id={leccion.id}
+                                        >
+                                            <div class="flex items-center space-x-3">
+                                                <div
+                                                    class={`w-8 h-8 ${leccion.activa ? 'bg-blue-600' : leccion.completada ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-600'} rounded-full flex items-center justify-center`}
+                                                >
+                                                    {leccion.activa ? (
+                                                        <svg
+                                                            class="w-4 h-4 text-white"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fill-rule="evenodd"
+                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                                                                clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    ) : leccion.completada ? (
+                                                        <svg
+                                                            class="w-4 h-4 text-white"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fill-rule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd"
+                                                            ></path>
+                                                        </svg>
+                                                    ) : (
+                                                        <svg
+                                                            class="w-4 h-4 text-gray-600 dark:text-gray-400"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                                            ></path>
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            ></path>
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                                <span class={`font-medium ${leccion.activa ? 'text-blue-700 dark:text-blue-300' : ''}`}>
+                                                    {leccion.titulo}
+                                                </span>
+                                            </div>
+                                        </a>
+                                    ))
+                                ) : (
+                                    <div class="text-center py-4">
+                                        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay lecciones en este módulo</p>
+                                    </div>
+                                )}
+                                
+                                <!-- Botón Añadir Lección -->
+                                <a
+                                    href={`/admin/modulos/${modulo.id}/lecciones/nuevo`}
+                                    class="flex items-center space-x-2 p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span class="font-medium">Añadir Lección</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                  );
+                })
+            )}
+        </div>
+    </div>
+</aside>
+
+<!-- Modal para Añadir Módulo -->
+<div
+    id="module-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4"
+>
+    <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Añadir Nuevo Módulo
+            </h3>
+            <button
+                id="close-module-modal"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="add-module-form" class="space-y-4">
+            <div>
+                <label
+                    for="module-name"
+                    class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+                >
+                    Nombre del Módulo
+                </label>
+                <input
+                    type="text"
+                    id="module-name"
+                    required
+                    class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Ej: Introducción a..."
+                />
+            </div>
+            <div class="flex gap-3">
+                <button
+                    type="submit"
+                    id="submit-module-btn"
+                    class="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <svg
+                        class="w-4 h-4 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span id="submit-text">Añadir Módulo</span>
+                    <span id="loading-spinner" class="hidden">
+                        <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Creando...
+                    </span>
+                </button>
+                <button
+                    type="button"
+                    id="cancel-module-btn"
+                    class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script define:vars={{ id }}>
+// Script para la interactividad del sidebar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Sidebar script cargado');
+
+    // Manejo del modal
+    const addModuleBtn = document.getElementById('add-module-btn');
+    const moduleModal = document.getElementById('module-modal');
+    const closeModuleModal = document.getElementById('close-module-modal');
+    const cancelModuleBtn = document.getElementById('cancel-module-btn');
+    const addModuleForm = document.getElementById('add-module-form');
+    const submitModuleBtn = document.getElementById('submit-module-btn');
+    const submitText = document.getElementById('submit-text');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    // Abrir modal
+    if (addModuleBtn && moduleModal) {
+        addModuleBtn.addEventListener('click', function() {
+            moduleModal.classList.remove('hidden');
+            moduleModal.classList.add('flex');
+            document.getElementById('module-name')?.focus();
+        });
+    }
+
+    // Cerrar modal
+    function closeModal() {
+        if (moduleModal) {
+            moduleModal.classList.remove('flex');
+            moduleModal.classList.add('hidden');
+            if (addModuleForm) addModuleForm.reset();
+            // Resetear estado del botón
+            if (submitModuleBtn) {
+                submitModuleBtn.disabled = false;
+            }
+            if (submitText) submitText.classList.remove('hidden');
+            if (loadingSpinner) loadingSpinner.classList.add('hidden');
+        }
+    }
+
+    if (closeModuleModal) {
+        closeModuleModal.addEventListener('click', closeModal);
+    }
+
+    if (cancelModuleBtn) {
+        cancelModuleBtn.addEventListener('click', closeModal);
+    }
+
+    // Cerrar modal al hacer click fuera
+    if (moduleModal) {
+        moduleModal.addEventListener('click', function(e) {
+            if (e.target === moduleModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Manejo del formulario de módulo
+    if (addModuleForm) {
+        addModuleForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const moduleInput = document.getElementById('module-name');
+            const moduleName = moduleInput?.value.trim();
+            
+            if (moduleName && submitModuleBtn) {
+                // Deshabilitar botón y mostrar loading
+                submitModuleBtn.disabled = true;
+                if (submitText) submitText.classList.add('hidden');
+                if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+
+                try {
+                    // Llamada a la API para añadir el módulo
+                    const response = await fetch('http://localhost:8000/api/modulos/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            curso_id: parseInt(id),
+                            titulo: moduleName
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    console.log('Módulo añadido:', data);
+                    
+                    // Cerrar modal y mostrar mensaje
+                    closeModal();
+                    alert(`Módulo "${moduleName}" añadido correctamente`);
+                    
+                    // Recargar la página para mostrar el nuevo módulo
+                    window.location.reload();
+                    
+                } catch (error) {
+                    console.error('Error al añadir el módulo:', error);
+                    alert(error.message || 'Hubo un error al añadir el módulo. Inténtalo de nuevo.');
+                    
+                    // Rehabilitar botón
+                    submitModuleBtn.disabled = false;
+                    if (submitText) submitText.classList.remove('hidden');
+                    if (loadingSpinner) loadingSpinner.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    // Manejo de acordeón de módulos - VERSIÓN ROBUSTA
+    function initAccordion() {
+        const moduleToggles = document.querySelectorAll('.module-toggle');
+        console.log('Encontrados', moduleToggles.length, 'módulos para acordeón');
+
+        moduleToggles.forEach((button, index) => {
+            // Si no hay data-module-id, usar el índice como fallback
+            let moduleId = button.getAttribute('data-module-id');
+            if (!moduleId) {
+                moduleId = `module-${index + 1}`;
+                button.setAttribute('data-module-id', moduleId);
+                console.warn(`Módulo sin ID, usando fallback: ${moduleId}`);
+            }
+
+            button.addEventListener('click', function() {
+                console.log('Click en módulo con ID:', moduleId);
+                
+                let moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
+                const arrow = this.querySelector('.module-arrow');
+                
+                // Si no se encuentra por data attribute, intentar por ID
+                if (!moduleContent) {
+                    moduleContent = document.getElementById(`module-${moduleId}-content`);
+                }
+                
+                console.log('Module content encontrado:', moduleContent);
+                console.log('Arrow encontrada:', arrow);
+
+                if (moduleContent && arrow) {
+                    // Verificar si está visible
+                    const isVisible = moduleContent.style.display !== 'none';
+                    
+                    if (isVisible) {
+                        // Ocultar
+                        moduleContent.style.display = 'none';
+                        arrow.classList.remove('rotate-180');
+                        console.log('Módulo ocultado');
+                    } else {
+                        // Mostrar
+                        moduleContent.style.display = 'block';
+                        arrow.classList.add('rotate-180');
+                        console.log('Módulo mostrado');
+                    }
+                } else {
+                    console.error('No se pudo encontrar el contenido o la flecha para el módulo:', moduleId);
+                    console.log('Contenido:', moduleContent);
+                    console.log('Flecha:', arrow);
+                }
+            });
+        });
+
+        // Inicializar flechas según el estado inicial
+        moduleToggles.forEach((button, index) => {
+            let moduleId = button.getAttribute('data-module-id');
+            if (!moduleId) {
+                moduleId = `module-${index + 1}`;
+            }
+            
+            let moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
+            if (!moduleContent) {
+                moduleContent = document.getElementById(`module-${moduleId}-content`);
+            }
+            
+            const arrow = button.querySelector('.module-arrow');
+            
+            if (moduleContent && arrow) {
+                const isVisible = moduleContent.style.display !== 'none';
+                if (isVisible) {
+                    arrow.classList.add('rotate-180');
+                } else {
+                    arrow.classList.remove('rotate-180');
+                }
+                console.log('Módulo inicializado:', moduleId, 'visible:', isVisible);
+            }
+        });
+    }
+
+    // Inicializar el acordeón cuando el DOM esté listo
+    initAccordion();
+});
+</script>

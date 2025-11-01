@@ -127,6 +127,8 @@ Route::post('/modulos', [ModuleController::class, 'store']);
 Route::put('/modulos/{id}', [ModuleController::class, 'update']);
 
 Route::delete('/modulos/{id}', [ModuleController::class, 'destroy']);
+
+Route::get('/cursos/{curso}/modulos', [CourseController::class, 'getModulosPorCurso']);
 // API PARA CONTENIDOS
 
 Route::get('/lecciones', [ContentController::class, 'index']);

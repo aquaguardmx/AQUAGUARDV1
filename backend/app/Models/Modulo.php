@@ -33,4 +33,16 @@ class Modulo extends Model
     {
         return $this->hasMany(Contenido::class, 'id_modulo');
     }
+
+    /**
+     * Define la relación inversa "un módulo pertenece a un curso".
+     */
+    public function curso()
+    {
+        // 1er arg: El modelo relacionado (Curso)
+        // 2do arg: La llave foránea en ESTA tabla 'modulos' (curso_id)
+        // 3er arg: La llave primaria en la tabla 'cursos' (id_curso)
+        return $this->belongsTo(Curso::class, 'curso_id', 'id_curso');
+    }
 }
+
