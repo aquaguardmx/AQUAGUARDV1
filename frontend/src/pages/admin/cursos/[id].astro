@@ -1,0 +1,904 @@
+---
+// Página: /admin/lecciones/[id]/editar.astro
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+// Interfaces para TypeScript
+interface Modulo {
+  id_modulo: number;
+  titulo: string;
+  descripcion: string;
+  orden: number;
+  curso_id: number;
+  lecciones: Leccion[];
+}
+
+interface Leccion {
+  id_leccion: number;
+  titulo: string;
+  descripcion: string;
+  contenido: string;
+  tipo_contenido: 'video' | 'texto';
+  url_video?: string;
+  orden: number;
+  modulo_id: number;
+  recursos: Recurso[];
+}
+
+interface Recurso {
+  id_recurso: number;
+  titulo: string;
+  url: string;
+  tipo: string;
+  leccion_id: number;
+}
+
+// Datos de ejemplo (reemplazar con datos reales de tu API)
+const moduloActual: Modulo = {
+  id_modulo: 1,
+  titulo: "Fundamentos",
+  descripcion: "Módulo introductorio sobre los fundamentos del agua",
+  orden: 1,
+  curso_id: 1,
+  lecciones: [
+    {
+      id_leccion: 1,
+      titulo: "1.1 Evaporación y Condensación",
+      descripcion: "Introducción a los procesos de evaporación y condensación",
+      contenido: "¡Bienvenido al primer módulo! En esta lección, exploraremos los dos motores principales del ciclo del agua...",
+      tipo_contenido: 'video',
+      url_video: "https://vimeo.com/ejemplo",
+      orden: 1,
+      modulo_id: 1,
+      recursos: [
+        {
+          id_recurso: 1,
+          titulo: "Glosario de Términos (PDF)",
+          url: "#",
+          tipo: "pdf",
+          leccion_id: 1
+        },
+        {
+          id_recurso: 2,
+          titulo: "Diagrama del Ciclo del Agua (PNG)",
+          url: "#",
+          tipo: "imagen",
+          leccion_id: 1
+        }
+      ]
+    }
+  ]
+};
+
+const leccionActual = moduloActual.lecciones[0];
+
+// Obtener el ID de la lección de la URL
+const { id } = Astro.params;
+---
+
+<AdminLayout>
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <!-- Header de Navegación -->
+        <nav class="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo y Título -->
+                    <div class="flex items-center space-x-4">
+                        <a href="/" class="flex items-center space-x-3">
+                            <img class="h-8 w-8" src="/img/logo.png" alt="AquaLearn Logo" />
+                            <span class="text-xl font-bold text-gray-900 dark:text-white">AquaLearn</span>
+                        </a>
+                        <div class="hidden md:block">
+                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                                Editando: {leccionActual.titulo}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Menú de Usuario -->
+                    <div class="flex items-center space-x-4">
+                        <a 
+                            href="/dashboard" 
+                            class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                            ← Volver al Panel
+                        </a>
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="flex text-sm bg-gray-800 rounded-full focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800"
+                                id="user-menu-button"
+                            >
+                                <span class="sr-only">Abrir menú de usuario</span>
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-medium">A</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar - Módulos y Lecciones -->
+                <aside class="lg:w-80 xl:w-96 flex-shrink-0">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
+                        <!-- Header del Sidebar -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                                Contenido del Curso
+                            </h2>
+                            <button
+                                type="button"
+                                class="inline-flex items-center p-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                id="add-module-btn"
+                            >
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="sr-only">Añadir Módulo</span>
+                            </button>
+                        </div>
+
+                        <!-- Lista de Módulos -->
+                        <div class="space-y-3" id="modules-list">
+                            <!-- Módulo 1 -->
+                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                                <button
+                                    class="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    data-module="1"
+                                >
+                                    <span class="font-semibold text-gray-900 dark:text-white text-left">
+                                        Módulo 1: Fundamentos
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-500 transition-transform" data-arrow="1">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                                    </svg>
+                                </button>
+                                <div class="hidden bg-gray-50 dark:bg-gray-700/50" id="module-1-content">
+                                    <div class="p-4 space-y-3">
+                                        <!-- Lección Activa -->
+                                        <a 
+                                            href="/admin/lecciones/1/editar"
+                                            class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+                                        >
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </div>
+                                                <span class="font-medium text-blue-700 dark:text-blue-300">
+                                                    1.1 Evaporación y Condensación
+                                                </span>
+                                            </div>
+                                        </a>
+                                        <!-- Otras Lecciones -->
+                                        <a 
+                                            href="/admin/lecciones/2/editar"
+                                            class="flex items-center space-x-3 p-3 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                        >
+                                            <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium">1.2 Precipitación y Recolección</span>
+                                        </a>
+                                        <!-- Botón Añadir Lección -->
+                                        <a 
+                                            href="/admin/modulos/1/lecciones/nuevo"
+                                            class="flex items-center space-x-2 p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                        >
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span class="font-medium">Añadir Lección</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Módulo 2 -->
+                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                                <button
+                                    class="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    data-module="2"
+                                >
+                                    <span class="font-semibold text-gray-900 dark:text-white text-left">
+                                        Módulo 2: Ecosistemas y Agua
+                                    </span>
+                                    <svg class="w-4 h-4 text-gray-500 transition-transform" data-arrow="2">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                                    </svg>
+                                </button>
+                                <div class="hidden bg-gray-50 dark:bg-gray-700/50" id="module-2-content">
+                                    <div class="p-4 space-y-3">
+                                        <a 
+                                            href="/admin/lecciones/3/editar"
+                                            class="flex items-center space-x-3 p-3 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                        >
+                                            <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium">2.1 La importancia de los Humedales</span>
+                                        </a>
+                                        <a 
+                                            href="/admin/modulos/2/lecciones/nuevo"
+                                            class="flex items-center space-x-2 p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                        >
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span class="font-medium">Añadir Lección</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Contenido Principal - Formulario de Edición -->
+                <main class="flex-1 min-w-0">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                        <!-- Breadcrumb -->
+                        <nav class="flex mb-6" aria-label="Breadcrumb">
+                            <ol class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                <li><a href="/dashboard" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Mis Cursos</a></li>
+                                <li class="flex items-center space-x-2">
+                                    <span>/</span>
+                                    <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">El Ciclo del Agua</a>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <span>/</span>
+                                    <span class="text-gray-900 dark:text-gray-300">Editando Lección</span>
+                                </li>
+                            </ol>
+                        </nav>
+
+                        <!-- Formulario de Edición -->
+                        <form id="lesson-form" class="space-y-6">
+                            <!-- Título de la Lección -->
+                            <div>
+                                <label for="lesson_title" class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                    Título de la Lección
+                                </label>
+                                <input
+                                    type="text"
+                                    id="lesson_title"
+                                    name="lesson_title"
+                                    value={leccionActual.titulo}
+                                    class="w-full px-4 py-3 text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    required
+                                />
+                            </div>
+
+                            <!-- Tipo de Contenido -->
+                            <div>
+                                <label for="content_type" class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                    Tipo de Contenido
+                                </label>
+                                <select
+                                    id="content_type"
+                                    name="content_type"
+                                    class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                >
+                                    <option value="video" selected={leccionActual.tipo_contenido === 'video'}>Video</option>
+                                    <option value="texto" selected={leccionActual.tipo_contenido === 'texto'}>Texto</option>
+                                </select>
+                            </div>
+
+                            <!-- Contenido de Video -->
+                            <div id="video-content" class={leccionActual.tipo_contenido === 'video' ? 'block' : 'hidden'}>
+                                <label for="video_url" class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                    Enlace del Video
+                                </label>
+                                <input
+                                    type="url"
+                                    id="video_url"
+                                    name="video_url"
+                                    value={leccionActual.url_video || ''}
+                                    class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="https://vimeo.com/..."
+                                />
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    Opcionalmente, puedes subir un archivo de video:
+                                </p>
+                                <input
+                                    class="mt-2 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-300"
+                                    id="video_file"
+                                    name="video_file"
+                                    type="file"
+                                    accept="video/*"
+                                />
+                            </div>
+
+                            <!-- Contenido de Texto -->
+                            <div id="text-content" class={leccionActual.tipo_contenido === 'texto' ? 'block' : 'hidden'}>
+                                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                                    Contenido de Texto
+                                </label>
+                                <div id="text-editor" class="min-h-[200px] border border-gray-300 dark:border-gray-600 rounded-lg"></div>
+                                <input type="hidden" id="text_content" name="text_content" />
+                            </div>
+
+                            <!-- Pestañas de Contenido Adicional -->
+                            <div class="border-b border-gray-200 dark:border-gray-600">
+                                <nav class="flex space-x-8">
+                                    <button
+                                        type="button"
+                                        class="py-4 px-1 border-b-2 border-blue-600 text-sm font-semibold text-blue-600 dark:text-blue-400"
+                                        data-tab="descripcion"
+                                    >
+                                        Descripción
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="py-4 px-1 border-b-2 border-transparent text-sm font-semibold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                        data-tab="recursos"
+                                    >
+                                        Recursos
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Contenido de las Pestañas -->
+                            <div id="tab-content">
+                                <!-- Pestaña Descripción -->
+                                <div id="descripcion-tab" class="space-y-4">
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">
+                                        Contenido de la Lección
+                                    </label>
+                                    <div id="description-editor" class="min-h-[300px] border border-gray-300 dark:border-gray-600 rounded-lg"></div>
+                                    <input type="hidden" id="lesson_description" name="lesson_description" />
+                                </div>
+
+                                <!-- Pestaña Recursos -->
+                                <div id="recursos-tab" class="hidden space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Recursos de la Lección
+                                    </h3>
+                                    <div id="resource-container" class="space-y-4">
+                                        {leccionActual.recursos.map((recurso, index) => (
+                                            <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg resource-item">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                                            Título del Recurso
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="resource_title[]"
+                                                            value={recurso.titulo}
+                                                            class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                                            Enlace o Archivo
+                                                        </label>
+                                                        <div class="flex gap-2">
+                                                            <input
+                                                                type="text"
+                                                                name="resource_url[]"
+                                                                value={recurso.url}
+                                                                class="flex-1 px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                                            />
+                                                            <input
+                                                                class="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 dark:file:bg-gray-700 dark:file:text-gray-300"
+                                                                name="resource_file[]"
+                                                                type="file"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="mt-3 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 inline-flex items-center text-sm font-medium transition-colors remove-resource"
+                                                >
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Eliminar recurso
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        id="add-resource-btn"
+                                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                                    >
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Añadir Recurso
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+                                <button
+                                    type="submit"
+                                    class="flex-1 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                >
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path>
+                                    </svg>
+                                    Guardar Cambios
+                                </button>
+                                <button
+                                    type="button"
+                                    id="delete-lesson-btn"
+                                    class="flex-1 inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                                >
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Eliminar Lección
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Añadir Módulo -->
+    <div id="module-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Añadir Nuevo Módulo
+                </h3>
+                <button id="close-module-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="add-module-form" class="space-y-4">
+                <div>
+                    <label for="module-name" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        Nombre del Módulo
+                    </label>
+                    <input
+                        type="text"
+                        id="module-name"
+                        required
+                        class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Ej: Introducción a..."
+                    />
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        type="submit"
+                        class="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Añadir Módulo
+                    </button>
+                    <button
+                        type="button"
+                        id="cancel-module-btn"
+                        class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <script>
+        // Variables globales para los editores
+        let textEditor, descriptionEditor;
+        
+        // Inicialización cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar editores Quill
+            initializeEditors();
+            
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Mostrar el primer módulo expandido por defecto
+            toggleModule(1);
+        });
+        
+        function initializeEditors() {
+            // Inicializar editor de contenido de texto
+            if (document.getElementById('text-editor')) {
+                textEditor = new Quill('#text-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            ['link', 'blockquote', 'code-block'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                        ]
+                    },
+                    placeholder: 'Escribe el contenido de texto de la lección aquí...'
+                });
+                
+                // Establecer contenido inicial si existe
+                textEditor.root.innerHTML = `{leccionActual.contenido}`;
+                
+                // Actualizar el campo oculto cuando el editor cambie
+                textEditor.on('text-change', function() {
+                    document.getElementById('text_content').value = textEditor.root.innerHTML;
+                });
+            }
+            
+            // Inicializar editor de descripción
+            if (document.getElementById('description-editor')) {
+                descriptionEditor = new Quill('#description-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            ['link', 'blockquote'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                        ]
+                    },
+                    placeholder: 'Escribe la descripción detallada de la lección aquí...'
+                });
+                
+                // Establecer contenido inicial si existe
+                descriptionEditor.root.innerHTML = `{leccionActual.descripcion}`;
+                
+                // Actualizar el campo oculto cuando el editor cambie
+                descriptionEditor.on('text-change', function() {
+                    document.getElementById('lesson_description').value = descriptionEditor.root.innerHTML;
+                });
+            }
+        }
+        
+        function setupEventListeners() {
+            // Toggle de módulos
+            document.querySelectorAll('[data-module]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const moduleId = this.getAttribute('data-module');
+                    toggleModule(moduleId);
+                });
+            });
+            
+            // Cambio de tipo de contenido
+            document.getElementById('content_type').addEventListener('change', function() {
+                const contentType = this.value;
+                toggleContentType(contentType);
+            });
+            
+            // Pestañas
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName);
+                });
+            });
+            
+            // Añadir recurso
+            document.getElementById('add-resource-btn').addEventListener('click', addResource);
+            
+            // Eliminar recurso (event delegation)
+            document.getElementById('resource-container').addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-resource') || e.target.closest('.remove-resource')) {
+                    const resourceItem = e.target.closest('.resource-item');
+                    if (resourceItem) {
+                        resourceItem.remove();
+                    }
+                }
+            });
+            
+            // Modal de módulo
+            document.getElementById('add-module-btn').addEventListener('click', openModuleModal);
+            document.getElementById('close-module-modal').addEventListener('click', closeModuleModal);
+            document.getElementById('cancel-module-btn').addEventListener('click', closeModuleModal);
+            document.getElementById('add-module-form').addEventListener('submit', addModule);
+            
+            // Eliminar lección
+            document.getElementById('delete-lesson-btn').addEventListener('click', confirmDelete);
+            
+            // Envío del formulario
+            document.getElementById('lesson-form').addEventListener('submit', saveLesson);
+        }
+        
+        function toggleModule(moduleId) {
+            const content = document.getElementById(`module-${moduleId}-content`);
+            const arrow = document.querySelector(`[data-arrow="${moduleId}"]`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        function toggleContentType(type) {
+            const videoContent = document.getElementById('video-content');
+            const textContent = document.getElementById('text-content');
+            
+            if (type === 'video') {
+                videoContent.classList.remove('hidden');
+                textContent.classList.add('hidden');
+            } else {
+                videoContent.classList.add('hidden');
+                textContent.classList.remove('hidden');
+            }
+        }
+        
+        function showTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remover estilo activo de todos los botones
+            document.querySelectorAll('[data-tab]').forEach(button => {
+                button.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+                button.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+            });
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Aplicar estilo activo al botón
+            const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+            activeButton.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+            activeButton.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+        }
+        
+        function addResource() {
+            const resourceContainer = document.getElementById('resource-container');
+            const resourceCount = resourceContainer.children.length;
+            
+            const resourceHTML = `
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg resource-item">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                Título del Recurso
+                            </label>
+                            <input
+                                type="text"
+                                name="resource_title[]"
+                                class="w-full px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                placeholder="Nombre del recurso"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                Enlace o Archivo
+                            </label>
+                            <div class="flex gap-2">
+                                <input
+                                    type="text"
+                                    name="resource_url[]"
+                                    class="flex-1 px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                    placeholder="https://..."
+                                />
+                                <input
+                                    class="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 dark:file:bg-gray-700 dark:file:text-gray-300"
+                                    name="resource_file[]"
+                                    type="file"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        class="mt-3 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 inline-flex items-center text-sm font-medium transition-colors remove-resource"
+                    >
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Eliminar recurso
+                    </button>
+                </div>
+            `;
+            
+            resourceContainer.insertAdjacentHTML('beforeend', resourceHTML);
+        }
+        
+        function openModuleModal() {
+            document.getElementById('module-modal').classList.remove('hidden');
+            document.getElementById('module-modal').classList.add('flex');
+        }
+        
+        function closeModuleModal() {
+            document.getElementById('module-modal').classList.add('hidden');
+            document.getElementById('module-modal').classList.remove('flex');
+            document.getElementById('add-module-form').reset();
+        }
+        
+        function addModule(event) {
+            event.preventDefault();
+            
+            const moduleName = document.getElementById('module-name').value;
+            
+            if (moduleName.trim() === '') {
+                alert('Por favor, ingresa un nombre para el módulo');
+                return;
+            }
+            
+            // Aquí iría la lógica para guardar el módulo en la base de datos
+            console.log('Añadiendo módulo:', moduleName);
+            
+            // Por ahora, solo cerramos el modal
+            closeModuleModal();
+            
+            // En una implementación real, aquí actualizarías la lista de módulos
+            alert(`Módulo "${moduleName}" añadido correctamente`);
+        }
+        
+        function confirmDelete() {
+            if (confirm('¿Estás seguro de que deseas eliminar esta lección? Esta acción no se puede deshacer.')) {
+                // Aquí iría la lógica para eliminar la lección
+                console.log('Eliminando lección con ID:', {id});
+                
+                // Redirigir al dashboard después de eliminar
+                window.location.href = '/dashboard';
+            }
+        }
+        
+        function saveLesson(event) {
+            event.preventDefault();
+            
+            // Actualizar los campos ocultos con el contenido de los editores
+            if (textEditor) {
+                document.getElementById('text_content').value = textEditor.root.innerHTML;
+            }
+            
+            if (descriptionEditor) {
+                document.getElementById('lesson_description').value = descriptionEditor.root.innerHTML;
+            }
+            
+            // Recopilar datos del formulario
+            const formData = new FormData(event.target);
+            const lessonData = {
+                title: formData.get('lesson_title'),
+                contentType: formData.get('content_type'),
+                videoUrl: formData.get('video_url'),
+                textContent: formData.get('text_content'),
+                description: formData.get('lesson_description'),
+                resources: []
+            };
+            
+            // Procesar recursos
+            const resourceTitles = formData.getAll('resource_title[]');
+            const resourceUrls = formData.getAll('resource_url[]');
+            
+            for (let i = 0; i < resourceTitles.length; i++) {
+                if (resourceTitles[i].trim() !== '') {
+                    lessonData.resources.push({
+                        title: resourceTitles[i],
+                        url: resourceUrls[i] || ''
+                    });
+                }
+            }
+            
+            // Aquí iría la lógica para guardar en la base de datos
+            console.log('Guardando lección:', lessonData);
+            
+            // Simular guardado exitoso
+            alert('Lección guardada correctamente');
+            
+            // En una implementación real, aquí redirigirías o mostrarías un mensaje de éxito
+        }
+    </script>
+
+    <style>
+        .ql-editor {
+            min-height: 200px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .ql-toolbar.ql-snow {
+            border-top: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .ql-container.ql-snow {
+            border-bottom: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .ql-snow .ql-stroke {
+                stroke: #d1d5db;
+            }
+            
+            .ql-snow .ql-fill {
+                fill: #d1d5db;
+            }
+            
+            .ql-snow .ql-picker-label {
+                color: #d1d5db;
+            }
+            
+            .ql-snow .ql-picker-options {
+                background-color: #374151;
+                border-color: #4b5563;
+            }
+            
+            .ql-snow .ql-picker-item {
+                color: #d1d5db;
+            }
+            
+            .ql-snow.ql-toolbar button:hover,
+            .ql-snow .ql-toolbar button:hover,
+            .ql-snow.ql-toolbar button:focus,
+            .ql-snow .ql-toolbar button:focus,
+            .ql-snow.ql-toolbar button.ql-active,
+            .ql-snow .ql-toolbar button.ql-active,
+            .ql-snow.ql-toolbar .ql-picker-label:hover,
+            .ql-snow .ql-toolbar .ql-picker-label:hover,
+            .ql-snow.ql-toolbar .ql-picker-label.ql-active,
+            .ql-snow .ql-toolbar .ql-picker-label.ql-active,
+            .ql-snow.ql-toolbar .ql-picker-item:hover,
+            .ql-snow .ql-toolbar .ql-picker-item:hover,
+            .ql-snow.ql-toolbar .ql-picker-item.ql-selected,
+            .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+                color: #3b82f6;
+            }
+            
+            .ql-snow.ql-toolbar button:hover .ql-stroke,
+            .ql-snow .ql-toolbar button:hover .ql-stroke,
+            .ql-snow.ql-toolbar button:focus .ql-stroke,
+            .ql-snow .ql-toolbar button:focus .ql-stroke,
+            .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+            .ql-snow .ql-toolbar button.ql-active .ql-stroke,
+            .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+            .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke,
+            .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+            .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+            .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+            .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke,
+            .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+            .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+            .ql-snow.ql-toolbar button:hover .ql-fill,
+            .ql-snow .ql-toolbar button:hover .ql-fill,
+            .ql-snow.ql-toolbar button:focus .ql-fill,
+            .ql-snow .ql-toolbar button:focus .ql-fill,
+            .ql-snow.ql-toolbar button.ql-active .ql-fill,
+            .ql-snow .ql-toolbar button.ql-active .ql-fill,
+            .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+            .ql-snow .ql-toolbar .ql-picker-label:hover .ql-fill,
+            .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,
+            .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill,
+            .ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
+            .ql-snow .ql-toolbar .ql-picker-item:hover .ql-fill,
+            .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill,
+            .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill {
+                stroke: #3b82f6;
+                fill: #3b82f6;
+            }
+        }
+    </style>
+</AdminLayout>

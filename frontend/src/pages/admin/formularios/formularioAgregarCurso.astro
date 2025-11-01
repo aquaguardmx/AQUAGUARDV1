@@ -1,11 +1,4 @@
 ---
-// --- Datos de Ejemplo ---
-const autores = [
-  { id: 1, nombre: "Juan Pérez" },
-  { id: 2, nombre: "Ana Gómez (Tú)" },
-  { id: 3, nombre: "Carlos Ruiz" },
-];
-
 interface Categoria {
   id: number;
   nombre: string;
@@ -14,18 +7,6 @@ interface Categoria {
 
 const res = await fetch("http://localhost:8000/api/categorias");
 const categorias: Categoria[] = await res.json();
-
-/* const categorias = [
-  { id: 1, nombre: "Programación" },
-  { id: 2, nombre: "Diseño Web" },
-  { id: 3, nombre: "Marketing Digital" },
-  { id: 4, nombre: "Idiomas" },
-];
-*/
-
-if (Astro.request.method === "POST") {
-  // console.log("Formulario recibido:", await Astro.request.formData());
-}
 ---
 
 <!doctype html>
@@ -743,6 +724,7 @@ if (Astro.request.method === "POST") {
             alert("Curso creado exitosamente");
             cursoForm.reset(); // Limpia el formulario
             editor.root.innerHTML = ""; // Limpia el editor de Quill
+            window.location.href = "../../admin/dashboardAdmin"; // Redirige al dashboard
           } else {
             // Manejo de errores de Laravel (ej. Validación 422)
             const errorData = await response.json();

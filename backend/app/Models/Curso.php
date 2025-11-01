@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use App\Models\Contenido;
 
@@ -34,5 +35,23 @@ class Curso extends Model
     public function contenidos()
     {
         return $this->hasMany(Contenido::class, 'id_curso');
+    }
+
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
+    }
+
+    /**
+     * Obtiene el autor (usuario) que creó el curso.
+     */
+    public function autor(): BelongsTo
+    {
+        // Esta función se conecta con el modelo 'User' (o 'Usuario')
+        // usando la llave foránea 'autor_id'
+        
+        // ¡IMPORTANTE! Asegúrate de que 'User::class' sea el nombre
+        // de tu modelo de usuarios. Si es 'Usuario::class', cámbialo.
+        return $this->belongsTo(User::class, 'autor_id');
     }
 }

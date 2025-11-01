@@ -2,303 +2,282 @@
 // 1. Importa tu layout principal
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 
-// 2. Define la estructura de tu Curso
-type Contenido = {
-    id_leccion: number;
-    titulo_leccion: string;
-    contenido_leccion: string;
-    video: string;
-    orden: number;
-    id_curso: number;
-};
-
-type Curso = {
-    id_curso: number | string;
-    nombre_curso: string;
-    descripcion: string;
-    nivel_dificultad: string;
-    contenidos?: Contenido[]; // Propiedad opcional para los contenidos
-};
-
-// 3. Hacemos el fetch al API de Laravel
-let cursos: Curso[] = [];
-let error: string | null = null;
-
-try {
-    // --- 1. OBTENEMOS LOS CURSOS ---
-    const responseCursos = await fetch("http://localhost:8000/api/cursos/");
-
-    if (!responseCursos.ok) {
-        throw new Error(
-            `Error al obtener los cursos: ${responseCursos.statusText}`,
-        );
-    }
-
-    const responseDataCursos = await responseCursos.json();
-
-    // Asignamos los cursos (manejando si viene con 'data' o no)
-    let cursosBase: Curso[] = [];
-    if (Array.isArray(responseDataCursos)) {
-        cursosBase = responseDataCursos;
-    } else if (responseDataCursos && Array.isArray(responseDataCursos.data)) {
-        cursosBase = responseDataCursos.data;
-    } else {
-        console.warn(
-            "La respuesta de la API de cursos no fue un array:",
-            responseDataCursos,
-        );
-    }
-
-    // --- 2. OBTENEMOS LOS CONTENIDOS PARA CADA CURSO ---
-
-    // Creamos un array de promesas. Cada una buscará el contenido de UN curso
-    const promesasDeContenido = cursosBase.map(async (curso) => {
-        // !!! AJUSTA ESTA URL a tu API de contenidos !!!
-        const responseContenido = await fetch(
-            `http://localhost:8000/api/lecciones`,
-            // O quizás es: `http://localhost:8000/api/contenidos?curso=${curso.id_curso}`
-            // ¡Verifica tu ruta!
-        );
-
-        if (!responseContenido.ok) {
-            console.warn(
-                `No se pudo cargar contenido para el curso ID: ${curso.id_curso}`,
-            );
-            return { ...curso, contenidos: [] }; // Devuelve el curso con contenidos vacíos si falla
-        }
-
-        const responseDataContenido = await responseContenido.json();
-
-        // Extraemos los contenidos (manejando si vienen con 'data' o no)
-        let contenidosDelCurso: Contenido[] = [];
-        if (Array.isArray(responseDataContenido)) {
-            contenidosDelCurso = responseDataContenido;
-        } else if (
-            responseDataContenido &&
-            Array.isArray(responseDataContenido.data)
-        ) {
-            contenidosDelCurso = responseDataContenido.data;
-        }
-
-        // Devolvemos el objeto del curso COMPLETO, con sus contenidos asignados
-        return {
-            ...curso,
-            contenidos: contenidosDelCurso,
-        };
-    });
-
-    // --- 3. ESPERAMOS A QUE TODAS LAS PETICIONES TERMINEN ---
-
-    // Promise.all ejecuta todas las promesas del array en paralelo
-    // 'cursos' ahora será el array de cursos, cada uno con su propiedad 'contenidos'
-    cursos = await Promise.all(promesasDeContenido);
-
-    // --- 4. MOSTRAMOS EN CONSOLA (EN TU TERMINAL) ---
-    console.log(
-        "Datos COMPLETOS (Cursos + Contenidos):",
-        JSON.stringify(cursos, null, 2),
-    );
-} catch (e) {
-    console.error(e);
-    error =
-        "No se pudo conectar con la API. Asegúrate de que tu backend esté corriendo.";
+interface Autor {
+  id_usuario: number;
+  nombre: string;
 }
+
+// Molde para el objeto Categoria (basado en tu JSON)
+interface Categoria {
+  id: number;
+  nombre: string;
+}
+
+interface Curso {
+  id_curso: number;
+  titulo: string;
+  descripcion: string;
+  portada_url: string;
+  tiempo_estimado_min: number;
+  autor_id: number;
+  categoria_id: number;
+  publicado: boolean;
+  autor: Autor;       
+  categoria: Categoria;
+}
+
+const res = await fetch("http://localhost:8000/api/cursos");
+const cursos: Curso[] = await res.json();
+
+// Función para formatear el tiempo estimado
+const formatTiempo = (minutos: number) => {
+  if (!minutos || isNaN(minutos)) return 'Sin tiempo';
+  
+  const horas = Math.floor(minutos / 60);
+  const mins = minutos % 60;
+  
+  if (horas > 0) {
+    return `${horas}h ${mins}m`;
+  }
+  return `${mins}m`;
+};
+
+// Función para limpiar HTML y obtener texto plano
+const cleanDescription = (desc: string) => {
+  if (!desc) return 'Sin descripción disponible';
+  
+  // Remover etiquetas HTML y limitar longitud
+  const textOnly = desc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return textOnly.length > 100 ? textOnly.substring(0, 100) + '...' : textOnly;
+};
+
+// Función para obtener un título por defecto si está vacío
+const getSafeTitle = (title: string) => {
+  return title && title.trim() ? title : 'Curso sin título';
+};
+
+// Función para obtener el color sólido basado en el ID del curso
+const getSolidColor = (id: number) => {
+  const colors = [
+    "bg-blue-600",      // Azul
+    "bg-purple-600",    // Morado
+    "bg-emerald-600",   // Verde esmeralda
+    "bg-orange-600",    // Naranja
+    "bg-cyan-600",      // Cian
+    "bg-rose-600",      // Rosa
+    "bg-lime-600",      // Lima
+    "bg-violet-600",    // Violeta
+    "bg-amber-600",     // Ámbar
+    "bg-teal-600",      // Verde azulado
+    "bg-indigo-600",    // Índigo
+    "bg-pink-600"       // Rosa fuerte
+  ];
+  return colors[id % colors.length];
+};
 ---
 
 <AdminLayout title="Gestión de Cursos">
-    <div class="p-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            Gestión de Cursos
-        </h1>
-        <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
-            Administra, busca y crea nuevos cursos en el sistema.
-        </p>
-
-        {
-            error && (
-                <div
-                    class="p-4 my-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400"
-                    role="alert"
-                >
-                    <span class="font-medium">¡Error de conexión!</span> {error}
+    <div class="container mx-auto px-4 py-8">
+        <!-- Encabezado con título y botón para crear nuevo curso -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        Gestión de Cursos
+                    </h1>
                 </div>
-            )
-        }
+                <p class="text-gray-600 ml-5">
+                    {cursos.length} {cursos.length === 1 ? 'curso encontrado' : 'cursos encontrados'}
+                </p>
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Nuevo Curso
+            </button>
+        </div>
 
-        <div
-            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 py-4"
-        >
-            <div class="w-full md:w-1/2">
-                <form class="flex items-center">
-                    <label for="simple-search" class="sr-only">Buscar</label>
-                    <div class="relative w-full">
-                        <div
-                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-                        >
-                            <svg
-                                class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 20 20"
-                                ><path
-                                    stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                                ></path></svg
-                            >
+        <!-- Filtros y búsqueda -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="search" class="block text-sm font-semibold text-gray-700 mb-2">Buscar curso</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                            </svg>
                         </div>
-                        <input
-                            type="text"
-                            id="simple-search"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Buscar curso por nombre..."
-                        />
+                        <input type="text" id="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 transition-all duration-200" placeholder="Buscar por nombre, descripción...">
                     </div>
-                </form>
-            </div>
-            <div
-                class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end"
-            >
-                <a
-                    href="/admin/formularios/formularioAgregarCurso"
-                    class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                >
-                    <svg
-                        class="h-3.5 w-3.5 mr-2"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        ><path
-                            clip-rule="evenodd"
-                            fill-rule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        ></path></svg
-                    >
-                    Añadir Curso
-                </a>
+                </div>
+                <div class="md:w-48">
+                    <label for="status" class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
+                    <select id="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition-all duration-200">
+                        <option value="all">Todos los estados</option>
+                        <option value="published">Publicados</option>
+                        <option value="draft">Borradores</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <!-- Tabla de Cursos Mejorada -->
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table
-                class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
-            >
-                <thead
-                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-                >
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-center"
-                            >Nombre del Curso</th
-                        >
-                        <th scope="col" class="px-6 py-3 text-center">Nivel</th>
-                        <th scope="col" class="px-6 py-3 text-center">ID</th>
-                        <th scope="col" class="px-6 py-3 text-center"
-                            >Acciones</th
-                        >
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        cursos.length > 0 ? (
-                            cursos.map((curso) => (
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <th
-                                        scope="row"
-                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center"
-                                    >
-                                        {curso.nombre_curso}
-                                    </th>
-                                    <td class="px-6 py-4 text-center">
-                                        {curso.nivel_dificultad ===
-                                        "principiante" ? (
-                                            <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
-                                                Principiante
-                                            </span>
-                                        ) : curso.nivel_dificultad ===
-                                          "intermedio" ? (
-                                            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
-                                                Intermedio
-                                            </span>
-                                        ) : (
-                                            <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
-                                                Avanzado
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        {curso.id_curso}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <a
-                                            href={`/admin/cursos/${curso.id_curso}/crearCurso`}
-                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline text-center"
-                                        >
-                                            Contenido
-                                        </a>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td
-                                    colspan="4"
-                                    class="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
-                                >
-                                    {error
-                                        ? "Error al cargar los datos."
-                                        : "No se encontraron cursos."}
-                                </td>
-                            </tr>
-                        )
-                    }
-                </tbody>
-            </table>
-        </div>
+        <!-- Grid de cursos -->
+        {cursos.length > 0 ? (
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Tarjeta para crear nuevo curso -->
+                <div class="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 flex flex-col items-center justify-center p-8 text-center cursor-pointer group hover:shadow-lg">
+                    <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Crear nuevo curso</h3>
+                    <p class="text-gray-500 text-sm">Comienza desde cero o usa una plantilla</p>
+                </div>
+
+                {cursos.map((curso) => (
+                    <a 
+                        href={`/admin/cursos/${curso.id_curso}`} 
+                        class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer relative"
+                    >
+                        <!-- Badge de estado ELEGANTE - POSICIÓN MEJORADA -->
+                        <div class="absolute top-4 right-4 z-20">
+                            <span class={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shadow-md ${
+                                curso.publicado 
+                                    ? 'bg-green-50 text-green-700 border-green-200' 
+                                    : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            }`}>
+                                {curso.publicado ? (
+                                    <>
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Publicado
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Borrador
+                                    </>
+                                )}
+                            </span>
+                        </div>
+
+                        <!-- Portada del curso -->
+                        <div class="h-48 relative overflow-hidden">
+                            {curso.portada_url ? (
+                                <img 
+                                    src={curso.portada_url} 
+                                    alt={getSafeTitle(curso.titulo)}
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                />
+                            ) : null}
+                            
+                            <!-- Fallback color sólido cuando no hay imagen o falla -->
+                            <div class={`w-full h-full ${getSolidColor(curso.id_curso)} flex items-center justify-center ${curso.portada_url ? 'hidden' : 'flex'}`}>
+                                <div class="text-center text-white">
+                                    
+                                </div>
+                            </div>
+                            
+                            <!-- Overlay sólido para mejor legibilidad -->
+                            <div class="absolute inset-0 bg-black/40"></div>
+                            
+                            <!-- Información superpuesta -->
+                            <div class="absolute bottom-4 left-4 right-4 text-white">
+                                <div class="mb-2">
+                                    <span class="text-xs font-semibold bg-white/20 backdrop-blur-sm px-2 py-1 rounded">
+                                        {curso.categoria.nombre}
+                                    </span>
+                                </div>
+                                <h3 class="font-bold text-xl leading-tight mb-2 line-clamp-2 drop-shadow-sm">
+                                    {getSafeTitle(curso.titulo)}
+                                </h3>
+                                <div class="flex items-center text-white/90 text-sm">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    <span class="font-medium">{curso.autor.nombre}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenido de la tarjeta -->
+                        <div class="p-5">
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
+                                {cleanDescription(curso.descripcion)}
+                            </p>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div class="flex items-center text-gray-700 text-sm font-medium">
+                                    <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>{formatTiempo(curso.tiempo_estimado_min)}</span>
+                                </div>
+                                <div class="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">
+                                    ID: {curso.id_curso}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        ) : (
+            <!-- Estado vacío -->
+            <div class="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-16 text-center">
+                <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">No hay cursos disponibles</h3>
+                <p class="text-gray-500 mb-8 max-w-md mx-auto">Comienza creando tu primer curso para gestionar módulos y lecciones de manera organizada.</p>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Crear primer curso
+                </button>
+            </div>
+        )}
+
+        <!-- Paginación (solo mostrar si hay cursos) -->
+        {cursos.length > 0 && (
+            <div class="flex justify-center mt-12">
+                <nav class="inline-flex rounded-lg shadow-sm border border-gray-300 bg-white overflow-hidden">
+                    <a href="#" class="py-3 px-4 border-r border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors duration-200">
+                        <span class="sr-only">Anterior</span>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="py-3 px-6 border-r border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">1</a>
+                    <a href="#" class="py-3 px-6 border-r border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">2</a>
+                    <a href="#" class="py-3 px-6 border-r border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors duration-200 font-medium">3</a>
+                    <a href="#" class="py-3 px-4 text-gray-500 hover:bg-gray-50 transition-colors duration-200">
+                        <span class="sr-only">Siguiente</span>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+        )}
     </div>
 
-    <!-- Script para manejar eliminación -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const deleteButtons = document.querySelectorAll(".btn-delete");
-            deleteButtons.forEach((button) => {
-                button.addEventListener("click", async (e) => {
-                    const target = e.target as HTMLButtonElement;
-                    const id = target.dataset.cursoId;
-
-                    // Opcional: Pedir confirmación
-                    // if (!confirm(`¿Estás seguro de que quieres eliminar el curso con ID ${id}?`)) {
-                    //    return;
-                    // }
-
-                    try {
-                        const response = await fetch(
-                            `http://localhost:8000/api/cursos/${id}`,
-                            {
-                                method: "DELETE",
-                            },
-                        );
-
-                        if (response.ok) {
-                            // Eliminar la fila de la tabla
-                            target.closest("tr")?.remove();
-                        } else {
-                            const errorData = await response.json();
-                            console.error(
-                                "Error al eliminar:",
-                                errorData.message,
-                            );
-                            // Aquí podrías mostrar un modal de error
-                        }
-                    } catch (error) {
-                        console.error("Error de red:", error);
-                    }
-                });
-            });
-        });
-    </script>
+    <style>
+        /* Utilidad para limitar líneas de texto */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
 </AdminLayout>

@@ -12,7 +12,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        $cursos = Curso::all();
+        $cursos = Curso::with('autor', 'categoria')->get();
 
         if($cursos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron cursos'], 404);
@@ -41,7 +41,8 @@ class CourseController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'titulo' => 'required|string|max:255',
-            'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Correcto
+            // 'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Correcto
+            'portada_url' => 'required|string|max:255',
             'descripcion' => 'required|string',
             'tiempo_estimado_min' => 'nullable|integer',
             'autor_id' => 'required|integer|exists:usuarios,id_usuario', // Correcto
