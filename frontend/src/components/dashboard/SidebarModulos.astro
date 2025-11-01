@@ -27,26 +27,15 @@ export interface Props {
 // Props por defecto
 const { modulos = [], cursoId = "1" } = Astro.props;
 
-// Debug: ver qué estamos recibiendo
-console.log('Modulos recibidos en el componente:', modulos);
-
 // Normalizar los datos para asegurar que siempre tengamos la estructura correcta
 const modulosNormalizados = Array.isArray(modulos) 
-  ? modulos.map((modulo, index) => {
-      // Si el módulo no tiene ID, usar el índice como fallback
-      const moduloId = modulo.id || index + 1;
-      console.log(`Módulo ${index}:`, { id: modulo.id, titulo: modulo.titulo, lecciones: modulo.lecciones?.length });
-      
-      return {
-        id: moduloId,
-        titulo: modulo.titulo || 'Sin título',
-        lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
-        expandido: modulo.expandido || false
-      };
-    })
+  ? modulos.map((modulo, index) => ({
+      id: modulo.id || index + 1,
+      titulo: modulo.titulo || 'Sin título',
+      lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
+      expandido: modulo.expandido || false
+    }))
   : [];
-
-console.log('Módulos normalizados:', modulosNormalizados);
 ---
 
 <aside class="lg:w-80 xl:w-96 flex-shrink-0">
@@ -76,7 +65,7 @@ console.log('Módulos normalizados:', modulosNormalizados);
         <!-- Lista de Módulos -->
         <div class="space-y-3" id="modules-list">
             {modulosNormalizados.length === 0 ? (
-                <div class="text-center py-8">
+                <div class="text-center py-8" id="empty-state">
                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
@@ -84,9 +73,7 @@ console.log('Módulos normalizados:', modulosNormalizados);
                     <p class="text-sm text-gray-400 dark:text-gray-500">Comienza añadiendo tu primer módulo</p>
                 </div>
             ) : (
-                modulosNormalizados.map((modulo, index) => {
-                  console.log(`Renderizando módulo ${index}:`, modulo);
-                  return (
+                modulosNormalizados.map((modulo) => (
                     <div
                         class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container"
                         data-module-container={modulo.id}
@@ -214,8 +201,7 @@ console.log('Módulos normalizados:', modulosNormalizados);
                             </div>
                         </div>
                     </div>
-                  );
-                })
+                ))
             )}
         </div>
     </div>
@@ -358,7 +344,78 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Manejo del formulario de módulo
+    // Función para crear el HTML de un módulo
+    function createModuleHTML(moduleData) {
+        return `
+            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container" data-module-container="${moduleData.id}">
+                <button class="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors module-toggle" data-module-id="${moduleData.id}" type="button">
+                    <span class="font-semibold text-gray-900 dark:text-white text-left">${moduleData.titulo}</span>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform module-arrow" data-arrow-id="${moduleData.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div class="bg-gray-50 dark:bg-gray-700/50 module-content" id="module-${moduleData.id}-content" data-module-content="${moduleData.id}" style="display: none;">
+                    <div class="p-4 space-y-3">
+                        <div class="text-center py-4">
+                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">No hay lecciones en este módulo</p>
+                        </div>
+                        <a href="/admin/modulos/${moduleData.id}/lecciones/nuevo" class="flex items-center space-x-2 p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-medium">Añadir Lección</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Función para añadir módulo al DOM
+    function addModuleToDOM(moduleData) {
+        const modulesList = document.getElementById('modules-list');
+        const emptyState = document.getElementById('empty-state');
+        
+        // Si existe el estado vacío, eliminarlo
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        // Crear y añadir el nuevo módulo
+        const moduleHTML = createModuleHTML(moduleData);
+        modulesList.insertAdjacentHTML('beforeend', moduleHTML);
+        
+        // Inicializar el acordeón para el nuevo módulo
+        initSingleAccordion(moduleData.id);
+        
+        console.log('Módulo añadido al DOM:', moduleData);
+    }
+
+    // Inicializar acordeón para un solo módulo
+    function initSingleAccordion(moduleId) {
+        const button = document.querySelector(`[data-module-id="${moduleId}"]`);
+        const moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
+        const arrow = document.querySelector(`[data-arrow-id="${moduleId}"]`);
+
+        if (button && moduleContent && arrow) {
+            button.addEventListener('click', function() {
+                const isVisible = moduleContent.style.display !== 'none';
+                
+                if (isVisible) {
+                    moduleContent.style.display = 'none';
+                    arrow.classList.remove('rotate-180');
+                } else {
+                    moduleContent.style.display = 'block';
+                    arrow.classList.add('rotate-180');
+                }
+            });
+        }
+    }
+
+    // Manejo del formulario de módulo - ACTUALIZADO
     if (addModuleForm) {
         addModuleForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -391,14 +448,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const data = await response.json();
                     
-                    console.log('Módulo añadido:', data);
+                    console.log('Módulo añadido a la API:', data);
+                    
+                    // Crear objeto del módulo con los datos de la respuesta
+                    const newModule = {
+                        id: data.id || Date.now(), // Usar ID de la API o timestamp como fallback
+                        titulo: moduleName,
+                        lecciones: [],
+                        expandido: false
+                    };
+                    
+                    // Añadir el módulo al DOM inmediatamente
+                    addModuleToDOM(newModule);
                     
                     // Cerrar modal y mostrar mensaje
                     closeModal();
-                    alert(`Módulo "${moduleName}" añadido correctamente`);
                     
-                    // Recargar la página para mostrar el nuevo módulo
-                    window.location.reload();
+                    // Mostrar toast de éxito (puedes reemplazar con tu sistema de notificaciones)
+                    showSuccessToast(`Módulo "${moduleName}" añadido correctamente`);
                     
                 } catch (error) {
                     console.error('Error al añadir el módulo:', error);
@@ -413,79 +480,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Manejo de acordeón de módulos - VERSIÓN ROBUSTA
+    // Función para mostrar toast de éxito
+    function showSuccessToast(message) {
+        // Crear elemento toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-0';
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remover después de 3 segundos
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Manejo de acordeón de módulos existentes
     function initAccordion() {
         const moduleToggles = document.querySelectorAll('.module-toggle');
         console.log('Encontrados', moduleToggles.length, 'módulos para acordeón');
 
-        moduleToggles.forEach((button, index) => {
-            // Si no hay data-module-id, usar el índice como fallback
-            let moduleId = button.getAttribute('data-module-id');
-            if (!moduleId) {
-                moduleId = `module-${index + 1}`;
-                button.setAttribute('data-module-id', moduleId);
-                console.warn(`Módulo sin ID, usando fallback: ${moduleId}`);
-            }
+        moduleToggles.forEach((button) => {
+            const moduleId = button.getAttribute('data-module-id');
+            const moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
+            const arrow = button.querySelector('.module-arrow');
 
-            button.addEventListener('click', function() {
-                console.log('Click en módulo con ID:', moduleId);
-                
-                let moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
-                const arrow = this.querySelector('.module-arrow');
-                
-                // Si no se encuentra por data attribute, intentar por ID
-                if (!moduleContent) {
-                    moduleContent = document.getElementById(`module-${moduleId}-content`);
-                }
-                
-                console.log('Module content encontrado:', moduleContent);
-                console.log('Arrow encontrada:', arrow);
-
-                if (moduleContent && arrow) {
-                    // Verificar si está visible
+            if (moduleContent && arrow) {
+                button.addEventListener('click', function() {
                     const isVisible = moduleContent.style.display !== 'none';
                     
                     if (isVisible) {
-                        // Ocultar
                         moduleContent.style.display = 'none';
                         arrow.classList.remove('rotate-180');
-                        console.log('Módulo ocultado');
                     } else {
-                        // Mostrar
                         moduleContent.style.display = 'block';
                         arrow.classList.add('rotate-180');
-                        console.log('Módulo mostrado');
                     }
-                } else {
-                    console.error('No se pudo encontrar el contenido o la flecha para el módulo:', moduleId);
-                    console.log('Contenido:', moduleContent);
-                    console.log('Flecha:', arrow);
-                }
-            });
-        });
-
-        // Inicializar flechas según el estado inicial
-        moduleToggles.forEach((button, index) => {
-            let moduleId = button.getAttribute('data-module-id');
-            if (!moduleId) {
-                moduleId = `module-${index + 1}`;
-            }
-            
-            let moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
-            if (!moduleContent) {
-                moduleContent = document.getElementById(`module-${moduleId}-content`);
-            }
-            
-            const arrow = button.querySelector('.module-arrow');
-            
-            if (moduleContent && arrow) {
-                const isVisible = moduleContent.style.display !== 'none';
-                if (isVisible) {
-                    arrow.classList.add('rotate-180');
-                } else {
-                    arrow.classList.remove('rotate-180');
-                }
-                console.log('Módulo inicializado:', moduleId, 'visible:', isVisible);
+                });
             }
         });
     }
