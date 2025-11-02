@@ -10,7 +10,9 @@ use App\Models\User;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\ModuleController;
 
 use App\Http\Controllers\Api\MapController;
 /*
@@ -93,17 +95,40 @@ Route::put('/usuarios/{id}', [UserController::class, 'update']);
 
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
 
-// API PARA CURSOS
+// API PARA CATEGORIAS
 Route::get('/categorias', [CategoryController::class, 'index']);
 
+Route::get('/categorias/{id}', [CategoryController::class, 'show']);
+
+Route::post('/categorias', [CategoryController::class, 'store']);
+
+Route::put('/categorias/{id}', [CategoryController::class, 'update']);
+
+Route::delete('/categorias/{id}', [CategoryController::class, 'destroy']);
+
+// API PARA CURSOS
 Route::get('/cursos', [CourseController::class, 'index']);
 
 Route::post('/cursos', [CourseController::class, 'store']);
 
 Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
+Route::put('/cursos/{id}', [CourseController::class, 'update']);
+
 Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
 
+// API PARA MODULOS
+Route::get('/modulos', [ModuleController::class, 'index']);
+
+Route::get('/modulos/{id}', [ModuleController::class, 'show']);
+
+Route::post('/modulos', [ModuleController::class, 'store']);
+
+Route::put('/modulos/{id}', [ModuleController::class, 'update']);
+
+Route::delete('/modulos/{id}', [ModuleController::class, 'destroy']);
+
+Route::get('/cursos/{curso}/modulos', [CourseController::class, 'getModulosPorCurso']);
 // API PARA CONTENIDOS
 
 Route::get('/lecciones', [ContentController::class, 'index']);

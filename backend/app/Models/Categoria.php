@@ -2,29 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Curso extends Model
+class Categoria extends Model
 {
-    /** @use HasFactory<\Database\Factories\CursoFactory> */
-    use HasFactory;
-
     protected $table = 'categorias';
 
-    protected $primaryKey = 'id';
+    public $timestamps = false; // Desactiva el manejo automático de ambos
 
-    // Es una clave autoincremental entera
-    public $incrementing = true;
-    protected $keyType = 'int';
+    const CREATED_AT = 'created_at'; // Solo dejamos activo created_at
 
     protected $fillable = [
         'nombre',
         'slug',
+        'created_at',
     ];
 
-    public function contenidos()
+    // Si quieres seguir usando created_at automáticamente:
+    protected static function boot()
     {
-        return $this->hasMany(Contenido::class, 'id');
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Solo se establecerá created_at al crear, no se tocará updated_at
+            if (! $model->created_at) {
+                $model->created_at = now();
+            }
+        });
     }
 }
