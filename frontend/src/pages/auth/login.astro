@@ -27,6 +27,7 @@ import "tailwindcss/tailwind.css";
         id="loginForm"
         class="flex flex-col gap-3"
         aria-label="Formulario de inicio de sesión"
+        method="POST"
       >
         <label
           for="correo_electronico"
@@ -137,158 +138,176 @@ import "tailwindcss/tailwind.css";
         <a href="/" class="text-blue-600 hover:underline">Regresar a inicio</a>
       </p>
     </main>
-    <script>
-      // 1. Busca el token en ambos almacenamientos.
-      const authToken =
-        localStorage.getItem("authToken") ||
-        sessionStorage.getItem("authToken");
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // VERIFICACIÓN DE AUTENTICACIÓN - Solo si no hay datos en el formulario
+    const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    
+    // Solo redirigir automáticamente si el usuario no está intentando iniciar sesión
+    // (es decir, si los campos del formulario están vacíos)
+    const emailInput = document.querySelector('input[name="correo_electronico"]');
+    const passwordInput = document.querySelector('input[name="contrasena"]');
+    
+    if (authToken && (!emailInput?.value && !passwordInput?.value)) {
+      console.log("Usuario ya autenticado, redirigiendo...");
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect');
+      
+      if (redirectUrl) {
+        console.log("Redirigiendo a:", redirectUrl);
+        window.location.href = redirectUrl;
+      } else {
+        console.log("Redirigiendo a /home...");
+        window.location.href = "/usuario/home";
+      }
+      return; // Salir temprano si redirigimos
+    }
 
-      console.log("Token de autenticación encontrado:", authToken);
+    // Si llegamos aquí, el usuario necesita iniciar sesión o los campos están llenos
+    console.log("Mostrando formulario de login");
 
-      // 2. Si el token existe, significa que el usuario ya está logueado.
-      if (authToken) {
-        console.log("Usuario ya autenticado. Redirigiendo a /home...");
+    const form = document.querySelector("#loginForm");
+    let messageDiv = document.getElementById("responseMessage");
 
-        // 3. Redirige inmediatamente al panel principal.
-        window.location.href = "../admin/dashboardAdmin";
+    if (!form) {
+      console.error('No se encontró el formulario con id "loginForm"');
+      return;
+    }
+
+    const messageEl = messageDiv;
+
+    // Botón submit y estado de carga
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonHTML = submitButton ? submitButton.innerHTML : "Iniciar sesión";
+
+    function setLoading(isLoading) {
+      if (!submitButton) return;
+      if (isLoading) {
+        submitButton.disabled = true;
+        submitButton.setAttribute("aria-busy", "true");
+        submitButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
+            <path d="M22 12a10 10 0 0 0-10-10" />
+          </svg>
+          <span>Cargando...</span>
+        `;
+        submitButton.classList.add("opacity-70", "cursor-not-allowed");
+      } else {
+        submitButton.disabled = false;
+        submitButton.removeAttribute("aria-busy");
+        submitButton.innerHTML = originalButtonHTML;
+        submitButton.classList.remove("opacity-70", "cursor-not-allowed");
+      }
+    }
+
+    // Prevenir el autocompletado de Google de enviar el formulario automáticamente
+    let formSubmittedByUser = false;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      formSubmittedByUser = true;
+
+      if (submitButton && submitButton.disabled) return;
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      // Verificar que los campos no estén vacíos
+      if (!data.correo_electronico || !data.contrasena) {
+        messageEl.textContent = "Por favor completa todos los campos";
+        messageEl.style.color = "red";
+        return;
       }
 
-      if (!document.getElementById("register-spinner-style")) {
-        const style = document.createElement("style");
-        style.id = "register-spinner-style";
-        style.textContent = `
-                .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
-                @keyframes rg-spin { to { transform: rotate(360deg); } }
-            `;
-        document.head.appendChild(style);
-      }
+      const rememberMe = formData.has("remember");
+      console.log(`¿Recordar sesión? ${rememberMe}`);
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const form = document.querySelector<HTMLFormElement>("#loginForm");
-        let messageDiv = document.getElementById("responseMessage");
+      setLoading(true);
 
-        if (!form) {
-          console.error(
-            'No se encontró el formulario con id "loginForm". Añade id="loginForm" al <form>.',
-          );
-          return;
-        }
-
-        const messageEl = messageDiv as HTMLElement;
-
-        // Botón submit y estado de carga
-        const submitButton = form.querySelector<HTMLButtonElement>(
-          'button[type="submit"]',
-        );
-        const originalButtonHTML = submitButton
-          ? submitButton.innerHTML
-          : "Iniciar sesión";
-
-        function setLoading(isLoading: boolean) {
-          if (!submitButton) return;
-          if (isLoading) {
-            submitButton.disabled = true;
-            submitButton.setAttribute("aria-busy", "true");
-            submitButton.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
-                                <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
-                                <path d="M22 12a10 10 0 0 0-10-10" />
-                            </svg>
-                            <span>Cargando...</span>
-                        `;
-            submitButton.classList.add("opacity-70", "cursor-not-allowed");
-          } else {
-            submitButton.disabled = false;
-            submitButton.removeAttribute("aria-busy");
-            submitButton.innerHTML = originalButtonHTML;
-            submitButton.classList.remove("opacity-70", "cursor-not-allowed");
-          }
-        }
-
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-
-          if (submitButton && submitButton.disabled) return;
-
-          const formData = new FormData(form);
-          const data = Object.fromEntries(formData.entries());
-
-          // 1. Comprueba si la casilla "remember" está marcada.
-          const rememberMe = formData.has("remember");
-          console.log(`¿Recordar sesión? ${rememberMe}`);
-
-          setLoading(true);
-
-          try {
-            const response = await fetch("http://127.0.0.1:8000/api/login", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-            console.log("Login response", response.status, result);
-
-            if (!response.ok) {
-              // Si hay errores de validación... (tu lógica de errores está bien)
-              let errorMessage = "Error al iniciar sesión: ";
-              if (result && typeof result === "object") {
-                const messages = [];
-                for (const key in result) {
-                  if (Array.isArray(result[key])) {
-                    messages.push(result[key][0]);
-                  } else if (typeof result[key] === "string") {
-                    messages.push(result[key]);
-                  }
-                }
-                if (messages.length) errorMessage += messages.join(" | ");
-              } else if (typeof result === "string") {
-                errorMessage += result;
-              }
-              messageEl.textContent = errorMessage;
-              messageEl.style.color = "red";
-            } else {
-              // --- INICIO DE LA CORRECCIÓN --- ✅
-              // 1. Decide dónde guardar (localStorage o sessionStorage)
-              //    basado en la variable 'rememberMe'.
-              const storage = rememberMe ? localStorage : sessionStorage;
-
-              // 2. Guarda los datos en el almacenamiento elegido.
-              storage.setItem("authToken", result.token);
-              storage.setItem("userData", JSON.stringify(result.user));
-              // --- FIN DE LA CORRECCIÓN ---
-
-              messageEl.textContent = "¡Inicio exitoso! Serás redirigido.";
-              messageEl.style.color = "green";
-
-              const userRole = result.user.id_rol;
-              console.log("Rol del usuario:", userRole);
-
-              setTimeout(() => {
-                if (userRole === 1) {
-                  console.log("Redirigiendo al panel de administrador...");
-                  window.location.href = "/admin/dashboardAdmin";
-                  return;
-                } else {
-                  console.log("Redirigiendo al panel de usuario...");
-                  window.location.href = "/usuario/home";
-                  return;
-                }
-                
-              }, 1500); // Redirige después de 1.5 segundos
-            }
-          } catch (error) {
-            console.error("Error de conexión:", error);
-            messageEl.textContent = "No se pudo conectar con el servidor.";
-            messageEl.style.color = "red";
-          } finally {
-            setLoading(false);
-          }
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(data),
         });
-      });
-    </script>
+
+        const result = await response.json();
+        console.log("Login response", response.status, result);
+
+        if (!response.ok) {
+          let errorMessage = "Error al iniciar sesión: ";
+          if (result && typeof result === "object") {
+            const messages = [];
+            for (const key in result) {
+              if (Array.isArray(result[key])) {
+                messages.push(result[key][0]);
+              } else if (typeof result[key] === "string") {
+                messages.push(result[key]);
+              }
+            }
+            if (messages.length) errorMessage += messages.join(" | ");
+          } else if (typeof result === "string") {
+            errorMessage += result;
+          }
+          messageEl.textContent = errorMessage;
+          messageEl.style.color = "red";
+        } else {
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem("authToken", result.token);
+          storage.setItem("userData", JSON.stringify(result.user));
+
+          messageEl.textContent = "¡Inicio exitoso! Serás redirigido.";
+          messageEl.style.color = "green";
+
+          const userRole = result.user?.id_rol || result.user?.role || result.role;
+          console.log("Final user role:", userRole);
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectUrl = urlParams.get('redirect');
+
+          setTimeout(() => {
+            if (redirectUrl && userRole !== 1) {
+              console.log("Redirigiendo a:", redirectUrl);
+              window.location.href = redirectUrl;
+            } else if (userRole === 1) {
+              console.log("Redirigiendo al panel de administrador...");
+              window.location.href = "/admin/dashboardAdmin";
+            } else {
+              console.log("Redirigiendo al panel de usuario...");
+              window.location.href = "/usuario/home";
+            }
+          }, 1500);
+        }
+      } catch (error) {
+        console.error("Error de conexión:", error);
+        messageEl.textContent = "No se pudo conectar con el servidor.";
+        messageEl.style.color = "red";
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // También agregar un botón para "limpiar y empezar de nuevo" por si el autocompletado molesta
+    const clearButton = document.createElement('button');
+    clearButton.type = 'button';
+    clearButton.textContent = 'Usar otra cuenta';
+    clearButton.className = 'text-sm text-blue-600 hover:underline mt-2';
+    clearButton.addEventListener('click', function() {
+      form.reset();
+      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
+      messageEl.textContent = "Campos limpiados. Puedes ingresar nuevas credenciales.";
+      messageEl.style.color = "blue";
+    });
+    
+    // Agregar el botón después del formulario
+    form.parentNode.insertBefore(clearButton, form.nextSibling);
+  });
+</script>
   </body>
 </html>

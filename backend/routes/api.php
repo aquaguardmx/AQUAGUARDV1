@@ -113,4 +113,10 @@ Route::post('/lecciones', [ContentController::class, 'store']);
 //API PARA  MAPA 
 Route::get('/mapa', [MapController::class, 'mapData']);
 
-//hola 
+Route::post('/mapa', [MapController::class, 'store']);
+Route::get('/estados', [MapController::class, 'getEstados']);
+Route::get('/municipios/estado/{estadoId}', [MapController::class, 'getMunicipiosPorEstado']);
+Route::get('/cuencas', [MapController::class, 'getCuencas']);
+Route::get('/tipos', [MapController::class, 'getTipos']);
+Route::get('/subtipos', [MapController::class, 'getSubtipos']);
+Route::get('/parametros', [MapController::class, 'getParametros']);

@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\Mediciones;
+use App\Models\Parametros;
+use App\Models\Semaforo;
+use App\Models\Tipos;
+
+use Illuminate\Support\Facades\Log;
+
 class MapController extends Controller
 {
 
@@ -72,68 +79,243 @@ class MapController extends Controller
         ]);
     }
 
-    // POST /api/mapa: Crear nueva estación con relaciones
-    public function store(Request $request): JsonResponse
+
+
+
+
+
+    // Función para determinar clasificación de medición
+    private function determinarClasificacion($parametroId, $valor, $tipoCuerpoAgua)
+    {
+        // Rangos según el tipo de cuerpo de agua y parámetro
+        $rangos = $this->obtenerRangosCalidad($tipoCuerpoAgua);
+        
+        if (!isset($rangos[$parametroId])) {
+            return 'Sin datos';
+        }
+
+        $rangoParametro = $rangos[$parametroId];
+        $valor = floatval($valor);
+
+        foreach ($rangoParametro as $clasificacion => $limites) {
+            if ($valor >= $limites['min'] && $valor <= $limites['max']) {
+                return $clasificacion;
+            }
+        }
+
+        return 'Fuera de rango';
+    }
+
+    // Función para obtener rangos de calidad (ejemplo - ajustar con tus datos reales)
+    private function obtenerRangosCalidad($tipoCuerpoAgua)
+    {
+        // Estructura: [id_parametro => [clasificacion => [min, max]]]
+        // Estos son ejemplos - debes reemplazar con tus rangos reales
+        $rangos = [
+            // DBO (Demanda Bioquímica de Oxígeno) - mg/L
+            1 => [
+                'Excelente' => ['min' => 0, 'max' => 3],
+                'Buena calidad' => ['min' => 3.1, 'max' => 5],
+                'Aceptable' => ['min' => 5.1, 'max' => 8],
+                'Contaminada' => ['min' => 8.1, 'max' => 15],
+                'Fuertemente contaminada' => ['min' => 15.1, 'max' => 100]
+            ],
+            // DQO (Demanda Química de Oxígeno) - mg/L
+            2 => [
+                'Excelente' => ['min' => 0, 'max' => 10],
+                'Buena calidad' => ['min' => 10.1, 'max' => 20],
+                'Aceptable' => ['min' => 20.1, 'max' => 30],
+                'Contaminada' => ['min' => 30.1, 'max' => 50],
+                'Fuertemente contaminada' => ['min' => 50.1, 'max' => 200]
+            ],
+            // SST (Sólidos Suspendidos Totales) - mg/L
+            3 => [
+                'Excelente' => ['min' => 0, 'max' => 20],
+                'Buena calidad' => ['min' => 20.1, 'max' => 40],
+                'Aceptable' => ['min' => 40.1, 'max' => 60],
+                'Contaminada' => ['min' => 60.1, 'max' => 100],
+                'Fuertemente contaminada' => ['min' => 100.1, 'max' => 500]
+            ],
+            // OD (Oxígeno Disuelto) - mg/L (invertido - mayor es mejor)
+            6 => [
+                'Excelente' => ['min' => 7, 'max' => 20],
+                'Buena calidad' => ['min' => 5, 'max' => 6.9],
+                'Aceptable' => ['min' => 4, 'max' => 4.9],
+                'Contaminada' => ['min' => 2, 'max' => 3.9],
+                'Fuertemente contaminada' => ['min' => 0, 'max' => 1.9]
+            ],
+            // Coliformes Fecales - NMP/100ml
+            4 => [
+                'Excelente' => ['min' => 0, 'max' => 100],
+                'Buena calidad' => ['min' => 101, 'max' => 500],
+                'Aceptable' => ['min' => 501, 'max' => 1000],
+                'Contaminada' => ['min' => 1001, 'max' => 5000],
+                'Fuertemente contaminada' => ['min' => 5001, 'max' => 100000]
+            ]
+        ];
+
+        // Ajustar rangos según tipo de cuerpo de agua si es necesario
+        if ($tipoCuerpoAgua === 'costero') {
+            // Rangos más estrictos para agua costera
+            $rangos[1]['Excelente']['max'] = 2; // DBO más bajo para costas
+        }
+
+        return $rangos;
+    }
+
+    // Función para determinar el color del semáforo
+    private function determinarSemaforo($mediciones)
+    {
+        if (empty($mediciones)) {
+            return [
+                'color' => 'VERDE',
+                'contaminantes' => null,
+                'razon' => 'Sin mediciones disponibles'
+            ];
+        }
+
+        $contaminantes = [];
+        $clasificacionesProblema = ['Contaminada', 'Fuertemente contaminada'];
+
+        foreach ($mediciones as $medicion) {
+            if (in_array($medicion['clasificacion'], $clasificacionesProblema)) {
+                $contaminantes[] = $medicion['parametro_nombre'];
+            }
+        }
+
+        if (!empty($contaminantes)) {
+            return [
+                'color' => 'ROJO',
+                'contaminantes' => implode(', ', $contaminantes),
+                'razon' => 'Presencia de parámetros contaminados'
+            ];
+        }
+
+        // Verificar si hay algún parámetro que no sea "Excelente" o "Buena calidad"
+        $clasificacionesAmarillo = ['Aceptable'];
+        $parametrosAmarillo = [];
+
+        foreach ($mediciones as $medicion) {
+            if (in_array($medicion['clasificacion'], $clasificacionesAmarillo)) {
+                $parametrosAmarillo[] = $medicion['parametro_nombre'];
+            }
+        }
+
+        if (!empty($parametrosAmarillo)) {
+            return [
+                'color' => 'AMARILLO',
+                'contaminantes' => implode(', ', $parametrosAmarillo),
+                'razon' => 'Parámetros en nivel aceptable que requieren atención'
+            ];
+        }
+
+        return [
+            'color' => 'VERDE',
+            'contaminantes' => null,
+            'razon' => 'Todos los parámetros en niveles excelentes o de buena calidad'
+        ];
+    }
+
+public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'clave_sitio' => 'required|string|max:50|unique:estaciones,clave_sitio',
+            'clave_sitio' => 'nullable|string|max:50|unique:estaciones,clave_sitio',
             'nombre' => 'required|string|max:255',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
+            'activo' => 'required|string|in:true,false',  // String para "true"/"false"
             'id_tipo' => 'required|integer|exists:tipos,id_tipo',
             'id_subtipo' => 'nullable|integer|exists:subtipos,id_subtipo',
             'id_cuenca' => 'nullable|integer|exists:cuencas,id_cuenca',
             'id_municipio' => 'required|integer|exists:municipios,id_municipio',
             'id_usuario' => 'required|integer|exists:usuarios,id_usuario',
             
-            // Datos para mediciones (opcional al crear)
+            // Mediciones con valores brutos (sin clasificación)
             'mediciones' => 'nullable|array',
             'mediciones.*.id_parametro' => 'required_with:mediciones|integer|exists:parametros,id_parametro',
             'mediciones.*.valor' => 'required_with:mediciones|numeric',
-            'mediciones.*.clasificacion' => 'required_with:mediciones|string|max:50',
             'mediciones.*.fecha_medicion' => 'required_with:mediciones|date',
-            
-            // Datos para semáforo (opcional al crear)
-            'semaforo' => 'nullable|array',
-            'semaforo.color' => 'required_with:semaforo|string|in:VERDE,AMARILLO,ROJO',
-            'semaforo.contaminantes' => 'nullable|string|max:255',
-            'semaforo.fecha_medicion' => 'required_with:semaforo|date',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         DB::beginTransaction();
         try {
-            // Crear la estación principal
-            $estacion = Mapa::create($request->only([
-                'clave_sitio', 'nombre', 'latitud', 'longitud', 
-                'id_tipo', 'id_subtipo', 'id_cuenca', 'id_municipio', 'id_usuario'
-            ]));
+            // Obtener el tipo de cuerpo de agua para las clasificaciones
+            $tipoCuerpoAgua = DB::table('tipos')->where('id_tipo', $request->id_tipo)->value('nombre');
 
+            // Generar clave_sitio automáticamente si no se proporciona
+            $claveSitio = $request->clave_sitio ?? 'EST-' . time() . '-' . rand(1000, 9999);
+
+            // Convertir activo a boolean (fix para string "false")
+            $activo = $request->boolean('activo');
+
+            // Convertir IDs a integer (fix para strings)
+            $idTipo = (int) $request->id_tipo;
+            $idSubtipo = $request->id_subtipo ? (int) $request->id_subtipo : null;
+            $idCuenca = $request->id_cuenca ? (int) $request->id_cuenca : null;
+            $idMunicipio = (int) $request->id_municipio;
+            $idUsuario = (int) $request->id_usuario;
+
+            // Crear la estación principal
+            $estacion = Mapa::create([
+                'clave_sitio' => $claveSitio,
+                'nombre' => $request->nombre,
+                'latitud' => (float) $request->latitud,
+                'longitud' => (float) $request->longitud,
+                'activo' => $activo,
+                'id_tipo' => $idTipo,
+                'id_subtipo' => $idSubtipo,
+                'id_cuenca' => $idCuenca,
+                'id_municipio' => $idMunicipio,
+                'id_usuario' => $idUsuario,
+            ]);
+
+            $medicionesConClasificacion = [];
+            
             // Crear mediciones si se proporcionan
             if ($request->has('mediciones') && is_array($request->mediciones)) {
                 foreach ($request->mediciones as $medicionData) {
-                    Medicion::create([
+                    // Determinar clasificación automáticamente
+                    $clasificacion = $this->determinarClasificacion(
+                        (int) $medicionData['id_parametro'],
+                        (float) $medicionData['valor'],
+                        $tipoCuerpoAgua
+                    );
+
+                    // Usar el modelo correcto para Mediciones
+                    $medicion = \App\Models\Mediciones::create([
                         'id_estacion' => $estacion->id_estacion,
-                        'id_parametro' => $medicionData['id_parametro'],
-                        'valor' => $medicionData['valor'],
-                        'clasificacion' => $medicionData['clasificacion'],
+                        'id_parametro' => (int) $medicionData['id_parametro'],
+                        'valor' => (float) $medicionData['valor'],
+                        'clasificacion' => $clasificacion,
                         'fecha_medicion' => $medicionData['fecha_medicion'],
+                        'id_usuario' => $idUsuario,
                     ]);
+
+                    // Guardar para determinar semáforo
+                    $parametro = DB::table('parametros')->where('id_parametro', $medicionData['id_parametro'])->first();
+                    $medicionesConClasificacion[] = [
+                        'clasificacion' => $clasificacion,
+                        'parametro_nombre' => $parametro->nombre
+                    ];
                 }
             }
 
-            // Crear semáforo si se proporciona
-            if ($request->has('semaforo')) {
-                Semaforo::create([
-                    'id_estacion' => $estacion->id_estacion,
-                    'color' => $request->semaforo['color'],
-                    'contaminantes' => $request->semaforo['contaminantes'] ?? null,
-                    'fecha_medicion' => $request->semaforo['fecha_medicion'],
-                ]);
-            }
+            // Determinar y crear semáforo automáticamente
+            $semaforoData = $this->determinarSemaforo($medicionesConClasificacion);
+            
+            \App\Models\Semaforo::create([
+                'id_estacion' => $estacion->id_estacion,
+                'color' => $semaforoData['color'],
+                'contaminantes' => $semaforoData['contaminantes'],
+                'fecha_medicion' => now(),
+            ]);
 
             DB::commit();
 
@@ -152,17 +334,70 @@ class MapController extends Controller
 
             return response()->json([
                 'message' => 'Estación creada exitosamente',
-                'estacion' => $estacion
+                'estacion' => $estacion,
+                'semaforo_automatico' => $semaforoData
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error al crear estación: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
             return response()->json([
                 'message' => 'Error al crear la estación',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => env('APP_DEBUG') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
+
+    // GET APIs para los selects
+    public function getEstados(): JsonResponse
+    {
+        $estados = \App\Models\Estados::select('id_estado', 'nombre')->get();
+        return response()->json($estados);
+    }
+
+    public function getMunicipiosPorEstado($estadoId): JsonResponse
+    {
+        $municipios = \App\Models\Municipios::where('id_estado', $estadoId)
+            ->select('id_municipio', 'nombre')
+            ->get();
+        return response()->json($municipios);
+    }
+
+    public function getCuencas(): JsonResponse
+    {
+        $cuencas = \App\Models\Cuencas::select('id_cuenca', 'nombre')->get();
+        return response()->json($cuencas);
+    }
+
+    public function getTipos(): JsonResponse
+    {
+        $tipos = \App\Models\Tipos::select('id_tipo', 'nombre')->get();
+        return response()->json($tipos);
+    }
+
+    public function getSubtipos(): JsonResponse
+    {
+        $subtipos = \App\Models\Subtipos::select('id_subtipo', 'nombre')->get();
+        return response()->json($subtipos);
+    }
+
+    public function getParametros(): JsonResponse
+    {
+        $parametros = \App\Models\Parametros::select('id_parametro', 'nombre', 'unidad', 'descripcion')->get();
+        return response()->json($parametros);
+    }
+
+
+
+
+
+
+
+
+
 
     // GET /api/mapa/{id} – Una estación con todas las relaciones
     public function show($id): JsonResponse

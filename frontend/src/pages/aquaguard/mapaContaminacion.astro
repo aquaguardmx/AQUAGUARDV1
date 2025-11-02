@@ -75,6 +75,25 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                 </div>
             </div>
 
+            <!-- Floating collaboration section - Izquierda y más compacta -->
+            <div class="floating-collaboration">
+                <div class="floating-card">
+                    <div class="floating-header">
+                        <i class="fas fa-tint"></i>
+                        <h4>¿Falta algún cuerpo de agua?</h4>
+                    </div>
+                    <div class="floating-body">
+                        <p>Ayúdanos a completar el mapa reportando ríos, lagos o presas</p>
+                        <button class="floating-btn" onclick="window.location.href='/usuario/registrarEstacion'">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Reportar Ahora</span>
+                        </button>
+                    </div>
+                    <div class="floating-pulse"></div>
+                </div>
+            </div>
+
+
         <Footer />
     </div>
 
@@ -679,6 +698,56 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
             inicializarEventListeners();
             cargarCuerposAgua();
         }
+
+
+
+
+        //modal para el login antes de registar una estacion (cuerpo d agua)
+function manejarReporteEstacion() {
+    const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    
+    if (!authToken) {
+        // Mostrar modal de autenticación con redirect
+        mostrarModalAutenticacion();
+    } else {
+        // Redirigir directamente al formulario
+        window.location.href = '/estaciones/nueva';
+    }
+}
+
+function mostrarModalAutenticacion() {
+    const modalHTML = `
+        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;">
+            <div class="modal-content" style="background:white; padding:30px; border-radius:15px; max-width:400px; width:90%; text-align:center;">
+                <h3 style="color:#0077b6; margin-bottom:15px;">Reportar Cuerpo de Agua</h3>
+                <p style="margin-bottom:20px; color:#666;">Necesitas una cuenta para contribuir a nuestro mapa de calidad del agua.</p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="irALogin()" style="background:#0077b6; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:600;">
+                        Iniciar Sesión
+                    </button>
+                    <button onclick="irARegistro()" style="background:#28a745; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:600;">
+                        Crear Cuenta
+                    </button>
+                    <button onclick="cerrarModal()" style="background:transparent; color:#666; border:1px solid #ddd; padding:12px; border-radius:8px; cursor:pointer;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function irALogin() {
+    // Agregar parámetro redirect
+    window.location.href = '/auth/login?redirect=/usuario/registrarEstacion';
+}
+
+function irARegistro() {
+    // Agregar parámetro redirect
+    window.location.href = '/auth/register?redirect=/usuario/registrarEstacion';
+}
     </script>
 
 </body>
