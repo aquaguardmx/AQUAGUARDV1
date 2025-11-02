@@ -1,5 +1,4 @@
 ---
-// Página: /admin/lecciones/[id]/editar.astro
 import SidebarModulos from '../../../components/dashboard/SidebarModulos.astro';
 import EditorLecciones from '../../../components/dashboard/EditorLecciones.astro';
 
@@ -33,22 +32,22 @@ interface Recurso {
   leccion_id: number;
 }
 
-// Obtener el ID de la lección de la URL
+// Obtener el ID del curso de la URL
 const { id } = Astro.params;
 
-// Obtener los módulos del curso
-let modulos = [];
+// Estado para controlar la visibilidad del editor
+let mostrarEditor = false;
 let leccionActual = null;
+let modulos = [];
+let modoCreacion = false; // Nuevo estado para diferenciar entre crear y editar
 
+// Obtener los módulos del curso
 try {
-    // Obtener todos los módulos del curso (necesitas saber el curso_id)
-    // Si no tienes el curso_id, necesitarás una forma de obtenerlo
     const modulosResponse = await fetch(`http://localhost:8000/api/cursos/${id}/modulos`);
     
     if (modulosResponse.ok) {
         const modulosData = await modulosResponse.json();
         
-        // Procesar la respuesta según la estructura de tu API
         if (Array.isArray(modulosData)) {
             modulos = modulosData;
         } else if (modulosData && Array.isArray(modulosData.data)) {
@@ -57,42 +56,75 @@ try {
             modulos = modulosData.modulos;
         }
     }
-
-    // Obtener la lección actual
-    const leccionResponse = await fetch(`http://localhost:8000/api/lecciones/${id}/`);
-    if (leccionResponse.ok) {
-        const leccionData = await leccionResponse.json();
-        
-        // Procesar la respuesta de la lección
-        if (leccionData) {
-            leccionActual = {
-                titulo: leccionData.titulo || "",
-                tipo_contenido: leccionData.tipo_contenido || "texto",
-                url_video: leccionData.url_video || "",
-                recursos: Array.isArray(leccionData.recursos) ? leccionData.recursos : []
-            };
-        }
-    }
 } catch (error) {
-    console.error('Error cargando datos:', error);
+    console.error('Error cargando módulos:', error);
 }
 
-// Si no se pudo cargar la lección, usar valores por defecto
-if (!leccionActual) {
+// Verificar si estamos creando una nueva lección
+if (Astro.url.searchParams.has('nueva_leccion')) {
+    const moduloId = Astro.url.searchParams.get('nueva_leccion');
+    mostrarEditor = true;
+    modoCreacion = true;
+    
+    // Crear objeto de lección vacío para nueva lección
     leccionActual = {
-        titulo: "Nueva Lección",
+        titulo: "",
+        descripcion: "",
+        contenido: "",
         tipo_contenido: "texto",
         url_video: "",
+        modulo_id: parseInt(moduloId),
+        recursos: []
+    };
+}
+// Si hay una lección específica para editar, cargarla y mostrar el editor
+else if (Astro.url.searchParams.has('leccion_id')) {
+    const leccionId = Astro.url.searchParams.get('leccion_id');
+    try {
+        const leccionResponse = await fetch(`http://localhost:8000/api/lecciones/${leccionId}/`);
+        if (leccionResponse.ok) {
+            const leccionData = await leccionResponse.json();
+            
+            if (leccionData) {
+                leccionActual = {
+                    id_leccion: leccionData.id_leccion || leccionData.id,
+                    titulo: leccionData.titulo || "",
+                    descripcion: leccionData.descripcion || "",
+                    contenido: leccionData.contenido || "",
+                    tipo_contenido: leccionData.tipo_contenido || "texto",
+                    url_video: leccionData.url_video || "",
+                    modulo_id: leccionData.modulo_id,
+                    recursos: Array.isArray(leccionData.recursos) ? leccionData.recursos : []
+                };
+                mostrarEditor = true;
+                modoCreacion = false;
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando lección:', error);
+    }
+}
+
+// Si no se pudo cargar la lección y estamos en modo creación, usar valores por defecto
+if (modoCreacion && !leccionActual) {
+    leccionActual = {
+        titulo: "",
+        descripcion: "",
+        contenido: "",
+        tipo_contenido: "texto",
+        url_video: "",
+        modulo_id: parseInt(Astro.url.searchParams.get('nueva_leccion')),
         recursos: []
     };
 }
 ---
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Lección - AquaLearn</title>
+    <title>Gestión de Lecciones - AquaLearn</title>
     <style>
         .ql-editor {
             min-height: 200px;
@@ -114,6 +146,17 @@ if (!leccionActual) {
             border-right: 1px solid #e5e7eb;
             border-top: none;
             border-radius: 0 0 8px 8px;
+        }
+
+        /* Estilos para el estado de bienvenida */
+        .welcome-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -203,7 +246,7 @@ if (!leccionActual) {
                         </a>
                         <div class="hidden md:block">
                             <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                                {leccionActual.titulo}
+                                {mostrarEditor ? (modoCreacion ? 'Nueva Lección' : leccionActual.titulo) : 'Creación de Curso'}
                             </span>
                         </div>
                     </div>
@@ -211,7 +254,7 @@ if (!leccionActual) {
                     <!-- Menú de Usuario -->
                     <div class="flex items-center space-x-4">
                         <a 
-                            href="/dashboard" 
+                            href="/dashboardAdmin" 
                             class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                         >
                             ← Volver al Panel
@@ -237,15 +280,42 @@ if (!leccionActual) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Sidebar - Módulos y Lecciones -->
-                <SidebarModulos modulos={modulos} cursoId={id}/>
+                <SidebarModulos 
+                    modulos={modulos} 
+                    cursoId={id} 
+                    currentLeccionId={leccionActual?.id_leccion}
+                    modoCreacion={modoCreacion}
+                />
 
-                <!-- Contenido Principal - Formulario de Edición -->
-                <main class="flex-1 min-w-0">
-                    <EditorLecciones leccionActual={leccionActual} />
+                <!-- Contenido Principal - Formulario de Edición o Bienvenida -->
+                <main class="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    {mostrarEditor ? (
+                        <EditorLecciones 
+                            leccionActual={leccionActual} 
+                            modoCreacion={modoCreacion}
+                            cursoId={id}
+                        />
+                    ) : (
+                        <div class="welcome-state">
+                            <div class="welcome-icon">📚</div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                Bienvenido a la Creación de Curso
+                            </h2>
+                            <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                                Selecciona una lección existente del sidebar o haz clic en "Agregar Lección" 
+                                para comenzar a crear contenido educativo.
+                            </p>
+                            <div class="text-gray-500 dark:text-gray-500 text-sm">
+                                <p>💡 <strong>Tip:</strong> Organiza tu curso en módulos y lecciones</p>
+                                <p>🚀 Comienza agregando tu primera lección</p>
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
         </div>
     </div>
+
     <!-- Scripts -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
