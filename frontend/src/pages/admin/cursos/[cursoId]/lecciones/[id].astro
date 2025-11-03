@@ -1,0 +1,61 @@
+---
+// Solución 1: Interface más flexible
+interface Params {
+    id?: string;
+}
+
+// Solución 2: Usar type assertion más seguro
+const { id } = Astro.params as { id?: string };
+
+// Solución 3: Validar que id existe
+if (!id) {
+    throw new Error('ID de lección no proporcionado');
+}
+
+// Función para obtener la lección
+async function obtenerLeccion(id: string) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/lecciones/${id}`);
+        
+        if (!response.ok) {
+            throw new Error('Error al obtener la lección');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// Uso de la función (solo si id existe)
+const leccionData = await obtenerLeccion(id);
+---
+
+<!-- Contenido de la página -->
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lección {id}</title>
+    </head>
+    <body>
+        <main>
+            {leccionData ? (
+                <div>
+                    <h1>{leccionData.titulo || 'Lección'}</h1>
+                    <div>
+                        {leccionData.contenido && (
+                            <div>{leccionData.contenido}</div>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    <h1>Error al cargar la lección</h1>
+                    <p>No se pudo cargar la lección con ID: {id}</p>
+                </div>
+            )}
+        </main>
+    </body>
+</html>

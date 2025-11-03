@@ -135,6 +135,8 @@ Route::get('/lecciones', [LessonController::class, 'index']);
 
 Route::post('/lecciones', [LessonController::class, 'store']);
 
+Route::get('/lecciones/{id}', [LessonController::class, 'show']);
+
 Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorModulo']);
 
 //API PARA  MAPA 

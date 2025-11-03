@@ -1,9 +1,9 @@
 ---
-const { id } = Astro.params;
+const { id: paramId } = Astro.params;
 
 // Interfaces para las props
 export interface Leccion {
-  id: number;
+  id_leccion: number;
   titulo: string;
   activa?: boolean;
   completada?: boolean;
@@ -25,29 +25,59 @@ export interface Props {
   moduloActual?: Modulo | null;
 }
 
-// Props por defecto - CORREGIDO: usar id del parámetro si cursoId no viene
-const { modulos = [], cursoId = id || "1", currentLeccionId } = Astro.props;
+// DEBUG: Ver datos originales
+console.log('📥 Datos originales de props:', {
+  modulos: Astro.props.modulos,
+  cursoId: Astro.props.cursoId,
+  currentLeccionId: Astro.props.currentLeccionId
+});
 
-// Normalizar los datos - CORREGIDO: mantener estructura original
+// CORREGIDO: Mejor manejo de IDs - VERSIÓN CORREGIDA
+const { modulos = [], cursoId = paramId || "1", currentLeccionId } = Astro.props;
+
+// Asegurar que cursoId siempre tenga un valor
+const cursoIdFinal = cursoId?.toString() || paramId?.toString() || "1";
+console.log('Curso ID final:', cursoIdFinal);
+
+// CORREGIDO: Normalización mejorada con manejo de IDs seguro
 const modulosNormalizados = Array.isArray(modulos) 
   ? modulos.map((modulo, index) => ({
-      id: modulo.id_modulo || index + 1,
+      id: modulo.id_modulo || modulo.id_modulo || (index + 1),
       titulo: modulo.titulo || 'Sin título',
       lecciones: Array.isArray(modulo.lecciones) 
-        ? modulo.lecciones.map(leccion => ({
-            ...leccion,
-            activa: leccion.id === currentLeccionId,
-            // Si no viene completada, asumir false
-            completada: leccion.completada || false
-          }))
+        ? modulo.lecciones.map((leccion, lecIndex) => {
+            // CORREGIDO: Lógica de ID corregida - verificar todas las posibles propiedades
+            const leccionId = leccion.id_leccion || leccion.id_leccion || (lecIndex + 1);
+            
+            console.log(`🔍 Lección ${lecIndex}:`, {
+              id_leccion: leccion.id_leccion,
+              id: leccion.id_leccion,
+              titulo: leccion.titulo,
+              asignado: leccionId
+            });
+            
+            return {
+              ...leccion,
+              id: leccionId,
+              id_leccion: leccionId, // Asegurar que id_leccion también esté definido
+              titulo: leccion.titulo || 'Lección sin título',
+              activa: leccionId === currentLeccionId,
+              completada: leccion.completada || false,
+              // CORREGIDO: URL construida con ID seguro
+              url: leccion.url || `/admin/cursos/${cursoIdFinal}/lecciones/${leccionId}`
+            };
+          })
         : [],
       expandido: modulo.expandido || false
     }))
   : [];
 
+// Log para debug
+console.log('📊 Módulos normalizados:', modulosNormalizados);
+
 // Convertir a JSON para el script
 const modulosJSON = JSON.stringify(modulosNormalizados);
-const cursoIdForScript = cursoId;
+const cursoIdForScript = cursoIdFinal;
 ---
 
 <style>
@@ -242,7 +272,6 @@ const cursoIdForScript = cursoId;
                             </div>
                         </button>
 
-                        <!-- Contenido del Módulo -->
                         <div
                             class="bg-gray-50 dark:bg-gray-700/50 module-content max-h-0 overflow-hidden transition-all duration-300"
                             id={`module-${modulo.id}-content`}
@@ -253,8 +282,9 @@ const cursoIdForScript = cursoId;
                                 <div class="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto thin-scrollbar lecciones-container">
                                     {modulo.lecciones.length > 0 ? (
                                         modulo.lecciones.map((leccion) => (
+                                            <!-- CORREGIDO: URL usando cursoIdFinal y leccion.id asegurado -->
                                             <a
-                                                href={leccion.url || '#'}
+                                                href={`/admin/cursos/${cursoIdFinal}/lecciones/${leccion.id}`}
                                                 class={`flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion ${
                                                     leccion.activa 
                                                         ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
@@ -338,8 +368,9 @@ const cursoIdForScript = cursoId;
                                     )}
                                 </div>
                                 
+                                <!-- CORREGIDO: URL usando cursoIdFinal -->
                                 <a
-                                    href={`/admin/cursos/${cursoId}/modulos/${modulo.id}/nueva`}
+                                    href={`/admin/cursos/${cursoIdFinal}/modulos/${modulo.id}/nueva`}
                                     class="flex items-center space-x-2 p-2 lg:p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors text-sm lg:text-base"
                                 >
                                     <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -438,17 +469,60 @@ const cursoIdForScript = cursoId;
 </div>
 
 <script is:inline define:vars={{ modulosJSON, cursoId: cursoIdForScript, currentLeccionId: currentLeccionId || null }}>
-    console.log('ID del curso recibido:', cursoId);
-    console.log('Módulos normalizados:', JSON.parse(modulosJSON));
+    console.log('=== DEBUG INFO MEJORADO ===');
+    console.log('Curso ID:', cursoId);
     console.log('Lección actual ID:', currentLeccionId);
     
+    const modulosNormalizados = JSON.parse(modulosJSON || '[]');
+    console.log('Módulos procesados:', modulosNormalizados);
+
+    // Verificar IDs de lecciones en detalle
+    modulosNormalizados.forEach((modulo, modIndex) => {
+        console.log(`📦 Módulo ${modIndex}: "${modulo.titulo}" (ID: ${modulo.id})`);
+        modulo.lecciones.forEach((leccion, lecIndex) => {
+            console.log(`   📖 Lección ${lecIndex}:`, {
+                titulo: leccion.titulo,
+                id_leccion: leccion.id_leccion,
+                id: leccion.id,
+                url: leccion.url,
+                activa: leccion.activa
+            });
+            
+            // Verificar si hay IDs duplicados
+            if (leccion.id === 1) {
+                console.warn('   ⚠️  POSIBLE PROBLEMA: ID = 1 detectado');
+            }
+        });
+    });
+
+    // CORREGIDO: Función auxiliar para construir URLs
+    function construirURLLeccion(leccionId) {
+        const url = `/admin/cursos/${cursoId}/lecciones/${leccionId}`;
+        console.log('URL construida para lección:', url);
+        return url;
+    }
+
     // Script para la interactividad del sidebar
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Sidebar script cargado - versión con carga automática de lecciones');
+        console.log('Sidebar script cargado - versión corregida');
         
         // Parsear los módulos desde JSON
         const modulosNormalizados = JSON.parse(modulosJSON || '[]');
         console.log('Módulos procesados:', modulosNormalizados);
+
+        // Verificar URLs de lecciones
+        modulosNormalizados.forEach((modulo, modIndex) => {
+            console.log(`Módulo ${modIndex}:`, modulo.titulo, 'ID:', modulo.id);
+            modulo.lecciones.forEach((leccion, lecIndex) => {
+                const url = construirURLLeccion(leccion.id);
+                console.log(`  Lección ${lecIndex}:`, {
+                    id: leccion.id,
+                    titulo: leccion.titulo,
+                    url: url,
+                    activa: leccion.activa
+                });
+            });
+        });
 
         // Elementos del loading overlay
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -488,61 +562,66 @@ const cursoIdForScript = cursoId;
                 
                 const lecciones = await response.json();
                 console.log(`Lecciones obtenidas para módulo ${moduloId}:`, lecciones);
-                return lecciones;
+                
+                // CORREGIDO: Asegurar que cada lección tenga ID
+                return lecciones.map((leccion, index) => ({
+                    ...leccion,
+                    id: leccion.id_leccion || leccion.id || (index + 1),
+                    id_leccion: leccion.id_leccion || leccion.id || (index + 1)
+                }));
             } catch (error) {
                 console.error(`Error al obtener lecciones del módulo ${moduloId}:`, error);
                 return [];
             }
         }
 
-        // Función para crear el HTML de una lección
+        // CORREGIDO: Función mejorada para crear el HTML de una lección
         function crearHTMLLeccion(leccion) {
+            console.log('Creando HTML para lección:', leccion);
+            
             const esActiva = leccion.id === currentLeccionId;
             const esCompletada = leccion.completada || false;
-            const url = leccion.url || `/admin/cursos/${cursoId}/lecciones/${leccion.id}`;
-            
+            // CORREGIDO: Usar función auxiliar para construir URL
+            const url = construirURLLeccion(leccion.id);
+
+            // Clases base
+            const claseContenedor = esActiva 
+            ? 'flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+            : 'flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 border border-transparent';
+
+            const claseIcono = esActiva 
+            ? 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600' 
+            : esCompletada 
+            ? 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-500' 
+            : 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200 dark:bg-gray-600';
+
+            const claseTitulo = esActiva 
+            ? 'ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 text-blue-700 dark:text-blue-300' 
+            : 'ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 text-gray-700 dark:text-gray-300';
+
+            // Icono según estado
+            let icono = '';
+            if (esActiva) {
+                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                        </svg>`;
+            } else if (esCompletada) {
+                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>`;
+            } else {
+                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>`;
+            }
+
             return `
-                <a
-                    href="${url}"
-                    class="flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion ${
-                        esActiva 
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 border border-transparent'
-                    }"
-                    data-leccion-id="${leccion.id}"
-                >
-                    <!-- Icono de estado -->
-                    <div
-                        class="w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            esActiva 
-                                ? 'bg-blue-600' 
-                                : esCompletada 
-                                    ? 'bg-green-500' 
-                                    : 'bg-gray-200 dark:bg-gray-600'
-                        }"
-                    >
-                        ${esActiva ? (
-                            `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
-                            </svg>`
-                        ) : esCompletada ? (
-                            `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>`
-                        ) : (
-                            `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>`
-                        )}
+                <a href="${url}" class="${claseContenedor}" data-leccion-id="${leccion.id}">
+                    <div class="${claseIcono}">
+                        ${icono}
                     </div>
-                    
-                    <!-- Título de la lección -->
-                    <span class="ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 ${
-                        esActiva 
-                            ? 'text-blue-700 dark:text-blue-300' 
-                            : 'text-gray-700 dark:text-gray-300'
-                    }">
+                    <span class="${claseTitulo}">
                         ${leccion.titulo || 'Sin título'}
                     </span>
                 </a>
@@ -738,9 +817,10 @@ const cursoIdForScript = cursoId;
                         
                         if (leccionesAPI.length > 0) {
                             leccionesAPI.forEach((leccion, index) => {
+                                const url = construirURLLeccion(leccion.id);
                                 console.log(`  ${index + 1}. ${leccion.titulo}`);
                                 console.log(`     ID: ${leccion.id}`);
-                                console.log(`     URL: ${leccion.url || 'No disponible'}`);
+                                console.log(`     URL: ${url}`);
                             });
                         }
                         
@@ -797,7 +877,7 @@ const cursoIdForScript = cursoId;
             });
         }
 
-        // Función para crear el HTML de un módulo
+        // CORREGIDO: Función para crear el HTML de un módulo usando cursoId
         function createModuleHTML(moduleData) {
             return `
                 <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container" data-module-container="${moduleData.id}">

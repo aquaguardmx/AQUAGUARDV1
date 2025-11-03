@@ -26,6 +26,17 @@ class LessonController extends Controller
         return response()->json($data);
     } 
 
+    public function show($id)
+    {
+        $leccion = Leccion::find($id);
+
+        if (!$leccion) {
+            return response()->json(['message' => 'Lección no encontrada'], 404);
+        }
+
+        return response()->json($leccion);
+    }
+
     public function store(Request $request)
     {
         // 1. Validar la entrada (sin 'orden')
