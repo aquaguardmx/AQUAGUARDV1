@@ -1,0 +1,646 @@
+---
+// 1. IMPORTAR ÚNICAMENTE EL LAYOUT CORRECTO
+import CursoLayout from "../../../../../../layouts/CursoLayout.astro";
+
+// 2. OBTENER PARÁMETROS Y VALIDAR
+const { cursoId, moduloId } = Astro.params;
+if (!cursoId || !moduloId) {
+    return new Response("Parámetros no válidos.", { status: 400 });
+}
+
+// 3. LÓGICA DE POST (actualizada con todos los campos)
+if (Astro.request.method === "POST") {
+    try {
+        const formData = await Astro.request.formData();
+        const titulo = formData.get("titulo");
+        const tipo_contenido = formData.get("tipo_contenido");
+        const contenido_texto = formData.get("contenido_texto");
+        const video_url = formData.get("video_url");
+        const orden = formData.get("orden");
+
+        console.log(`Creando lección "${titulo}" para el módulo ${moduloId}`);
+        console.log("Datos:", {
+            moduloId,
+            titulo,
+            tipo_contenido,
+            contenido_texto,
+            video_url,
+            orden,
+        });
+
+        return Astro.redirect(`/admin/cursos/${cursoId}`);
+    } catch (error) {
+        console.error("Error al crear la lección:", error);
+    }
+}
+---
+
+<CursoLayout cursoId={cursoId} moduloId={moduloId}>
+    <!-- INCLUIR LOS ARCHIVOS DE QUILL EN EL HEAD -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <!-- Header Mejorado -->
+    <div class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+            <a
+                href={`/admin/cursos/${cursoId}`}
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                >
+                    <path
+                        fill-rule="evenodd"
+                        d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                        clip-rule="evenodd"></path>
+                </svg>
+            </a>
+            <span class="text-gray-500 dark:text-gray-400 text-sm"
+                >Volver al curso</span
+            >
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Crear Nueva Lección
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">
+            Completa los detalles para crear una nueva lección en tu módulo
+        </p>
+    </div>
+
+    <!-- Main Card Mejorada -->
+    <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-md"
+    >
+        <!-- Card Header -->
+        <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800"
+        >
+            <div class="flex items-center">
+                <div
+                    class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mr-3"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2
+                        class="text-xl font-semibold text-gray-800 dark:text-white"
+                    >
+                        Información de la Lección
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                        Los campos marcados con * son obligatorios
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Mejorado -->
+        <form method="POST" class="p-6 lg:p-8 space-y-8">
+            <!-- Título Mejorado -->
+            <div class="fade-in">
+                <label
+                    for="titulo"
+                    class="block text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center"
+                >
+                    <span>Título de la Lección</span>
+                    <span class="text-red-500 ml-1">*</span>
+                </label>
+                <div class="relative">
+                    <input
+                        type="text"
+                        id="titulo"
+                        name="titulo"
+                        required
+                        class="w-full px-4 py-3 pl-10 text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Ej: ¿Qué es el agua?"
+                    />
+                    <div
+                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            ></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipo de Contenido y Orden en línea -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tipo de Contenido Mejorado -->
+                <div class="fade-in">
+                    <label
+                        for="tipo_contenido"
+                        class="block text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center"
+                    >
+                        <span>Tipo de Contenido</span>
+                        <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="relative">
+                        <select
+                            id="tipo_contenido"
+                            name="tipo_contenido"
+                            required
+                            class="w-full px-4 py-3 pl-10 text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none"
+                        >
+                            <option value="">Selecciona un tipo</option>
+                            <option value="video">Solo Video</option>
+                            <option value="texto">Solo Texto</option>
+                            <option value="video-texto">Video y Texto</option>
+                        </select>
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <div
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orden Mejorado -->
+                <div class="fade-in">
+                    <label
+                        for="orden"
+                        class="block text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center"
+                    >
+                        <span>Orden en el Módulo</span>
+                        <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="number"
+                            id="orden"
+                            name="orden"
+                            required
+                            min="1"
+                            class="w-full px-4 py-3 pl-10 text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            placeholder="1"
+                        />
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16m-7 6h7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Texto con Quill Editor Mejorado -->
+            <div id="texto-container" class="fade-in">
+                <div class="mb-2 flex items-center">
+                    <label
+                        class="block text-sm font-medium text-gray-900 dark:text-white flex items-center"
+                    >
+                        <span>Contenido de Texto</span>
+                    </label>
+                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"
+                        >(Opcional para tipos de contenido con video)</span
+                    >
+                </div>
+                <!-- Contenedor del editor con altura fija -->
+                <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                    <div
+                        id="editor-container"
+                        class="h-64 bg-white dark:bg-gray-700"
+                    >
+                        <!-- Quill Editor se inicializará aquí -->
+                    </div>
+                </div>
+                <input
+                    type="hidden"
+                    id="contenido_texto"
+                    name="contenido_texto"
+                />
+            </div>
+
+            <!-- URL del Video Mejorado -->
+            <div id="video-container" class="fade-in hidden">
+                <label
+                    for="video_url"
+                    class="block text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center"
+                >
+                    <span>URL del Video</span>
+                    <span id="video-required" class="text-red-500 ml-1 hidden"
+                        >*</span
+                    >
+                </label>
+                <div class="relative">
+                    <input
+                        type="url"
+                        id="video_url"
+                        name="video_url"
+                        class="w-full px-4 py-3 pl-10 text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                    <div
+                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            ></path>
+                        </svg>
+                    </div>
+                </div>
+                <p
+                    class="text-sm text-gray-500 dark:text-gray-400 mt-2 flex items-center"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                    Inserta la URL de YouTube o Vimeo
+                </p>
+            </div>
+
+            <!-- Botones Mejorados -->
+            <div
+                class="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t border-gray-200 dark:border-gray-700"
+            >
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    <p>
+                        Los campos marcados con <span class="text-red-500"
+                            >*</span
+                        > son obligatorios
+                    </p>
+                </div>
+                <div class="flex gap-3">
+                    <a
+                        href={`/admin/cursos/${cursoId}`}
+                        class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 mr-2"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancelar
+                    </a>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all shadow-sm"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 mr-2"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Crear Lección
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script is:inline>
+        console.log('Script de creación de lección cargado');
+        
+        // Variable global para rastrear el editor
+        let quillInstance = null;
+
+        function initializeQuillEditor() {
+            console.log('Inicializando Quill Editor...');
+            
+            const editorContainer = document.getElementById("editor-container");
+            const contenidoTextoInput = document.getElementById("contenido_texto");
+
+            if (!editorContainer) {
+                console.error('No se encontró el contenedor del editor');
+                return;
+            }
+
+            if (!contenidoTextoInput) {
+                console.error('No se encontró el input hidden para el contenido');
+                return;
+            }
+
+            // Verificar si Quill está disponible
+            if (typeof Quill === 'undefined') {
+                console.error('Quill no está disponible');
+                return;
+            }
+
+            // Limpiar cualquier instancia previa
+            if (quillInstance) {
+                console.log('Limpiando instancia previa de Quill');
+                quillInstance = null;
+            }
+
+            try {
+                // Inicializar Quill Editor
+                quillInstance = new Quill(editorContainer, {
+                    theme: "snow",
+                    modules: {
+                        toolbar: [
+                            [{ header: [1, 2, 3, false] }],
+                            ["bold", "italic", "underline"],
+                            [{ list: "ordered" }, { list: "bullet" }],
+                            ["link", "blockquote", "code-block"],
+                            ["clean"],
+                        ],
+                    },
+                    placeholder: "Escribe el contenido de la lección aquí...",
+                });
+
+                console.log('Quill inicializado correctamente');
+
+                // Actualizar el campo hidden
+                quillInstance.on("text-change", () => {
+                    if (contenidoTextoInput && quillInstance) {
+                        contenidoTextoInput.value = quillInstance.root.innerHTML;
+                        console.log('Contenido actualizado:', contenidoTextoInput.value.substring(0, 50) + '...');
+                    }
+                });
+
+                // Forzar una actualización inicial
+                contenidoTextoInput.value = quillInstance.root.innerHTML;
+
+            } catch (error) {
+                console.error('Error al inicializar Quill:', error);
+            }
+        }
+
+        function setupFormLogic() {
+            console.log('Configurando lógica del formulario...');
+            
+            const elements = {
+                tipoContenidoSelect: document.getElementById("tipo_contenido"),
+                textoContainer: document.getElementById("texto-container"),
+                videoContainer: document.getElementById("video-container"),
+                videoUrlInput: document.getElementById("video_url"),
+                videoRequired: document.getElementById("video-required"),
+                form: document.querySelector("form"),
+            };
+
+            // Verificar elementos
+            const missingElements = Object.entries(elements)
+                .filter(([key, element]) => !element)
+                .map(([key]) => key);
+
+            if (missingElements.length > 0) {
+                console.warn('Elementos faltantes:', missingElements);
+                return;
+            }
+
+            // Mostrar/ocultar campos según el tipo de contenido
+            function actualizarCampos() {
+                const tipo = elements.tipoContenidoSelect.value;
+                console.log('Tipo de contenido seleccionado:', tipo);
+                
+                // Resetear requeridos
+                elements.videoUrlInput.required = false;
+                elements.videoRequired.classList.add("hidden");
+
+                switch (tipo) {
+                    case "video":
+                        elements.textoContainer.classList.add("hidden");
+                        elements.videoContainer.classList.remove("hidden");
+                        elements.videoUrlInput.required = true;
+                        elements.videoRequired.classList.remove("hidden");
+                        break;
+                    case "texto":
+                        elements.textoContainer.classList.remove("hidden");
+                        elements.videoContainer.classList.add("hidden");
+                        // Inicializar Quill si no está inicializado
+                        if (!quillInstance) {
+                            setTimeout(initializeQuillEditor, 100);
+                        }
+                        break;
+                    case "video-texto":
+                        elements.textoContainer.classList.remove("hidden");
+                        elements.videoContainer.classList.remove("hidden");
+                        elements.videoUrlInput.required = true;
+                        elements.videoRequired.classList.remove("hidden");
+                        // Inicializar Quill si no está inicializado
+                        if (!quillInstance) {
+                            setTimeout(initializeQuillEditor, 100);
+                        }
+                        break;
+                    default:
+                        elements.textoContainer.classList.add("hidden");
+                        elements.videoContainer.classList.add("hidden");
+                }
+            }
+
+            // Event listeners
+            elements.tipoContenidoSelect.addEventListener("change", actualizarCampos);
+
+            // Validación del formulario
+            elements.form.addEventListener("submit", (e) => {
+                const tipo = elements.tipoContenidoSelect.value;
+                const contenidoTexto = quillInstance ? quillInstance.getText().trim() : '';
+                const videoUrl = elements.videoUrlInput.value.trim();
+
+                console.log('Validando formulario:', { tipo, contenidoTexto, videoUrl });
+
+                if (tipo === "texto" && contenidoTexto.length === 0) {
+                    e.preventDefault();
+                    alert("Por favor, añade contenido de texto para la lección.");
+                    return;
+                }
+                
+                if ((tipo === "video" || tipo === "video-texto") && videoUrl.length === 0) {
+                    e.preventDefault();
+                    alert("Por favor, añade una URL de video para la lección.");
+                    return;
+                }
+                
+                // Asegurar que el contenido del editor se guarde
+                if (quillInstance && elements.contenidoTextoInput) {
+                    elements.contenidoTextoInput.value = quillInstance.root.innerHTML;
+                }
+            });
+
+            // Inicializar estado
+            actualizarCampos();
+        }
+
+        function waitForDependencies() {
+            console.log('Esperando dependencias...');
+            
+            if (typeof Quill !== 'undefined') {
+                console.log('Quill cargado, inicializando...');
+                initializeQuillEditor();
+                setupFormLogic();
+            } else {
+                console.log('Quill no disponible, reintentando...');
+                setTimeout(waitForDependencies, 100);
+            }
+        }
+
+        // Inicializar cuando la página esté lista
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForDependencies);
+        } else {
+            waitForDependencies();
+        }
+
+        // También usar astro:page-load como respaldo
+        document.addEventListener("astro:page-load", waitForDependencies);
+    </script>
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Estilos específicos para Quill */
+        #editor-container {
+            min-height: 200px;
+        }
+        
+        /* Asegurar que los estilos de Quill se apliquen correctamente */
+        .ql-editor {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #1f2937 !important; /* gray-800 */
+        }
+        
+        .dark .ql-editor {
+            color: #f9fafb !important; /* gray-50 */
+        }
+        
+        .ql-editor.ql-blank::before {
+            color: #9ca3af !important; /* gray-400 */
+            font-style: italic;
+        }
+        
+        /* Forzar visibilidad del toolbar */
+        .ql-toolbar {
+            border-top: 1px solid #d1d5db !important;
+            border-left: 1px solid #d1d5db !important;
+            border-right: 1px solid #d1d5db !important;
+            border-bottom: none !important;
+            background: white !important;
+        }
+        
+        .dark .ql-toolbar {
+            border-color: #4b5563 !important; /* gray-600 */
+            background: #374151 !important; /* gray-700 */
+        }
+        
+        .ql-container {
+            border: 1px solid #d1d5db !important;
+            border-top: none !important;
+            background: white !important;
+        }
+        
+        .dark .ql-container {
+            border-color: #4b5563 !important; /* gray-600 */
+            background: #374151 !important; /* gray-700 */
+        }
+    </style>
+</CursoLayout>

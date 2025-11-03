@@ -1,0 +1,430 @@
+/* Paleta de colores ambiental/acuática */
+:root {
+    --color-ocean-deep: #0f766e;
+    --color-ocean-medium: #0d9488;
+    --color-ocean-light: #14b8a6;
+    --color-sea-foam: #99f6e4;
+    --color-sand: #fef3c7;
+    --color-coral: #f97316;
+    --color-seaweed: #15803d;
+}
+
+/* Estilos mejorados para el estado de bienvenida */
+.welcome-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg,
+            var(--color-ocean-deep) 0%,
+            var(--color-ocean-medium) 50%,
+            var(--color-ocean-light) 100%);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(15, 118, 110, 0.3);
+}
+
+.welcome-state::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2399f6e4' fill-opacity='0.1'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.4;
+}
+
+.welcome-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    background: linear-gradient(135deg,
+            var(--color-sea-foam),
+            #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    animation: float 3s ease-in-out infinite;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    transition: left 0.5s;
+}
+
+.feature-card:hover::before {
+    left: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(15, 118, 110, 0.2);
+    border-color: var(--color-ocean-light);
+}
+
+.feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.feature-card h3 {
+    background: linear-gradient(135deg,
+            var(--color-ocean-deep),
+            var(--color-seaweed));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.feature-card p {
+    color: var(--color-ocean-deep);
+    font-weight: 500;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 10;
+}
+
+.welcome-title {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg,
+            var(--color-sea-foam),
+            #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.guide-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-top: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.guide-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg,
+            var(--color-ocean-light),
+            var(--color-seaweed));
+}
+
+.guide-steps {
+    display: grid;
+    gap: 1.5rem;
+    counter-reset: step-counter;
+}
+
+.guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+.guide-step::before {
+    counter-increment: step-counter;
+    content: counter(step-counter);
+    background: linear-gradient(135deg,
+            var(--color-ocean-light),
+            var(--color-seaweed));
+    color: white;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.guide-step:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(8px);
+    border-color: var(--color-ocean-light);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
+}
+
+.guide-step-content {
+    flex: 1;
+}
+
+.guide-step-content p {
+    margin: 0;
+    color: var(--color-ocean-deep);
+    font-weight: 500;
+}
+
+/* Animaciones */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes float-particle {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-20px) rotate(120deg);
+    }
+
+    66% {
+        transform: translateY(10px) rotate(240deg);
+    }
+}
+
+.particle {
+    position: absolute;
+    background: rgba(153, 246, 228, 0.3);
+    border-radius: 50%;
+    animation: float-particle 6s ease-in-out infinite;
+}
+
+.particle:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    width: 8px;
+    height: 8px;
+    animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+    top: 60%;
+    left: 80%;
+    width: 12px;
+    height: 12px;
+    animation-delay: 1s;
+}
+
+.particle:nth-child(3) {
+    top: 40%;
+    left: 20%;
+    width: 6px;
+    height: 6px;
+    animation-delay: 2s;
+}
+
+.particle:nth-child(4) {
+    top: 80%;
+    left: 40%;
+    width: 10px;
+    height: 10px;
+    animation-delay: 3s;
+}
+
+.particle:nth-child(5) {
+    top: 30%;
+    left: 70%;
+    width: 8px;
+    height: 8px;
+    animation-delay: 4s;
+}
+
+/* Modo oscuro mejorado con temática acuática */
+@media (prefers-color-scheme: dark) {
+    .welcome-state {
+        background: linear-gradient(135deg,
+                #134e4a 0%,
+                #0f766e 50%,
+                #14b8a6 100%);
+    }
+
+    .feature-card {
+        background: rgba(15, 23, 42, 0.95);
+        border-color: rgba(20, 184, 166, 0.2);
+    }
+
+    .feature-card h3 {
+        background: linear-gradient(135deg,
+                var(--color-sea-foam),
+                #99f6e4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .feature-card p {
+        color: #cbd5e1;
+    }
+
+    .guide-card {
+        background: rgba(15, 23, 42, 0.95);
+        border-color: rgba(20, 184, 166, 0.2);
+    }
+
+    .guide-step {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+    }
+
+    .guide-step:hover {
+        background: rgba(15, 23, 42, 0.9);
+        border-color: var(--color-ocean-light);
+    }
+
+    .guide-step-content p {
+        color: #e2e8f0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-state {
+        padding: 3rem 1.5rem;
+        margin: 1rem;
+    }
+
+    .welcome-title {
+        font-size: 2.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.125rem;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .feature-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .guide-card {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .guide-step {
+        padding: 1rem;
+    }
+}
+
+/* Estilos para el header */
+.nav-gradient {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.98) 0%,
+            rgba(240, 253, 250, 0.98) 100%);
+    backdrop-filter: blur(12px);
+}
+
+.dark .nav-gradient {
+    background: linear-gradient(135deg,
+            rgba(15, 23, 42, 0.98) 0%,
+            rgba(6, 78, 59, 0.98) 100%);
+}
+
+.btn-aqua {
+    background: linear-gradient(135deg,
+            var(--color-ocean-medium),
+            var(--color-ocean-light));
+    color: white;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-aqua:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(20, 184, 166, 0.35);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Mejoras responsive adicionales */
+@media (max-width: 640px) {
+    .nav-gradient {
+        backdrop-filter: blur(8px);
+    }
+}
+
+/* Prevenir scroll cuando el menú móvil está abierto */
+html.mobile-menu-open {
+    overflow: hidden;
+}
+
+/* Smooth scrolling para toda la página */
+html {
+    scroll-behavior: smooth;
+}

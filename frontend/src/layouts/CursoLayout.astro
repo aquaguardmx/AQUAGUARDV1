@@ -1,0 +1,145 @@
+---
+// -----------------------------------------------------------------
+// ARCHIVO CORREGIDO: src/layouts/CursoLayout.astro
+// (Este es ahora un layout HTML completo e independiente)
+// -----------------------------------------------------------------
+
+// 1. IMPORTACIONES
+import Header from "../components/dashboard/HeaderCurso.astro"; // <-- IMPORTANTE
+import SidebarModulos from "../components/dashboard/SidebarModulos.astro";
+import "../styles/gestion-curso.css"; // <-- Asumiendo que tienes este CSS
+
+// 2. INTERFACES (Las mismas de antes)
+export interface Leccion {
+    id: number;
+    titulo: string;
+    activa?: boolean;
+    completada?: boolean;
+    url: string;
+}
+
+export interface Modulo {
+    id: number;
+    titulo: string;
+    lecciones: Leccion[];
+    expandido?: boolean;
+}
+
+// 3. PROPS
+interface Props {
+    cursoId: string;
+    moduloId?: string;
+    modulos?: Modulo[];
+}
+
+const { cursoId, moduloId, modulos: modulosProp = [] } = Astro.props;
+
+// 4. LÓGICA DE SERVIDOR (La misma que corregimos)
+let modulos: Modulo[] = modulosProp;
+let moduloActual: Modulo | null = null;
+
+if (modulos.length === 0 && cursoId) {
+    let modulosRaw: any[] = [];
+    try {
+        const modulosResponse = await fetch(
+            `http://localhost:8000/api/cursos/${cursoId}/modulos`,
+        );
+        if (modulosResponse.ok) {
+            const modulosData = await modulosResponse.json();
+            if (Array.isArray(modulosData)) {
+                modulosRaw = modulosData;
+            } else if (modulosData?.data && Array.isArray(modulosData.data)) {
+                modulosRaw = modulosData.data;
+            } else if (modulosData?.modulos && Array.isArray(modulosData.modulos)) {
+                modulosRaw = modulosData.modulos;
+            }
+            modulos = Array.isArray(modulosRaw)
+                ? modulosRaw
+                    .filter(modulo => modulo)
+                    .map((modulo, index) => ({
+                        id: modulo.id || index + 1,
+                        titulo: modulo.titulo || 'Sin título',
+                        lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
+                        expandido: modulo.expandido || false
+                    }))
+                : [];
+        } else {
+            modulos = [];
+        }
+    } catch (error) {
+        console.error("Error cargando módulos:", error);
+        modulos = [];
+    }
+}
+
+if (moduloId) {
+    moduloActual = modulos.find(modulo => modulo.id.toString() === moduloId) || null;
+}
+
+// 5. LÓGICA DE TÍTULOS (Se queda igual)
+let tituloPrincipal = "Gestión del Curso";
+let mensajeBienvenida = "Bienvenido a la gestión de tu curso. Selecciona un módulo del sidebar para comenzar.";
+
+if (moduloId && moduloActual) {
+    tituloPrincipal = `Añadir Lección - ${moduloActual.titulo}`;
+    mensajeBienvenida = `Estás añadiendo una nueva lección al módulo: "${moduloActual.titulo}". Completa el formulario a continuación para crear la lección.`;
+} else if (moduloId && !moduloActual) {
+    tituloPrincipal = "Módulo No Encontrado";
+    mensajeBienvenida = `El módulo con ID "${moduloId}" no existe o no se pudo cargar.`;
+}
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{tituloPrincipal} - AquaLearn</title>
+    </head>
+    <body>
+        <div
+            class="min-h-screen bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-gray-900 dark:to-cyan-900"
+        >
+            <Header />
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <SidebarModulos 
+                        modulos={modulos} 
+                        cursoId={cursoId} 
+                        moduloActual={moduloActual}
+                    />
+
+                    <main class="flex-1 min-w-0">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                                {tituloPrincipal}
+                            </h1>
+                            <p class="text-gray-600 dark:text-gray-300 text-lg">
+                                {mensajeBienvenida}
+                            </p>
+                            
+                            {moduloId && moduloActual && (
+                                <div class="mt-4 flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                    <span>Curso ID: {cursoId}</span>
+                                    <span>•</span>
+                                    <span>Módulo ID: {moduloId}</span>
+                                    <span>•</span>
+                                    <span class="text-blue-600 dark:text-blue-400 font-medium">
+                                        {moduloActual.lecciones.length} lecciones existentes
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        <slot />
+                    </main>
+                </div>
+
+            </div>
+        </div>
+
+        <script src="//unpkg.com/alpinejs" defer></script>
+    </body>
+</html>
