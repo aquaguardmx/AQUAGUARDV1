@@ -110,5 +110,20 @@ class ModuleController extends Controller
         return response()->json(['message' => 'Módulo eliminado correctamente']);
     }
 
-    
+    public function getPorModulo($moduloId)
+    {
+        try {
+            // 1. Encuentra el módulo
+            $modulo = Modulo::findOrFail($moduloId);
+
+            $lecciones = $modulo->lecciones()->orderBy('orden', 'asc')->get();
+
+            // 3. Devuelve las lecciones como JSON
+            return response()->json($lecciones);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Manejo de error si el módulo no se encuentra
+            return response()->json(['message' => 'Módulo no encontrado'], 404);
+        }
+    }
 }

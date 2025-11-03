@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\ModuleController;
+use App\Http\Controllers\Api\LessonController;
 
 use App\Http\Controllers\Api\MapController;
 /*
@@ -129,11 +130,12 @@ Route::put('/modulos/{id}', [ModuleController::class, 'update']);
 Route::delete('/modulos/{id}', [ModuleController::class, 'destroy']);
 
 Route::get('/cursos/{curso}/modulos', [CourseController::class, 'getModulosPorCurso']);
-// API PARA CONTENIDOS
 
-Route::get('/lecciones', [ContentController::class, 'index']);
+Route::get('/lecciones', [LessonController::class, 'index']);
 
-Route::post('/lecciones', [ContentController::class, 'store']);
+Route::post('/lecciones', [LessonController::class, 'store']);
+
+Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorModulo']);
 
 //API PARA  MAPA 
 Route::get('/mapa', [MapController::class, 'mapData']);
