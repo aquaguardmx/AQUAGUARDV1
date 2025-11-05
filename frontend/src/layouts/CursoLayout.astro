@@ -11,7 +11,7 @@ import "../styles/gestion-curso.css"; // <-- Asumiendo que tienes este CSS
 
 // 2. INTERFACES (Las mismas de antes)
 export interface Leccion {
-    id: number;
+    id_leccion: number;
     titulo: string;
     activa?: boolean;
     completada?: boolean;
@@ -19,7 +19,7 @@ export interface Leccion {
 }
 
 export interface Modulo {
-    id: number;
+    id_modulo: number;
     titulo: string;
     lecciones: Leccion[];
     expandido?: boolean;
@@ -34,46 +34,50 @@ interface Props {
 
 const { cursoId, moduloId, modulos: modulosProp = [] } = Astro.props;
 
-// 4. LÓGICA DE SERVIDOR (La misma que corregimos)
+// 4. LÓGICA DE SERVIDOR (Corregida)
 let modulos: Modulo[] = modulosProp;
 let moduloActual: Modulo | null = null;
 
 if (modulos.length === 0 && cursoId) {
-    let modulosRaw: any[] = [];
-    try {
-        const modulosResponse = await fetch(
-            `http://localhost:8000/api/cursos/${cursoId}/modulos`,
-        );
-        if (modulosResponse.ok) {
-            const modulosData = await modulosResponse.json();
-            if (Array.isArray(modulosData)) {
-                modulosRaw = modulosData;
-            } else if (modulosData?.data && Array.isArray(modulosData.data)) {
-                modulosRaw = modulosData.data;
-            } else if (modulosData?.modulos && Array.isArray(modulosData.modulos)) {
-                modulosRaw = modulosData.modulos;
-            }
-            modulos = Array.isArray(modulosRaw)
-                ? modulosRaw
-                    .filter(modulo => modulo)
-                    .map((modulo, index) => ({
-                        id: modulo.id || index + 1,
-                        titulo: modulo.titulo || 'Sin título',
-                        lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
-                        expandido: modulo.expandido || false
-                    }))
-                : [];
-        } else {
-            modulos = [];
-        }
-    } catch (error) {
-        console.error("Error cargando módulos:", error);
-        modulos = [];
-    }
+    let modulosRaw: any[] = [];
+    try {
+        const modulosResponse = await fetch(
+            `http://localhost:8000/api/cursos/${cursoId}/modulos`,
+        );
+        if (modulosResponse.ok) {
+            const modulosData = await modulosResponse.json();
+            if (Array.isArray(modulosData)) {
+                modulosRaw = modulosData;
+            } else if (modulosData?.data && Array.isArray(modulosData.data)) {
+                modulosRaw = modulosData.data;
+            } else if (modulosData?.modulos && Array.isArray(modulosData.modulos)) {
+                modulosRaw = modulosData.modulos;
+            }
+            modulos = Array.isArray(modulosRaw)
+                ? modulosRaw
+                    .filter(modulo => modulo)
+                    .map((modulo, index) => ({
+                        // ----- INICIO DE LA CORRECCIÓN 1 -----
+                        id_modulo: modulo.id || index + 1, // <--- CAMBIO AQUÍ
+                        // ----- FIN DE LA CORRECCIÓN 1 -----
+                        titulo: modulo.titulo || 'Sin título',
+                        lecciones: Array.isArray(modulo.lecciones) ? modulo.lecciones : [],
+                        expandido: modulo.expandido || false
+                    }))
+                : [];
+        } else {
+            modulos = [];
+        }
+    } catch (error) {
+        console.error("Error cargando módulos:", error);
+        modulos = [];
+    }
 }
 
 if (moduloId) {
-    moduloActual = modulos.find(modulo => modulo.id.toString() === moduloId) || null;
+    // ----- INICIO DE LA CORRECCIÓN 2 -----
+    moduloActual = modulos.find(modulo => modulo.id_modulo.toString() === moduloId) || null; // <--- CAMBIO AQUÍ
+    // ----- FIN DE LA CORRECCIÓN 2 -----
 }
 
 // 5. LÓGICA DE TÍTULOS (Se queda igual)
@@ -105,10 +109,9 @@ if (moduloId && moduloActual) {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 
                 <div class="flex flex-col lg:flex-row gap-8">
-                    <SidebarModulos 
+                    <SidebarModulos
                         modulos={modulos} 
                         cursoId={cursoId} 
-                        moduloActual={moduloActual}
                     />
 
                     <main class="flex-1 min-w-0">
