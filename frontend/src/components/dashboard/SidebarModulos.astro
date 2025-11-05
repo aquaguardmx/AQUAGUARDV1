@@ -25,55 +25,52 @@ export interface Props {
   moduloActual?: Modulo | null;
 }
 
-// DEBUG: Ver datos originales
-console.log('📥 Datos originales de props:', {
-  modulos: Astro.props.modulos,
-  cursoId: Astro.props.cursoId,
-  currentLeccionId: Astro.props.currentLeccionId
-});
+// Función segura para obtener datos
+function obtenerDatosNormalizados() {
+  // Usar valores por defecto seguros
+  const props = Astro.props || {};
+  const modulos = props.modulos || [];
+  const cursoId = props.cursoId || paramId || "1";
+  const currentLeccionId = props.currentLeccionId || null;
+  
+  const cursoIdFinal = cursoId?.toString() || paramId?.toString() || "1";
 
-// CORREGIDO: Mejor manejo de IDs - VERSIÓN CORREGIDA
-const { modulos = [], cursoId = paramId || "1", currentLeccionId } = Astro.props;
+  const modulosNormalizados = Array.isArray(modulos) 
+    ? modulos.map((modulo, index) => {
+        const moduloSafe = modulo || {};
+        return {
+          id: moduloSafe.id_modulo || (index + 1),
+          titulo: moduloSafe.titulo || 'Sin título',
+          lecciones: Array.isArray(moduloSafe.lecciones) 
+            ? moduloSafe.lecciones.map((leccion, lecIndex) => {
+                const leccionSafe = leccion || {};
+                const leccionId = leccionSafe.id_leccion || (lecIndex + 1);
+                
+                return {
+                  ...leccionSafe,
+                  id: leccionId,
+                  id_leccion: leccionId,
+                  titulo: leccionSafe.titulo || 'Lección sin título',
+                  activa: leccionId === currentLeccionId,
+                  completada: leccionSafe.completada || false,
+                  url: leccionSafe.url || `/admin/cursos/${cursoIdFinal}/lecciones/${leccionId}`
+                };
+              })
+            : [],
+          expandido: moduloSafe.expandido || false
+        };
+      })
+    : [];
 
-// Asegurar que cursoId siempre tenga un valor
-const cursoIdFinal = cursoId?.toString() || paramId?.toString() || "1";
-console.log('Curso ID final:', cursoIdFinal);
+  return {
+    modulosNormalizados,
+    cursoIdFinal,
+    currentLeccionId
+  };
+}
 
-// CORREGIDO: Normalización mejorada con manejo de IDs seguro
-const modulosNormalizados = Array.isArray(modulos) 
-  ? modulos.map((modulo, index) => ({
-      id: modulo.id_modulo || modulo.id_modulo || (index + 1),
-      titulo: modulo.titulo || 'Sin título',
-      lecciones: Array.isArray(modulo.lecciones) 
-        ? modulo.lecciones.map((leccion, lecIndex) => {
-            // CORREGIDO: Lógica de ID corregida - verificar todas las posibles propiedades
-            const leccionId = leccion.id_leccion || leccion.id_leccion || (lecIndex + 1);
-            
-            console.log(`🔍 Lección ${lecIndex}:`, {
-              id_leccion: leccion.id_leccion,
-              id: leccion.id_leccion,
-              titulo: leccion.titulo,
-              asignado: leccionId
-            });
-            
-            return {
-              ...leccion,
-              id: leccionId,
-              id_leccion: leccionId, // Asegurar que id_leccion también esté definido
-              titulo: leccion.titulo || 'Lección sin título',
-              activa: leccionId === currentLeccionId,
-              completada: leccion.completada || false,
-              // CORREGIDO: URL construida con ID seguro
-              url: leccion.url || `/admin/cursos/${cursoIdFinal}/lecciones/${leccionId}`
-            };
-          })
-        : [],
-      expandido: modulo.expandido || false
-    }))
-  : [];
-
-// Log para debug
-console.log('📊 Módulos normalizados:', modulosNormalizados);
+// Obtener datos normalizados
+const { modulosNormalizados, cursoIdFinal, currentLeccionId: currentLeccionIdCache } = obtenerDatosNormalizados();
 
 // Convertir a JSON para el script
 const modulosJSON = JSON.stringify(modulosNormalizados);
@@ -81,46 +78,20 @@ const cursoIdForScript = cursoIdFinal;
 ---
 
 <style>
-    /* ... (estilos existentes) ... */
+    /* Estilos optimizados */
+    .rotate-180 { transform: rotate(180deg); }
+    .module-arrow { transition: transform 0.3s ease; }
     
-    .rotate-180 {
-        transform: rotate(180deg);
-    }
+    .thin-scrollbar::-webkit-scrollbar { width: 4px; }
+    .thin-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .thin-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    .thin-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     
-    .module-arrow {
-        transition: transform 0.3s ease;
-    }
-    
-    /* Scrollbar personalizado para mejor experiencia móvil */
-    .thin-scrollbar::-webkit-scrollbar {
-        width: 4px;
-    }
-    
-    .thin-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    .thin-scrollbar::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 2px;
-    }
-    
-    .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-    
-    /* Dark mode scrollbar */
     @media (prefers-color-scheme: dark) {
-        .thin-scrollbar::-webkit-scrollbar-thumb {
-            background: #4b5563;
-        }
-        
-        .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
-        }
+        .thin-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; }
+        .thin-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
     }
     
-    /* Utilidad para truncar texto a múltiples líneas */
     .line-clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -128,30 +99,26 @@ const cursoIdForScript = cursoIdFinal;
         overflow: hidden;
     }
     
-    /* Mejoras de rendimiento para animaciones */
-    .module-content {
-        will-change: max-height;
-    }
+    .module-content { will-change: max-height; }
     
-    /* Spinner de carga global */
+    /* Loading overlay */
     .loading-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         backdrop-filter: blur(4px);
+        transition: opacity 0.3s ease;
     }
     
-    .dark .loading-overlay {
-        background: rgba(0, 0, 0, 0.9);
-    }
+    .dark .loading-overlay { background: rgba(0, 0, 0, 0.95); }
     
     .loading-spinner {
         width: 3rem;
@@ -179,9 +146,7 @@ const cursoIdForScript = cursoIdFinal;
         color: #374151;
     }
     
-    .dark .loading-text {
-        color: #d1d5db;
-    }
+    .dark .loading-text { color: #d1d5db; }
     
     .loading-progress {
         margin-top: 0.5rem;
@@ -189,23 +154,19 @@ const cursoIdForScript = cursoIdFinal;
         color: #6b7280;
     }
     
-    .dark .loading-progress {
-        color: #9ca3af;
-    }
+    .dark .loading-progress { color: #9ca3af; }
 </style>
 
 <!-- Overlay de carga -->
 <div id="loading-overlay" class="loading-overlay">
     <div class="loading-spinner"></div>
     <div class="loading-text" id="loading-text">Cargando contenido del curso...</div>
-    <div class="loading-progress" id="loading-progress">Iniciando...</div>
+    <div class="loading-progress" id="loading-progress">Inicializando...</div>
 </div>
 
 <aside class="w-full lg:w-80 xl:w-96 flex-shrink-0">
-    <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-6rem)] overflow-hidden flex flex-col"
-    >
-        <!-- Header del Sidebar -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6 sticky top-20 lg:top-24 max-h-[calc(100vh-6rem)] overflow-hidden flex flex-col">
+        <!-- Header -->
         <div class="flex items-center justify-between mb-4 lg:mb-6">
             <h2 class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white truncate">
                 Contenido del Curso
@@ -217,16 +178,13 @@ const cursoIdForScript = cursoIdFinal;
                 title="Añadir nuevo módulo"
             >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        fill-rule="evenodd"
-                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                        clip-rule="evenodd"></path>
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
                 </svg>
                 <span class="sr-only">Añadir Módulo</span>
             </button>
         </div>
 
-        <!-- Lista de Módulos - Scrollable -->
+        <!-- Lista de Módulos -->
         <div class="flex-1 overflow-y-auto space-y-3 thin-scrollbar" id="modules-list">
             {modulosNormalizados.length === 0 ? (
                 <div class="text-center py-6 lg:py-8" id="empty-state">
@@ -238,10 +196,7 @@ const cursoIdForScript = cursoIdFinal;
                 </div>
             ) : (
                 modulosNormalizados.map((modulo) => (
-                    <div
-                        class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container"
-                        data-module-container={modulo.id}
-                    >
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container" data-module-container={modulo.id}>
                         <!-- Header del Módulo -->
                         <button
                             class="flex items-center justify-between w-full p-3 lg:p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors module-toggle group"
@@ -282,7 +237,6 @@ const cursoIdForScript = cursoIdFinal;
                                 <div class="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto thin-scrollbar lecciones-container">
                                     {modulo.lecciones.length > 0 ? (
                                         modulo.lecciones.map((leccion) => (
-                                            <!-- CORREGIDO: URL usando cursoIdFinal y leccion.id asegurado -->
                                             <a
                                                 href={`/admin/cursos/${cursoIdFinal}/lecciones/${leccion.id}`}
                                                 class={`flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion ${
@@ -368,7 +322,6 @@ const cursoIdForScript = cursoIdFinal;
                                     )}
                                 </div>
                                 
-                                <!-- CORREGIDO: URL usando cursoIdFinal -->
                                 <a
                                     href={`/admin/cursos/${cursoIdFinal}/modulos/${modulo.id}/nueva`}
                                     class="flex items-center space-x-2 p-2 lg:p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors text-sm lg:text-base"
@@ -468,184 +421,120 @@ const cursoIdForScript = cursoIdFinal;
     </div>
 </div>
 
-<script is:inline define:vars={{ modulosJSON, cursoId: cursoIdForScript, currentLeccionId: currentLeccionId || null }}>
-    console.log('=== DEBUG INFO MEJORADO ===');
-    console.log('Curso ID:', cursoId);
-    console.log('Lección actual ID:', currentLeccionId);
+<script is:inline define:vars={{ modulosJSON, cursoId: cursoIdForScript, currentLeccionId: currentLeccionIdCache || null }}>
+    // CACHÉ GLOBAL EN CLIENTE
+    if (!window.sidebarCache) {
+        window.sidebarCache = new Map();
+    }
     
-    const modulosNormalizados = JSON.parse(modulosJSON || '[]');
-    console.log('Módulos procesados:', modulosNormalizados);
-
-    // Verificar IDs de lecciones en detalle
-    modulosNormalizados.forEach((modulo, modIndex) => {
-        console.log(`📦 Módulo ${modIndex}: "${modulo.titulo}" (ID: ${modulo.id})`);
-        modulo.lecciones.forEach((leccion, lecIndex) => {
-            console.log(`   📖 Lección ${lecIndex}:`, {
-                titulo: leccion.titulo,
-                id_leccion: leccion.id_leccion,
-                id: leccion.id,
-                url: leccion.url,
-                activa: leccion.activa
-            });
-            
-            // Verificar si hay IDs duplicados
-            if (leccion.id === 1) {
-                console.warn('   ⚠️  POSIBLE PROBLEMA: ID = 1 detectado');
-            }
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+    
+    // Función segura para obtener elementos
+    function getElementSafe(selector) {
+        try {
+            return document.querySelector(selector);
+        } catch (error) {
+            console.warn('Elemento no encontrado:', selector);
+            return null;
+        }
+    }
+    
+    // Función para obtener datos con caché en cliente
+    async function obtenerConCache(clave, funcionObtener) {
+        const ahora = Date.now();
+        const cacheEntry = window.sidebarCache.get(clave);
+        
+        // Si existe en caché y no ha expirado
+        if (cacheEntry && (ahora - cacheEntry.timestamp < CACHE_DURATION)) {
+            console.log(`📦 [CLIENTE] Usando caché para: ${clave}`);
+            return cacheEntry.datos;
+        }
+        
+        // Obtener datos frescos
+        console.log(`🔄 [CLIENTE] Obteniendo datos frescos para: ${clave}`);
+        const datos = await funcionObtener();
+        
+        // Guardar en caché
+        window.sidebarCache.set(clave, {
+            datos,
+            timestamp: ahora
         });
-    });
-
-    // CORREGIDO: Función auxiliar para construir URLs
-    function construirURLLeccion(leccionId) {
-        const url = `/admin/cursos/${cursoId}/lecciones/${leccionId}`;
-        console.log('URL construida para lección:', url);
-        return url;
+        
+        return datos;
     }
 
-    // Script para la interactividad del sidebar
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Sidebar script cargado - versión corregida');
+        console.log('🚀 Sidebar optimizado cargado');
         
-        // Parsear los módulos desde JSON
-        const modulosNormalizados = JSON.parse(modulosJSON || '[]');
-        console.log('Módulos procesados:', modulosNormalizados);
-
-        // Verificar URLs de lecciones
-        modulosNormalizados.forEach((modulo, modIndex) => {
-            console.log(`Módulo ${modIndex}:`, modulo.titulo, 'ID:', modulo.id);
-            modulo.lecciones.forEach((leccion, lecIndex) => {
-                const url = construirURLLeccion(leccion.id);
-                console.log(`  Lección ${lecIndex}:`, {
-                    id: leccion.id,
-                    titulo: leccion.titulo,
-                    url: url,
-                    activa: leccion.activa
-                });
-            });
-        });
-
-        // Elementos del loading overlay
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
-        const loadingProgress = document.getElementById('loading-progress');
-
-        // Función para actualizar el progreso de carga
-        function actualizarProgreso(mensaje, moduloActual = 0, totalModulos = 0) {
-            if (loadingProgress) {
-                if (totalModulos > 0) {
-                    loadingProgress.textContent = `${mensaje} (${moduloActual}/${totalModulos})`;
-                } else {
-                    loadingProgress.textContent = mensaje;
-                }
-            }
-        }
-
-        // Función para ocultar el loading overlay
-        function ocultarLoading() {
+        // Ocultar loading inmediatamente
+        const loadingOverlay = getElementSafe('#loading-overlay');
+        setTimeout(() => {
             if (loadingOverlay) {
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
                     loadingOverlay.style.display = 'none';
-                }, 500);
+                }, 300);
             }
+        }, 500);
+
+        // Parsear los módulos desde JSON de forma segura
+        let modulosNormalizados = [];
+        try {
+            modulosNormalizados = JSON.parse(modulosJSON || '[]');
+            console.log('Módulos procesados:', modulosNormalizados.length);
+        } catch (error) {
+            console.error('Error parseando modulosJSON:', error);
+            modulosNormalizados = [];
         }
 
-        // Función para obtener lecciones de la API
+        // Función auxiliar para construir URLs
+        function construirURLLeccion(leccionId) {
+            const cursoIdSafe = cursoId || '1';
+            return `/admin/cursos/${cursoIdSafe}/lecciones/${leccionId}`;
+        }
+
+        // Función para obtener lecciones con caché
         async function obtenerLeccionesDelModulo(moduloId) {
-            try {
-                console.log(`Obteniendo lecciones para módulo ${moduloId}...`);
-                const response = await fetch(`http://localhost:8000/api/modulos/${moduloId}/lecciones`);
-                
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-                
-                const lecciones = await response.json();
-                console.log(`Lecciones obtenidas para módulo ${moduloId}:`, lecciones);
-                
-                // CORREGIDO: Asegurar que cada lección tenga ID
-                return lecciones.map((leccion, index) => ({
-                    ...leccion,
-                    id: leccion.id_leccion || leccion.id || (index + 1),
-                    id_leccion: leccion.id_leccion || leccion.id || (index + 1)
-                }));
-            } catch (error) {
-                console.error(`Error al obtener lecciones del módulo ${moduloId}:`, error);
-                return [];
-            }
-        }
-
-        // CORREGIDO: Función mejorada para crear el HTML de una lección
-        function crearHTMLLeccion(leccion) {
-            console.log('Creando HTML para lección:', leccion);
+            const cacheKey = `lecciones_modulo_${moduloId}`;
             
-            const esActiva = leccion.id === currentLeccionId;
-            const esCompletada = leccion.completada || false;
-            // CORREGIDO: Usar función auxiliar para construir URL
-            const url = construirURLLeccion(leccion.id);
-
-            // Clases base
-            const claseContenedor = esActiva 
-            ? 'flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
-            : 'flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 border border-transparent';
-
-            const claseIcono = esActiva 
-            ? 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600' 
-            : esCompletada 
-            ? 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-500' 
-            : 'w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200 dark:bg-gray-600';
-
-            const claseTitulo = esActiva 
-            ? 'ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 text-blue-700 dark:text-blue-300' 
-            : 'ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 text-gray-700 dark:text-gray-300';
-
-            // Icono según estado
-            let icono = '';
-            if (esActiva) {
-                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
-                        </svg>`;
-            } else if (esCompletada) {
-                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>`;
-            } else {
-                icono = `<svg class="w-3 h-3 lg:w-4 lg:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>`;
-            }
-
-            return `
-                <a href="${url}" class="${claseContenedor}" data-leccion-id="${leccion.id}">
-                    <div class="${claseIcono}">
-                        ${icono}
-                    </div>
-                    <span class="${claseTitulo}">
-                        ${leccion.titulo || 'Sin título'}
-                    </span>
-                </a>
-            `;
+            return await obtenerConCache(cacheKey, async () => {
+                try {
+                    console.log(`🔍 Obteniendo lecciones para módulo ${moduloId}...`);
+                    const response = await fetch(`http://localhost:8000/api/modulos/${moduloId}/lecciones`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const lecciones = await response.json();
+                    console.log(`✅ Lecciones obtenidas para módulo ${moduloId}:`, lecciones.length);
+                    
+                    return Array.isArray(lecciones) ? lecciones.map((leccion, index) => ({
+                        ...leccion,
+                        id: leccion.id_leccion || leccion.id || (index + 1),
+                        id_leccion: leccion.id_leccion || leccion.id || (index + 1),
+                        titulo: leccion.titulo || 'Sin título',
+                        completada: leccion.completada || false
+                    })) : [];
+                } catch (error) {
+                    console.error(`❌ Error al obtener lecciones del módulo ${moduloId}:`, error);
+                    return [];
+                }
+            });
         }
 
-        // Función para cargar y mostrar el contador de lecciones para todos los módulos
+        // Función optimizada para cargar contadores
         async function cargarContadoresDeLecciones() {
-            console.log('Cargando contadores de lecciones para todos los módulos...');
+            console.log('⚡ Cargando contadores...');
             
             const moduleToggles = document.querySelectorAll('.module-toggle');
             const totalModulos = moduleToggles.length;
             
-            // Actualizar texto de carga
-            if (loadingText) {
-                loadingText.textContent = 'Cargando información de módulos...';
-            }
+            if (totalModulos === 0) return;
             
-            for (let i = 0; i < moduleToggles.length; i++) {
-                const button = moduleToggles[i];
+            const promesas = Array.from(moduleToggles).map(async (button) => {
                 const moduleId = button.getAttribute('data-module-id');
-                
-                // Actualizar progreso
-                actualizarProgreso(`Cargando módulo: ${button.querySelector('span').textContent}`, i + 1, totalModulos);
+                if (!moduleId) return;
                 
                 try {
                     const leccionesAPI = await obtenerLeccionesDelModulo(moduleId);
@@ -653,32 +542,28 @@ const cursoIdForScript = cursoIdFinal;
                     
                     if (counter) {
                         counter.textContent = leccionesAPI.length;
-                        console.log(`Módulo ${moduleId}: ${leccionesAPI.length} lecciones`);
                     }
                     
-                    // Pequeña pausa para evitar sobrecargar la API
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     
                 } catch (error) {
-                    console.error(`Error al cargar contador para módulo ${moduleId}:`, error);
-                    // Mantener el contador original si hay error
+                    console.error(`Error en módulo ${moduleId}:`, error);
                 }
-            }
+            });
             
-            // Ocultar loading cuando termine
-            actualizarProgreso('¡Todo listo!', totalModulos, totalModulos);
-            setTimeout(ocultarLoading, 1000);
+            await Promise.allSettled(promesas);
+            console.log('✅ Contadores cargados');
         }
 
-        // Función para actualizar las lecciones en el sidebar cuando se expande
+        // Función para actualizar lecciones en sidebar
         async function actualizarLeccionesEnSidebar(moduloId) {
-            const moduleContent = document.querySelector(`[data-module-content="${moduloId}"]`);
+            const moduleContent = getElementSafe(`[data-module-content="${moduloId}"]`);
             if (!moduleContent) return;
 
             const leccionesContainer = moduleContent.querySelector('.lecciones-container');
             if (!leccionesContainer) return;
 
-            // Mostrar indicador de carga
+            // Mostrar loading
             leccionesContainer.innerHTML = `
                 <div class="flex justify-center items-center py-4">
                     <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
@@ -690,11 +575,10 @@ const cursoIdForScript = cursoIdFinal;
             `;
 
             try {
-                // Obtener lecciones de la API
                 const leccionesAPI = await obtenerLeccionesDelModulo(moduloId);
                 
-                // Actualizar el contador en el header del módulo (por si cambió)
-                const moduleToggle = document.querySelector(`[data-module-id="${moduloId}"]`);
+                // Actualizar contador
+                const moduleToggle = getElementSafe(`[data-module-id="${moduloId}"]`);
                 if (moduleToggle) {
                     const counter = moduleToggle.querySelector('.lecciones-counter');
                     if (counter) {
@@ -702,11 +586,34 @@ const cursoIdForScript = cursoIdFinal;
                     }
                 }
 
-                // Crear HTML de las lecciones
+                // Crear HTML de lecciones
                 let leccionesHTML = '';
                 if (leccionesAPI.length > 0) {
                     leccionesAPI.forEach(leccion => {
-                        leccionesHTML += crearHTMLLeccion(leccion);
+                        const esActiva = leccion.id === currentLeccionId;
+                        const esCompletada = leccion.completada || false;
+                        const url = construirURLLeccion(leccion.id);
+
+                        leccionesHTML += `
+                            <a href="${url}" class="flex items-center p-2 lg:p-3 rounded-lg transition-colors group/leccion ${
+                                esActiva 
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 border border-transparent'
+                            }" data-leccion-id="${leccion.id}">
+                                <div class="w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                    esActiva ? 'bg-blue-600' : esCompletada ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-600'
+                                }">
+                                    ${esActiva ? '<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path></svg>' : 
+                                    esCompletada ? '<svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>' : 
+                                    '<svg class="w-3 h-3 lg:w-4 lg:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}
+                                </div>
+                                <span class="ml-2 lg:ml-3 text-sm lg:text-base font-medium line-clamp-2 flex-1 ${
+                                    esActiva ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'
+                                }">
+                                    ${leccion.titulo || 'Sin título'}
+                                </span>
+                            </a>
+                        `;
                     });
                 } else {
                     leccionesHTML = `
@@ -719,13 +626,10 @@ const cursoIdForScript = cursoIdFinal;
                     `;
                 }
 
-                // Actualizar el DOM
                 leccionesContainer.innerHTML = leccionesHTML;
-                console.log(`Lecciones actualizadas para módulo ${moduloId}:`, leccionesAPI.length);
 
             } catch (error) {
                 console.error(`Error al actualizar lecciones para módulo ${moduloId}:`, error);
-                
                 leccionesContainer.innerHTML = `
                     <div class="text-center py-3 lg:py-4">
                         <svg class="w-6 h-6 lg:w-8 lg:h-8 text-red-400 mx-auto mb-1 lg:mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -737,52 +641,39 @@ const cursoIdForScript = cursoIdFinal;
             }
         }
 
-        // Función mejorada para manejar el acordeón
+        // Inicializar acordeón
         function initAccordion() {
-            console.log('Inicializando acordeón...');
-            
             const moduleToggles = document.querySelectorAll('.module-toggle');
             
             moduleToggles.forEach((button) => {
                 const moduleId = button.getAttribute('data-module-id');
-                const moduleContent = document.querySelector(`[data-module-content="${moduleId}"]`);
+                if (!moduleId) return;
+                
+                const moduleContent = getElementSafe(`[data-module-content="${moduleId}"]`);
                 const arrow = button.querySelector('.module-arrow');
 
                 if (moduleContent && arrow) {
-                    console.log(`Configurando módulo ${moduleId}`);
-                    
-                    // Inicializar estado basado en los datos
                     const moduleData = modulosNormalizados.find(m => m.id == moduleId);
                     if (moduleData?.expandido) {
                         moduleContent.style.maxHeight = moduleContent.scrollHeight + 'px';
                         arrow.classList.add('rotate-180');
-                    } else {
-                        moduleContent.style.maxHeight = '0px';
-                        arrow.classList.remove('rotate-180');
                     }
 
-                    // Agregar event listener para acordeón
                     button.addEventListener('click', async function(e) {
                         e.preventDefault();
                         e.stopPropagation();
                         
-                        console.log(`Click en módulo - ID: ${moduleId}`);
-                        
                         const isExpanded = moduleContent.style.maxHeight && moduleContent.style.maxHeight !== '0px';
                         
                         if (isExpanded) {
-                            // Cerrar
                             moduleContent.style.maxHeight = '0px';
                             arrow.classList.remove('rotate-180');
                         } else {
-                            // Abrir y cargar lecciones
                             moduleContent.style.maxHeight = moduleContent.scrollHeight + 'px';
                             arrow.classList.add('rotate-180');
                             
-                            // Cargar lecciones desde la API
                             await actualizarLeccionesEnSidebar(moduleId);
                             
-                            // Actualizar altura después de cargar contenido
                             setTimeout(() => {
                                 moduleContent.style.maxHeight = moduleContent.scrollHeight + 'px';
                             }, 100);
@@ -792,76 +683,40 @@ const cursoIdForScript = cursoIdFinal;
             });
         }
 
-        // Función para mostrar lecciones en consola al hacer click
-        function setupModuleClickLogging() {
-            console.log('Configurando logging de módulos...');
-            
-            const moduleToggles = document.querySelectorAll('.module-toggle');
-            
-            moduleToggles.forEach((button) => {
-                const moduleId = button.getAttribute('data-module-id');
-                
-                // Agregar event listener para logging
-                button.addEventListener('click', async function(e) {
-                    // Encontrar el módulo correspondiente en los datos
-                    const modulo = modulosNormalizados.find(m => m.id == moduleId);
-                    
-                    if (modulo) {
-                        console.log('=== INFORMACIÓN DEL MÓDULO ===');
-                        console.log(`ID: ${modulo.id}`);
-                        console.log(`Título: ${modulo.titulo}`);
-                        
-                        // Obtener lecciones de la API para logging
-                        const leccionesAPI = await obtenerLeccionesDelModulo(moduleId);
-                        console.log(`Lecciones desde API: ${leccionesAPI.length}`);
-                        
-                        if (leccionesAPI.length > 0) {
-                            leccionesAPI.forEach((leccion, index) => {
-                                const url = construirURLLeccion(leccion.id);
-                                console.log(`  ${index + 1}. ${leccion.titulo}`);
-                                console.log(`     ID: ${leccion.id}`);
-                                console.log(`     URL: ${url}`);
-                            });
-                        }
-                        
-                        console.log('============================');
-                    }
-                });
-            });
-        }
-
-        // Inicializar todas las funcionalidades
+        // Inicializar
         initAccordion();
-        setupModuleClickLogging();
         
-        // Cargar los contadores de lecciones automáticamente al inicio
-        cargarContadoresDeLecciones();
+        // Cargar contadores en segundo plano
+        setTimeout(() => {
+            cargarContadoresDeLecciones();
+        }, 1000);
 
-        // Manejo del modal
-        const addModuleBtn = document.getElementById('add-module-btn');
-        const moduleModal = document.getElementById('module-modal');
-        const closeModuleModal = document.getElementById('close-module-modal');
-        const cancelModuleBtn = document.getElementById('cancel-module-btn');
-        const addModuleForm = document.getElementById('add-module-form');
-        const submitModuleBtn = document.getElementById('submit-module-btn');
-        const submitText = document.getElementById('submit-text');
-        const loadingSpinner = document.getElementById('loading-spinner');
+        // Manejo del modal (código seguro)
+        const addModuleBtn = getElementSafe('#add-module-btn');
+        const moduleModal = getElementSafe('#module-modal');
+        const closeModuleModal = getElementSafe('#close-module-modal');
+        const cancelModuleBtn = getElementSafe('#cancel-module-btn');
+        const addModuleForm = getElementSafe('#add-module-form');
 
-        // Abrir modal
         if (addModuleBtn && moduleModal) {
             addModuleBtn.addEventListener('click', function() {
                 moduleModal.classList.remove('hidden');
                 moduleModal.classList.add('flex');
-                document.getElementById('module-name')?.focus();
+                const moduleNameInput = getElementSafe('#module-name');
+                if (moduleNameInput) moduleNameInput.focus();
             });
         }
 
-        // Cerrar modal
         function closeModal() {
             if (moduleModal) {
                 moduleModal.classList.remove('flex');
                 moduleModal.classList.add('hidden');
                 if (addModuleForm) addModuleForm.reset();
+                
+                const submitModuleBtn = getElementSafe('#submit-module-btn');
+                const submitText = getElementSafe('#submit-text');
+                const loadingSpinner = getElementSafe('#loading-spinner');
+                
                 if (submitModuleBtn) submitModuleBtn.disabled = false;
                 if (submitText) submitText.classList.remove('hidden');
                 if (loadingSpinner) loadingSpinner.classList.add('hidden');
@@ -877,74 +732,19 @@ const cursoIdForScript = cursoIdFinal;
             });
         }
 
-        // CORREGIDO: Función para crear el HTML de un módulo usando cursoId
-        function createModuleHTML(moduleData) {
-            return `
-                <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden module-container" data-module-container="${moduleData.id}">
-                    <button class="flex items-center justify-between w-full p-3 lg:p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors module-toggle group" data-module-id="${moduleData.id}" type="button">
-                        <span class="font-semibold text-gray-900 dark:text-white text-left text-sm lg:text-base line-clamp-2 flex-1 mr-2">${moduleData.titulo}</span>
-                        <div class="flex items-center space-x-2 flex-shrink-0">
-                            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded lecciones-counter">0</span>
-                            <svg class="w-4 h-4 text-gray-500 transition-transform module-arrow flex-shrink-0 group-hover:text-gray-700 dark:group-hover:text-gray-300" data-arrow-id="${moduleData.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </button>
-                    <div class="bg-gray-50 dark:bg-gray-700/50 module-content max-h-0 overflow-hidden transition-all duration-300" id="module-${moduleData.id}-content" data-module-content="${moduleData.id}">
-                        <div class="p-3 lg:p-4 space-y-2 lg:space-y-3">
-                            <!-- Contenedor para lecciones -->
-                            <div class="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto thin-scrollbar lecciones-container">
-                                <div class="text-center py-3 lg:py-4">
-                                    <svg class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400 mx-auto mb-1 lg:mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                    <p class="text-xs lg:text-sm text-gray-500 dark:text-gray-400">Haz click para cargar lecciones</p>
-                                </div>
-                            </div>
-                            
-                            <a 
-                                href="/admin/cursos/${cursoId}/modulos/${moduleData.id}/nueva" 
-                                class="flex items-center space-x-2 p-2 lg:p-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors text-sm lg:text-base"
-                            >
-                                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="font-medium truncate">Añadir Lección</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Función para añadir módulo al DOM
-        function addModuleToDOM(moduleData) {
-            const modulesList = document.getElementById('modules-list');
-            const emptyState = document.getElementById('empty-state');
-            
-            if (emptyState) emptyState.remove();
-            
-            const moduleHTML = createModuleHTML(moduleData);
-            modulesList.insertAdjacentHTML('beforeend', moduleHTML);
-            
-            // Re-inicializar todas las funcionalidades para incluir el nuevo módulo
-            setTimeout(() => {
-                initAccordion();
-                setupModuleClickLogging();
-                // Cargar el contador para el nuevo módulo
-                cargarContadoresDeLecciones();
-            }, 50);
-        }
-
-        // Manejo del formulario de módulo
+        // Manejo del formulario
         if (addModuleForm) {
             addModuleForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const moduleInput = document.getElementById('module-name');
+                const moduleInput = getElementSafe('#module-name');
                 const moduleName = moduleInput?.value.trim();
                 
-                if (moduleName && submitModuleBtn) {
-                    submitModuleBtn.disabled = true;
+                if (moduleName) {
+                    const submitModuleBtn = getElementSafe('#submit-module-btn');
+                    const submitText = getElementSafe('#submit-text');
+                    const loadingSpinner = getElementSafe('#loading-spinner');
+                    
+                    if (submitModuleBtn) submitModuleBtn.disabled = true;
                     if (submitText) submitText.classList.add('hidden');
                     if (loadingSpinner) loadingSpinner.classList.remove('hidden');
 
@@ -953,7 +753,7 @@ const cursoIdForScript = cursoIdFinal;
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
-                                curso_id: parseInt(cursoId), 
+                                curso_id: parseInt(cursoId || '1'), 
                                 titulo: moduleName 
                             })
                         });
@@ -963,26 +763,17 @@ const cursoIdForScript = cursoIdFinal;
                         }
 
                         const data = await response.json();
-                        const newModule = {
-                            id: data.id || Date.now(),
-                            titulo: moduleName,
-                            lecciones: [],
-                            expandido: false
-                        };
+                        console.log('Módulo creado:', data);
                         
-                        // Agregar el nuevo módulo a los datos
-                        modulosNormalizados.push(newModule);
-                        
-                        addModuleToDOM(newModule);
-                        closeModal();
-                        showSuccessToast(`Módulo "${moduleName}" añadido correctamente`);
+                        // Recargar la página para ver el nuevo módulo
+                        window.location.reload();
                         
                     } catch (error) {
                         console.error('Error al añadir el módulo:', error);
                         alert('Hubo un error al añadir el módulo. Inténtalo de nuevo.');
                         
                         // Restaurar el botón
-                        submitModuleBtn.disabled = false;
+                        if (submitModuleBtn) submitModuleBtn.disabled = false;
                         if (submitText) submitText.classList.remove('hidden');
                         if (loadingSpinner) loadingSpinner.classList.add('hidden');
                     }
@@ -990,13 +781,10 @@ const cursoIdForScript = cursoIdFinal;
             });
         }
 
-        // Función para mostrar toast de éxito
-        function showSuccessToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-0';
-            toast.innerHTML = `<div class="flex items-center space-x-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg><span>${message}</span></div>`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
-        }
+        // Función para limpiar caché
+        window.limpiarCacheSidebar = function() {
+            window.sidebarCache.clear();
+            console.log('🗑️ Caché limpiado');
+        };
     });
 </script>

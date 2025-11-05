@@ -7,6 +7,7 @@ use App\Models\Curso;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class CourseController extends Controller
 {
@@ -37,52 +38,31 @@ class CourseController extends Controller
         return response()->json($curso);
     }
 
+
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'titulo' => 'required|string|max:255',
-            // 'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048', // Correcto
-            'portada_url' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'tiempo_estimado_min' => 'nullable|integer',
-            'autor_id' => 'required|integer|exists:usuarios,id_usuario', // Correcto
-            'categoria_id' => 'required|integer|exists:categorias,id',
-            'publicado' => 'required|boolean',
-        ]);
+{
+    $validated = $request->validate([
+        'titulo' => 'required|string|max:255',
+        'descripcion' => 'required|string',
+        'autor_id' => 'required|integer',
+        'categoria_id' => 'required|integer',
+        'tiempo_estimado_min' => 'nullable|integer',
+        'portada_url' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        'publicado' => 'boolean'
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        
-        $urlDeLaPortada = null; // 1. Inicializa la variable
-
-        if ($request->hasFile('portada_url')) {
-            // 2. Guarda el archivo en 'storage/app/public/portadas'
-            $path = $request->file('portada_url')->store('portadas', 'public');
-
-            // 3. Obtiene la URL pública
-            $urlDeLaPortada = Storage::url($path);
-        }
-        
-        // --- FIN DE LA CORRECCIÓN ---
-
-        $curso = Curso::create([
-            'titulo' => $request->input('titulo'),
-            'descripcion' => $request->input('descripcion'),
-            
-            // 4. Asigna la URL generada
-            'portada_url' => $urlDeLaPortada, 
-            
-            'tiempo_estimado_min' => $request->input('tiempo_estimado_min'),
-            'autor_id' => $request->input('autor_id'),
-            'categoria_id' => $request->input('categoria_id'),
-            'publicado' => $request->input('publicado'),
-        ]);
-
-        return response()->json($curso, 201);
+    // Procesar la imagen si existe
+    if ($request->hasFile('portada_url')) {
+        $image = $request->file('portada_url');
+        $imageName = time() . '_' . $image->getClientOriginalName();
+        $imagePath = $image->storeAs('portadas', $imageName, 'public');
+        $validated['portada_url'] = 'storage/' . $imagePath;
     }
+
+    $curso = Curso::create($validated);
+
+    return response()->json($curso, 201);
+}
 
     public function update(Request $request, $id)
     {
@@ -149,5 +129,46 @@ class CourseController extends Controller
 
         // 3. Devolvemos los módulos como JSON.
         return response()->json($modulos, 200);
+    }
+
+    public function getCursosPorUsuario($usuarioId)
+    {
+        try {
+            // 1. Encontrar al usuario
+            $user = User::find($usuarioId);
+
+            if (!$user) {
+                return response()->json(['message' => 'Usuario no encontrado'], 404);
+            }
+
+            // 2. Obtener los cursos
+            // --- OPCIÓN A: Usando una relación (Recomendado) ---
+            // Esto asume que en tu modelo User tienes una relación 'cursos()'
+            $cursos = $user->cursos;
+
+            /*
+            // --- OPCIÓN B: Consultando la tabla pivote directamente ---
+            // Úsala si no tienes la relación definida en el modelo.
+            // (Basado en el modelo 'CursoInscritoUsuario' que has estado usando)
+
+            // Obtenemos los IDs de los cursos en los que el usuario está inscrito
+            $cursoIds = CursoInscritoUsuario::where('usuario_id', $usuarioId)
+                                            ->pluck('curso_id');
+
+            // Buscamos todos los cursos que coincidan con esos IDs
+            $cursos = Curso::whereIn('id', $cursoIds)->get();
+            */
+
+
+            // 3. Devolver la respuesta
+            return response()->json($cursos, 200);
+
+        } catch (Exception $e) {
+            // Manejo de cualquier error inesperado
+            return response()->json([
+                'message' => 'Error al obtener los cursos del usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

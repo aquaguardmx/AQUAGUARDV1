@@ -109,4 +109,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->correo_electronico;
     }
+
+    public function cursos()
+    {
+        // Le indicamos a Laravel:
+        // 1. Con qué modelo se relaciona: Curso::class
+        // 2. Cómo se llama la tabla pivote: 'curso_inscrito_usuario'
+        // 3. Cuál es la clave foránea de este modelo (User): 'usuario_id'
+        // 4. Cuál es la clave foránea del otro modelo (Curso): 'curso_id'
+        return $this->belongsToMany(Curso::class, 'cursos_inscritos', 'usuario_id', 'curso_id');
+    }
 }

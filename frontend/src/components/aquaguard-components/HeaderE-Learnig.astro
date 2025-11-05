@@ -1,0 +1,273 @@
+---
+// src/components/Header.astro
+
+// Interfaces para tipado seguro
+interface NavItem {
+  name: string;
+  href: string;
+  icon?: string;
+}
+
+// Props del componente
+export interface Props {
+  currentPath?: string;
+  user?: {
+    name: string;
+    isLoggedIn: boolean;
+  };
+}
+
+// Datos de navegación
+const navItems: NavItem[] = [
+  { name: 'Inicio', href: '/' },
+  { name: 'Cursos', href: '/cursos' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'Recursos', href: '/recursos' },
+  { name: 'Sobre Nosotros', href: '/nosotros' },
+];
+
+const { currentPath = '/', user = { name: '', isLoggedIn: false } } = Astro.props;
+---
+
+<header class="bg-white shadow-sm border-b border-blue-50 sticky top-0 z-50">
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo -->
+      <div class="flex-shrink-0 flex items-center">
+        <a href="/" class="flex items-center space-x-2">
+          <div class="w-10 h-10 flex items-center justify-center">
+            <img src="/img/logo.png" alt="AquaLearn" class="w-10 h-10">
+          </div>
+          <span class="text-xl font-bold text-blue-600">AquaLearn</span>
+        </a>
+      </div>
+
+      <!-- Navegación Desktop -->
+      <div class="hidden md:flex items-center space-x-8">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href;
+          return (
+            <a
+              href={item.href}
+              class={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive
+                  ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-400'
+                  : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
+              }`}
+            >
+              {item.name}
+            </a>
+          );
+        })}
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex items-center space-x-4">
+        <!-- Botón de búsqueda -->
+        <button
+          type="button"
+          class="p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200"
+          id="search-button"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+
+        <!-- Menú de usuario -->
+        {user.isLoggedIn ? (
+          <div class="relative" id="user-menu">
+            <button
+              type="button"
+              class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+              id="user-menu-button"
+            >
+              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-blue-600">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <span class="text-sm text-gray-700 hidden sm:block">{user.name}</span>
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            <!-- Dropdown del usuario -->
+            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-blue-100 py-1 z-50" id="user-dropdown">
+              <a href="/perfil" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Mi Perfil</a>
+              <a href="/mis-cursos" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Mis Cursos</a>
+              <a href="/configuracion" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Configuración</a>
+              <div class="border-t border-blue-100 my-1"></div>
+              <a href="/logout" class="block px-4 py-2 text-sm text-blue-500 hover:bg-blue-50">Cerrar Sesión</a>
+            </div>
+          </div>
+        ) : (
+          <div class="flex items-center space-x-3">
+            <a
+              href="/login"
+              class="text-sm text-gray-700 hover:text-blue-500 font-medium transition-colors duration-200"
+            >
+              Iniciar Sesión
+            </a>
+            <a
+              href="/registro"
+              class="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              Registrarse
+            </a>
+          </div>
+        )}
+
+        <!-- Botón menú móvil -->
+        <button
+          type="button"
+          class="md:hidden p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200"
+          id="mobile-menu-button"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menú móvil -->
+    <div class="hidden md:hidden" id="mobile-menu">
+      <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-blue-50">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href;
+          return (
+            <a
+              href={item.href}
+              class={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                isActive
+                  ? 'text-blue-600 bg-blue-50 border-l-4 border-blue-400'
+                  : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
+              }`}
+            >
+              {item.name}
+            </a>
+          );
+        })}
+        
+        <!-- Enlaces de usuario en móvil -->
+        {user.isLoggedIn ? (
+          <div class="border-t border-blue-100 pt-2 mt-2">
+            <a href="/perfil" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Mi Perfil</a>
+            <a href="/mis-cursos" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Mis Cursos</a>
+            <a href="/logout" class="block px-3 py-2 text-blue-500 hover:bg-blue-50">Cerrar Sesión</a>
+          </div>
+        ) : (
+          <div class="border-t border-blue-100 pt-2 mt-2">
+            <a href="/login" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Iniciar Sesión</a>
+            <a href="/registro" class="block px-3 py-2 text-blue-500 hover:bg-blue-50 font-medium">Registrarse</a>
+          </div>
+        )}
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script is:inline>
+// Script para funcionalidad del menú móvil y validación de null
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const userMenuButton = document.getElementById('user-menu-button');
+  const userDropdown = document.getElementById('user-dropdown');
+
+  // Menú móvil
+  if (mobileMenuButton && mobileMenu) {
+    mobileMenuButton.addEventListener('click', function() {
+      if (mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.remove('hidden');
+      } else {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  // Dropdown del usuario
+  if (userMenuButton && userDropdown) {
+    userMenuButton.addEventListener('click', function() {
+      if (userDropdown.classList.contains('hidden')) {
+        userDropdown.classList.remove('hidden');
+      } else {
+        userDropdown.classList.add('hidden');
+      }
+    });
+
+    // Cerrar dropdown al hacer clic fuera
+    document.addEventListener('click', function(event) {
+      if (userMenuButton && userDropdown && 
+          !userMenuButton.contains(event.target) && 
+          !userDropdown.contains(event.target)) {
+        userDropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // Cerrar menús al hacer clic fuera (móvil)
+  document.addEventListener('click', function(event) {
+    if (mobileMenu && mobileMenuButton && 
+        !mobileMenu.contains(event.target) && 
+        !mobileMenuButton.contains(event.target) &&
+        !mobileMenu.classList.contains('hidden')) {
+      mobileMenu.classList.add('hidden');
+    }
+  });
+});
+</script>
+
+<style is:global>
+/* Mejoras de accesibilidad y transiciones */
+.header-transition {
+  transition: all 0.3s ease;
+}
+
+/* Efectos hover mejorados con temática acuática */
+.hover-lift:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Efecto de onda sutil en botones */
+.btn-aqua {
+  background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-aqua::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-aqua:hover::before {
+  left: 100%;
+}
+
+/* Mejoras para reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .header-transition, .hover-lift, .btn-aqua::before {
+    transition: none;
+    transform: none;
+  }
+  
+  .btn-aqua::before {
+    display: none;
+  }
+}
+
+/* Sombras suaves con tonos azules */
+.shadow-aqua {
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+}
+</style>

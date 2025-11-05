@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\ModuleController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\CursoInscritoUsuarioController;
 
 use App\Http\Controllers\Api\MapController;
 /*
@@ -117,6 +118,14 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
 Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
+
+Route::post('/subir-portada', [CourseController::class, 'subirPortada']);
+
+Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
+
+Route::post('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'store']);
+
+Route::get('/cursos-por-usuario/{usuarioId}', [CourseController::class, 'getCursosPorUsuario']);
 
 // API PARA MODULOS
 Route::get('/modulos', [ModuleController::class, 'index']);

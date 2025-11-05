@@ -1,0 +1,319 @@
+---
+// src/pages/detalle-curso/[id].astro
+import Layout from '../../layouts/Layout.astro';
+
+// --- Interfaces (Autor, Categoria, Curso) ---
+interface Autor {
+  id_usuario: number;
+  nombre: string;
+}
+interface Categoria {
+  id: number;
+  nombre: string;
+  slug: string;
+}
+interface Curso {
+  id_curso: number;
+  titulo: string;
+  descripcion: string;
+  portada_url: string | null;
+  tiempo_estimado_min: number;
+  autor: Autor;
+  categoria: Categoria;
+  publicado: boolean;
+}
+
+const { id } = Astro.params;
+
+// --- Lógica de Fetch ---
+let curso: Curso | null = null;
+let fetchError = false;
+
+try {
+  const response = await fetch(`http://localhost:8000/api/cursos/${id}`);
+  
+  if (response.ok) {
+    const data = await response.json();
+    console.log('Datos recibidos del API:', data);
+    curso = data; 
+  } else {
+    fetchError = true;
+    console.error('Error en la respuesta:', response.status);
+  }
+} catch (error: any) {
+  fetchError = true;
+  console.error('Error de conexión:', error.message);
+}
+---
+
+<Layout title={curso?.titulo || 'Curso no encontrado'}>
+  
+  <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-6 py-4">
+       <div class="flex justify-between items-center">
+         <div class="flex items-center space-x-2">
+           <a href="/" class="flex items-center space-x-2">
+             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.714-4.24a5.714 5.714 0 1111.428 0 5.714 5.714 0 01-11.428 0z"></path>
+             </svg>
+                          <span class="text-xl font-bold text-gray-800 dark:text-white">AquaLearn</span>
+           </a>
+         </div>
+         
+         <div class="flex items-center space-x-4">
+           <button id="dropdownUserButton" data-dropdown-toggle="dropdownUser" class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" type="button">
+             <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-300 font-medium">
+               U
+             </div>
+             <span>Usuario</span>
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+             </svg>
+           </button>
+           
+           <div id="dropdownUser" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+             <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+               <div>Usuario Demo</div>
+               <div class="font-medium truncate">usuario@example.com</div>
+             </div>
+             <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownUserButton">
+               <li>
+                 <a href="/perfil" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mi Perfil</a>
+               </li>
+               <li>
+                 <a href="/mis-cursos" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mis Cursos</a>
+               </li>
+             </ul>
+             <div class="py-2">
+               <a href="/cerrar-sesion" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-400 dark:hover:text-white">
+                 Cerrar Sesión
+               </a>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+  </header>
+
+  <main class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+      
+      {fetchError || !curso ? (
+                <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          <div class="p-8 text-center">
+            <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+            <h2 class="mt-4 text-2xl font-bold text-gray-800 dark:text-white">Curso no encontrado</h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Lo sentimos, no pudimos cargar la información del curso solicitado.</p>
+            <a href="/" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+              Volver al inicio
+            </a>
+      _     </div>
+        </div>
+      ) : (
+        <div class="max-w-6xl mx-auto">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <div class="md:flex">
+              <div class="md:w-2/3 p-8">
+                                
+                <div class="flex items-center mb-4">
+                  {curso.categoria && (
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                      {curso.categoria?.nombre}
+                    </span>
+                  )}
+                  <span class="ml-4 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {Math.floor(curso.tiempo_estimado_min / 60)}h {curso.tiempo_estimado_min % 60}m
+                  </span>
+                </div>
+    D         
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{curso.titulo}</h1>
+                
+                <div class="flex items-center mb-6">
+                  {curso.autor && (
+                    <>
+                      <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-300 font-medium">
+                        {curso.autor?.nombre.charAt(0)}
+                      </div>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">{curso.autor?.nombre}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Instructor</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                <div class="prose dark:prose-invert max-w-none mb-8">
+                  {curso.descripcion ? (
+                    <div set:html={curso.descripcion} />
+                  ) : (
+                    <p class="text-gray-700 dark:text-gray-300 italic">
+                      No hay descripción disponible para este curso.
+                    </p>
+                  )}
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Lo que aprenderás</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                     <div class="flex items-start">
+                       <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                       </svg>
+                       <span class="text-gray-700 dark:text-gray-300">Conceptos fundamentales sobre el tema del curso</span>
+                     </div>
+                     <div class="flex items-start">
+                       <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        _              </svg>
+                       <span class="text-gray-700 dark:text-gray-300">Técnicas avanzadas y mejores prácticas</span>
+                     </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="md:w-1/3 bg-gray-50 dark:bg-gray-700 p-8 border-l border-gray-200 dark:border-gray-600">
+                <div class="sticky top-8">
+                  {curso.portada_url ? (
+                    <img src={curso.portada_url} alt={curso.titulo} class="w-full h-48 object-cover rounded-lg mb-6" />
+                  ) : (
+                    <div class="w-full h-48 bg-blue-100 dark:bg-blue-800 rounded-lg flex items-center justify-center mb-6">
+                      <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.714-4.24a5.714 5.714 0 1111.428 0 5.714 5.714 0 01-11.428 0z"></path>
+                      </svg>
+                    </div>
+                  )}
+                  
+                  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+                    <div class="mb-4">
+                      <span class="text-2xl font-bold text-gray-900 dark:text-white">Gratis</span>
+                    </div>
+                    
+                                        <button 
+                      id="inscribirseBtn" 
+                      data-curso-id={curso.id_curso}
+                      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      </svg>
+                      Inscribirse en el curso
+                    </button>
+                    
+                	                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </main>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inscribirseBtn = document.getElementById('inscribirseBtn') as HTMLButtonElement | null;
+
+      if (inscribirseBtn) {
+        const originalBtnText = inscribirseBtn.innerHTML;
+
+        inscribirseBtn.addEventListener('click', async () => {
+          
+          const cursoId = inscribirseBtn.dataset.cursoId;
+
+          let userId = null;
+          // Asumiendo que usas 'userData' como me dijiste
+          const userString = localStorage.getItem("userData") || sessionStorage.getItem("userData");
+
+          if (userString) {
+            try {
+              const userData = JSON.parse(userString);
+              // Asumiendo { "id_usuario": 123 }
+              userId = userData.id_usuario; 
+            } catch (error) {
+              console.error("Error al obtener ID de usuario:", error);
+            }
+          }
+
+          // Validaciones
+          if (!userId) { 
+            alert('Error: No se encontró tu ID de usuario. Por favor, inicia sesión de nuevo.');
+            return;
+          }
+          
+          if (!cursoId) {
+            alert('Error: No se pudo encontrar el ID del curso.');
+            return;
+          }
+          
+          // Deshabilitar botón
+          inscribirseBtn.disabled = true;
+          inscribirseBtn.innerHTML = `
+            <svg class...></svg>
+            Procesando...
+          `;
+          
+          // --- ⭐ CAMBIO CLAVE AQUÍ ⭐ ---
+          // Prepara el objeto 'data' con las claves que tu API espera.
+          const data = {
+            usuario_id: parseInt(userId, 10),   // Clave actualizada
+            curso_id: parseInt(cursoId, 10)     // Clave actualizada
+          };
+          // --- FIN DEL CAMBIO ---
+          
+          try {
+            // ⚠️ RECUERDA: Cambia esta URL por tu endpoint real
+            const response = await fetch('http://localhost:8000/api/cursos-inscritos', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                // 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              },
+              // El body ahora enviará JSON con "usuario_id" y "curso_id"
+              body: JSON.stringify(data) 
+            });
+
+            if (response.ok) {
+              // ... (manejo de éxito) ...
+              alert('¡Inscripción exitosa!');
+              inscribirseBtn.textContent = '¡Inscrito!';
+              inscribirseBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+              inscribirseBtn.classList.add('bg-green-600', 'cursor-not-allowed');
+              
+              setTimeout(() => {
+                window.location.href = '/mis-cursos';
+              }, 1000);
+            
+            } else {
+              // ... (manejo de error del servidor) ...
+              let errorMsg = 'Inténtalo de nuevo más tarde.';
+              try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+              } catch (e) {
+                errorMsg = `Error ${response.status}: No se pudo procesar la solicitud.`;
+              }
+              alert(`Error al inscribirse: ${errorMsg}`);
+              inscribirseBtn.disabled = false;
+              inscribirseBtn.innerHTML = originalBtnText;
+            }
+          
+          } catch (error) {
+            // ... (manejo de error de red) ...
+            console.error('Error de red al intentar inscribirse:', error);
+            alert('Error de conexión. Por favor, revisa tu conexión a internet.');
+            inscribirseBtn.disabled = false;
+            inscribirseBtn.innerHTML = originalBtnText;
+          }
+        });
+      }
+    });
+  </script>
+</Layout>

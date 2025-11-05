@@ -1,61 +1,562 @@
 ---
-// Solución 1: Interface más flexible
+// -----------------------------------------------------------------
+// ARCHIVO: src/pages/admin/cursos/[cursoId]/lecciones/[id].astro
+// Página para mostrar el contenido de una lección específica
+// -----------------------------------------------------------------
+
+import CursoLayout from "../../../../../layouts/CursoLayout.astro";
+
+// 1. Params con validación
 interface Params {
+    cursoId?: string;
     id?: string;
 }
 
-// Solución 2: Usar type assertion más seguro
-const { id } = Astro.params as { id?: string };
+const { cursoId, id } = Astro.params as Params;
 
-// Solución 3: Validar que id existe
-if (!id) {
-    throw new Error('ID de lección no proporcionado');
+// 2. Validar que los parámetros existen
+if (!cursoId || !id) {
+    throw new Error("Parámetros cursoId e id son requeridos");
 }
 
-// Función para obtener la lección
+// 3. Función para obtener la lección desde la API
 async function obtenerLeccion(id: string) {
     try {
-        const response = await fetch(`http://localhost:8000/api/lecciones/${id}`);
-        
+        console.log(`🔍 Obteniendo lección con ID: ${id}`);
+        const response = await fetch(
+            `http://localhost:8000/api/lecciones/${id}`,
+        );
+
         if (!response.ok) {
-            throw new Error('Error al obtener la lección');
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-        
-        return await response.json();
+
+        const leccionData = await response.json();
+        console.log("📦 Datos de lección obtenidos:", leccionData);
+        return leccionData;
     } catch (error) {
-        console.error('Error:', error);
+        console.error("❌ Error al obtener la lección:", error);
         return null;
     }
 }
 
-// Uso de la función (solo si id existe)
+// 4. Función para obtener módulos del curso (para el sidebar)
+async function obtenerModulosDelCurso(cursoId: string) {
+    try {
+        console.log(`🔍 Obteniendo módulos del curso: ${cursoId}`);
+        const response = await fetch(
+            `http://localhost:8000/api/cursos/${cursoId}/modulos`,
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const modulosData = await response.json();
+        console.log("📦 Módulos obtenidos:", modulosData);
+        return modulosData;
+    } catch (error) {
+        console.error("❌ Error al obtener módulos:", error);
+        return [];
+    }
+}
+
+// 5. Obtener datos
 const leccionData = await obtenerLeccion(id);
+const modulosData = await obtenerModulosDelCurso(cursoId);
+
+// 6. Determinar si la lección está activa para el sidebar
+const modulosConLeccionActiva = modulosData.map((modulo: any) => ({
+    ...modulo,
+    lecciones:
+        modulo.lecciones?.map((leccion: any) => ({
+            ...leccion,
+            activa:
+                leccion.id_leccion?.toString() === id ||
+                leccion.id?.toString() === id,
+        })) || [],
+}));
+
+// 7. Preparar título y descripción basado en los datos
+let tituloPagina = "Lección no encontrada";
+let contenidoLeccion = null;
+
+if (leccionData) {
+    tituloPagina = leccionData.titulo || `Lección ${id}`;
+    contenidoLeccion = leccionData;
+}
+
+// 8. Props para el layout
+const layoutProps = {
+    cursoId: cursoId,
+    modulos: modulosConLeccionActiva,
+    currentLeccionId: parseInt(id)
+};
 ---
 
-<!-- Contenido de la página -->
-<html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lección {id}</title>
-    </head>
-    <body>
-        <main>
-            {leccionData ? (
-                <div>
-                    <h1>{leccionData.titulo || 'Lección'}</h1>
-                    <div>
-                        {leccionData.contenido && (
-                            <div>{leccionData.contenido}</div>
+<CursoLayout {...layoutProps}>
+    <!-- Contenido principal de la lección -->
+    <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+    >
+        {
+            leccionData ? (
+                <div class="space-y-6">
+                    <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                                    {leccionData.titulo || "Lección sin título"}
+                                </h1>
+                                {leccionData.descripcion && (
+                                    <p class="text-gray-600 dark:text-gray-300 mt-2 text-lg">
+                                        {leccionData.descripcion}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    Lección ID: {id}
+                                </span>
+                                {leccionData.duracion && (
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        ⏱️ {leccionData.duracion} min
+                                    </span>
+                                )}
+                                {leccionData.dificultad && (
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                        {leccionData.dificultad}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prose prose-lg max-w-none dark:prose-invert">
+                        {leccionData.contenido_texto ? (
+                            <div class="leccion-contenido">
+                                <!-- CORREGIDO: Mostrar HTML exacto como está en la BD -->
+                                <div set:html={leccionData.contenido_texto} />
+                            </div>
+                        ) : (
+                            <div class="text-center py-12">
+                                <svg
+                                    class="w-16 h-16 text-gray-400 mx-auto mb-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                    />
+                                </svg>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                    Contenido no disponible
+                                </h3>
+                                <p class="text-gray-500 dark:text-gray-400">
+                                    Esta lección no tiene contenido asignado
+                                    todavía.
+                                </p>
+                            </div>
                         )}
+                    </div>
+
+                    <!-- Navegación entre lecciones -->
+                    <div class="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <!-- Lección anterior -->
+                        <button 
+                            id="prev-leccion-btn"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled
+                        >
+                            <svg
+                                class="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 19l-7-7 7-7"
+                                />
+                            </svg>
+                            Lección anterior
+                        </button>
+
+                        <!-- Marcar como completada -->
+                        <button 
+                            id="completar-leccion-btn"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Marcar como completada
+                            <svg
+                                class="w-4 h-4 ml-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"
+                                />
+                            </svg>
+                        </button>
+
+                        <!-- Siguiente lección -->
+                        <button 
+                            id="next-leccion-btn"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled
+                        >
+                            Siguiente lección
+                            <svg
+                                class="w-4 h-4 ml-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             ) : (
-                <div>
-                    <h1>Error al cargar la lección</h1>
-                    <p>No se pudo cargar la lección con ID: {id}</p>
+                <div class="text-center py-12">
+                    <svg
+                        class="w-16 h-16 text-red-400 mx-auto mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        Error al cargar la lección
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-300 text-lg mb-6">
+                        No se pudo cargar la lección con ID: {id}
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <a
+                            href={`/admin/cursos/${cursoId}`}
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <svg
+                                class="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                                />
+                            </svg>
+                            Volver al curso
+                        </a>
+                        <button
+                            onclick="location.reload()"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                            <svg
+                                class="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                />
+                            </svg>
+                            Reintentar
+                        </button>
+                    </div>
                 </div>
-            )}
-        </main>
-    </body>
-</html>
+            )
+        }
+    </div>
+
+    <!-- Script para navegación entre lecciones -->
+    <script is:inline>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== NAVEGACIÓN ENTRE LECCIONES ===');
+            
+            // Obtener elementos
+            const prevBtn = document.getElementById('prev-leccion-btn');
+            const nextBtn = document.getElementById('next-leccion-btn');
+            const completarBtn = document.getElementById('completar-leccion-btn');
+            
+            // Función para encontrar la lección actual en la estructura de módulos
+            function encontrarLeccionActual() {
+                const modulos = JSON.parse(document.body.getAttribute('data-modulos') || '[]');
+                let leccionActual = null;
+                let leccionIndex = -1;
+                let moduloIndex = -1;
+                
+                for (let i = 0; i < modulos.length; i++) {
+                    const modulo = modulos[i];
+                    const lecciones = modulo.lecciones || [];
+                    
+                    for (let j = 0; j < lecciones.length; j++) {
+                        const leccion = lecciones[j];
+                        if (leccion.activa) {
+                            leccionActual = leccion;
+                            leccionIndex = j;
+                            moduloIndex = i;
+                            break;
+                        }
+                    }
+                    if (leccionActual) break;
+                }
+                
+                return { leccionActual, leccionIndex, moduloIndex, modulos };
+            }
+            
+            // Función para habilitar/deshabilitar botones de navegación
+            function configurarNavegacion() {
+                const { leccionActual, leccionIndex, moduloIndex, modulos } = encontrarLeccionActual();
+                
+                if (!leccionActual) return;
+                
+                const moduloActual = modulos[moduloIndex];
+                const leccionesModuloActual = moduloActual.lecciones || [];
+                
+                // Verificar si hay lección anterior
+                if (leccionIndex > 0) {
+                    const leccionAnterior = leccionesModuloActual[leccionIndex - 1];
+                    prevBtn.disabled = false;
+                    prevBtn.onclick = function() {
+                        window.location.href = leccionAnterior.url;
+                    };
+                } else {
+                    prevBtn.disabled = true;
+                }
+                
+                // Verificar si hay lección siguiente
+                if (leccionIndex < leccionesModuloActual.length - 1) {
+                    const leccionSiguiente = leccionesModuloActual[leccionIndex + 1];
+                    nextBtn.disabled = false;
+                    nextBtn.onclick = function() {
+                        window.location.href = leccionSiguiente.url;
+                    };
+                } else {
+                    nextBtn.disabled = true;
+                }
+            }
+            
+            // Configurar botón de completar lección
+            if (completarBtn) {
+                completarBtn.addEventListener('click', async function() {
+                    const leccionId = '{id}';
+                    
+                    try {
+                        completarBtn.disabled = true;
+                        completarBtn.innerHTML = `
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Marcando...
+                        `;
+                        
+                        const response = await fetch(`http://localhost:8000/api/lecciones/${leccionId}/completar`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            completarBtn.innerHTML = `
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                ¡Completada!
+                            `;
+                            completarBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                            completarBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                            
+                            // Redirigir a la siguiente lección después de 1.5 segundos
+                            setTimeout(() => {
+                                const nextBtn = document.getElementById('next-leccion-btn');
+                                if (!nextBtn.disabled) {
+                                    nextBtn.click();
+                                }
+                            }, 1500);
+                        } else {
+                            throw new Error('Error al marcar como completada');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        completarBtn.disabled = false;
+                        completarBtn.innerHTML = `
+                            Marcar como completada
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        `;
+                        alert('Error al marcar la lección como completada');
+                    }
+                });
+            }
+            
+            // Inicializar navegación
+            configurarNavegacion();
+        });
+    </script>
+</CursoLayout>
+
+<style is:global>
+    /* Estilos adicionales para el contenido de la lección */
+    .leccion-contenido {
+        line-height: 1.7;
+        font-size: 1.125rem;
+    }
+
+    .leccion-contenido h1,
+    .leccion-contenido h2,
+    .leccion-contenido h3,
+    .leccion-contenido h4 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .dark .leccion-contenido h1,
+    .dark .leccion-contenido h2,
+    .dark .leccion-contenido h3,
+    .dark .leccion-contenido h4 {
+        color: #f9fafb;
+    }
+
+    .leccion-contenido p {
+        margin-bottom: 1em;
+        color: #4b5563;
+    }
+
+    .dark .leccion-contenido p {
+        color: #d1d5db;
+    }
+
+    .leccion-contenido ul,
+    .leccion-contenido ol {
+        margin-bottom: 1em;
+        padding-left: 1.5em;
+    }
+
+    .leccion-contenido li {
+        margin-bottom: 0.5em;
+        color: #4b5563;
+    }
+
+    .dark .leccion-contenido li {
+        color: #d1d5db;
+    }
+
+    .leccion-contenido code {
+        background-color: #f3f4f6;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+        font-family: 'Courier New', monospace;
+    }
+
+    .dark .leccion-contenido code {
+        background-color: #374151;
+        color: #e5e7eb;
+    }
+
+    .leccion-contenido pre {
+        background-color: #1f2937;
+        color: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        margin: 1.5em 0;
+        font-family: 'Courier New', monospace;
+        line-height: 1.5;
+    }
+
+    .leccion-contenido pre.ql-syntax {
+        background-color: #1a202c;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .leccion-contenido blockquote {
+        border-left: 4px solid #3b82f6;
+        padding-left: 1rem;
+        margin: 1.5em 0;
+        font-style: italic;
+        color: #6b7280;
+        background-color: #f8fafc;
+        padding: 1rem;
+        border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .dark .leccion-contenido blockquote {
+        color: #9ca3af;
+        border-left-color: #60a5fa;
+        background-color: #1f2937;
+    }
+
+    .leccion-contenido a {
+        color: #3b82f6;
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+    .leccion-contenido a:hover {
+        color: #1d4ed8;
+    }
+
+    .dark .leccion-contenido a {
+        color: #60a5fa;
+    }
+
+    .dark .leccion-contenido a:hover {
+        color: #93c5fd;
+    }
+
+    /* Estilos específicos para contenido de Quill */
+    .leccion-contenido .ql-syntax {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9em;
+    }
+
+    .leccion-contenido strong {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .dark .leccion-contenido strong {
+        color: #f9fafb;
+    }
+
+    .leccion-contenido em {
+        font-style: italic;
+    }
+</style>

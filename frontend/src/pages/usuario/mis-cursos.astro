@@ -1,0 +1,192 @@
+---
+// src/pages/mis-cursos.astro
+import Layout from '../../layouts/Layout.astro';
+
+// ¡Hemos borrado toda la lógica de fetch de aquí!
+// Las interfaces ahora se usarán en el script de abajo.
+---
+
+<Layout title="Mis Cursos">
+  <main class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mis Cursos</h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Gestiona y continúa con tu aprendizaje
+        </p>
+      </div>
+
+      <div id="cursos-container">
+        <div class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+  <script>
+    // --- Interfaces (solo como referencia) ---
+    /* ... */
+
+    // --- Plantillas HTML (sin cambios) ---
+    const plantillaError = `... (tu plantilla de error) ...`;
+    const plantillaVacio = `... (tu plantilla de vacío) ...`;
+
+    /**
+     * Función para crear la tarjeta de un curso (VERSIÓN ROBUSTA)
+     * @param {CursoInscrito} inscripcion
+     */
+    function crearTarjetaCurso(inscripcion) {
+      // *** NUEVA VALIDACIÓN ***
+      // Proteger contra inscripciones nulas o cursos nulos
+      if (!inscripcion || !inscripcion.curso) {
+        console.warn('Se omitió una inscripción por datos inválidos:', inscripcion);
+        return ''; // Retorna un string vacío para no renderizar esta tarjeta
+      }
+
+      const { curso, fecha_inscripcion } = inscripcion;
+      
+      // Usamos el operador "Nullish Coalescing" (??) para valores por defecto
+      const titulo = curso.titulo ?? 'Curso sin Título';
+      const descripcion = curso.descripcion ?? 'Sin descripción disponible';
+      const categoriaNombre = curso.categoria?.nombre ?? 'Sin Categoría'; // 'Optional Chaining' (?.
+      const portadaAlt = titulo;
+
+      const portadaHtml = curso.portada_url 
+        ? `<img src="${curso.portada_url}" alt="${portadaAlt}" class="w-full h-48 object-cover">`
+        : `
+          <div class="w-full h-48 bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+            <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.714-4.24a5.714 5.714 0 1111.428 0 5.714 5.714 0 01-11.428 0z"></path>
+            </svg>
+          </div>
+        `;
+      
+      // *** VALIDACIÓN DE TIEMPO Y FECHA ***
+      const tiempoMin = curso.tiempo_estimado_min ?? 0;
+      const tiempoEstimado = `${Math.floor(tiempoMin / 60)}h ${tiempoMin % 60}m`;
+      
+      let fechaInscripcionFormateada = 'Fecha desconocida';
+      if (fecha_inscripcion) {
+        try {
+          const fecha = new Date(fecha_inscripcion);
+          // Validamos que la fecha sea un objeto Date válido
+          if (!isNaN(fecha.getTime())) {
+            fechaInscripcionFormateada = fecha.toLocaleDateString();
+          }
+        } catch (e) {
+          console.warn('Error al formatear la fecha:', fecha_inscripcion, e);
+        }
+      }
+
+      return `
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          ${portadaHtml}
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                ${categoriaNombre}
+              </span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">
+                ${fechaInscripcionFormateada}
+              </span>
+            </div>
+            
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              ${titulo}
+            </h3>
+            
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+              ${descripcion}
+            </p>
+            
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                ${tiempoEstimado}
+              </span>
+              
+              <a 
+                href="/detalle-curso/${curso.id_curso}"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+              >
+                Continuar
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. Función principal para cargar y renderizar
+    async function cargarMisCursos() {
+      const container = document.getElementById('cursos-container');
+      
+      // *** VALIDACIÓN DE CONTENEDOR (LA MÁS IMPORTANTE) ***
+      if (!container) {
+        console.error('Error Crítico: No se pudo encontrar el elemento #cursos-container en el DOM.');
+        // No podemos mostrar un error al usuario porque no sabemos dónde ponerlo.
+        return; 
+      }
+      
+      try {
+        const userId = localStorage.getItem('userId');
+
+        if (!userId) {
+          console.error('No se encontró el ID del usuario en localStorage');
+          // Ahora es seguro usar 'container' porque ya lo validamos
+          container.innerHTML = plantillaError;
+          return;
+        }
+
+        const response = await fetch(`http://localhost:8000/api/cursos-por-usuario/${userId}`);
+        
+        if (!response.ok) {
+          throw new Error(`La respuesta de la red no fue exitosa (Estado: ${response.status})`);
+        }
+
+        const cursosInscritos = await response.json();
+
+        // Validamos que la respuesta sea un array
+        if (!Array.isArray(cursosInscritos)) {
+          console.error('La respuesta de la API no fue un array:', cursosInscritos);
+          throw new Error('Respuesta inesperada de la API');
+        }
+
+        if (cursosInscritos.length === 0) {
+          container.innerHTML = plantillaVacio;
+        } else {
+          // map() filtrará automáticamente los strings vacíos que devuelva crearTarjetaCurso
+          const gridHtml = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${cursosInscritos.map(crearTarjetaCurso).join('')} 
+            </div>
+          `;
+          container.innerHTML = gridHtml;
+        }
+
+      } catch (err) {
+        console.error('Error al cargar los cursos:', err);
+        // Es seguro usar 'container' aquí
+        if (container) {
+          container.innerHTML = plantillaError;
+        }
+      }
+    }
+
+    // 3. Ejecutar la función cuando el documento esté listo
+    // Aseguramos que el script se ejecute solo después de que el DOM esté cargado
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', cargarMisCursos);
+    } else {
+        // El DOM ya está listo
+        cargarMisCursos();
+    }
+
+  </script>
+</Layout>
