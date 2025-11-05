@@ -1,0 +1,414 @@
+---
+// src/pages/admin/estaciones/[id].astro
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+const { id } = Astro.params;
+// Validación de ID
+if (!id) {
+    return Astro.redirect("/admin/verEstaciones");
+}
+// Fetch de datos de la estación específica
+let estacion = null;
+let error = null;
+try {
+    const res = await fetch(`http://localhost:8000/api/admin/estacion/${id}`);
+   
+    if (!res.ok) {
+        throw new Error(`Error ${res.status}: ${res.statusText}`);
+    }
+   
+    const data = await res.json();
+   
+    // Verificar la estructura de la respuesta
+    if (data.estacion) {
+        estacion = data.estacion;
+    } else if (data) {
+        estacion = data;
+    } else {
+        throw new Error("Formato de respuesta inesperado");
+    }
+} catch (err) {
+    console.error("Error cargando estación:", err);
+    error = err instanceof Error ? err.message : "Error desconocido";
+}
+// Función para formatear coordenadas
+const formatCoordenada = (coord: number | string | undefined): string => {
+    if (coord === undefined || coord === null) return 'N/A';
+    const numCoord = typeof coord === 'string' ? parseFloat(coord) : coord;
+    if (isNaN(numCoord)) return 'N/A';
+    return numCoord.toFixed(6);
+};
+// Función para formatear fecha
+const formatFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+// Datos para el script del cliente (para evitar errores de sintaxis en JS)
+const scriptData = {
+    id,
+    estacion: {
+        nombre: estacion?.nombre || '',
+        activo: !!estacion?.activo
+    }
+};
+---
+<AdminLayout title={`Estación ${estacion?.nombre || 'No encontrada'}`}>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Botón de regreso -->
+        <div class="mb-6">
+            <a
+                href="/admin/estaciones/verEstaciones"
+                class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Volver a estaciones
+            </a>
+        </div>
+        {error ? (
+            <!-- Mostrar error si hay problema con la API -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-800">Error al cargar estación</h3>
+                        <p class="text-red-600 mt-1">{error}</p>
+                    </div>
+                </div>
+            </div>
+        ) : !estacion ? (
+            <!-- Mostrar si no se encuentra la estación -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+                <h3 class="text-lg font-semibold text-yellow-800">Estación no encontrada</h3>
+                <p class="text-yellow-600 mt-1">La estación solicitada no existe o no está disponible.</p>
+            </div>
+        ) : (
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Columna principal -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Encabezado de la estación -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class={`w-3 h-10 rounded-full ${
+                                        estacion.activo ? 'bg-green-500' : 'bg-yellow-500'
+                                    }`}></div>
+                                    <div>
+                                        <h1 class="text-3xl font-bold text-gray-800">{estacion.nombre}</h1>
+                                        <p class="text-gray-600">{estacion.clave_sitio}</p>
+                                    </div>
+                                </div>
+                               
+                                <!-- Estado y acciones -->
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <span class={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
+                                        estacion.activo
+                                            ? 'bg-green-100 text-green-800 border border-green-200'
+                                            : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                                    }`}>
+                                        {estacion.activo ? (
+                                            <>
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Activa
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                En Espera
+                                            </>
+                                        )}
+                                    </span>
+                                   
+                                    <!-- Botón para activar/desactivar -->
+                                    <button
+                                        id="toggleActivoBtn"
+                                        class={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${
+                                            estacion.activo
+                                                ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                                : 'bg-green-500 hover:bg-green-600 text-white'
+                                        }`}
+                                    >
+                                        {estacion.activo ? 'Desactivar' : 'Activar'} Estación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Información de ubicación -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Ubicación
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600 mb-2">Coordenadas</h3>
+                                <p class="text-gray-800 font-mono">
+                                    Lat: {formatCoordenada(estacion.latitud)}<br>
+                                    Long: {formatCoordenada(estacion.longitud)}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600 mb-2">Ubicación Geográfica</h3>
+                                <p class="text-gray-800">
+                                    {estacion.municipio?.nombre || 'N/A'}, {estacion.municipio?.estado?.nombre || 'N/A'}<br>
+                                    Cuenca: {estacion.cuenca?.nombre || 'N/A'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Información técnica -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Información Técnica
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600 mb-2">Tipo y Subtipo</h3>
+                                <p class="text-gray-800">
+                                    Tipo: {estacion.tipo?.nombre || 'N/A'}<br>
+                                    Subtipo: {estacion.subtipo?.nombre || 'N/A'}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600 mb-2">Semáforo de Calidad</h3>
+                                {estacion.semaforo && estacion.semaforo.length > 0 ? (
+                                    <div class="flex items-center gap-2">
+                                        <span class={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+                                            estacion.semaforo[0].color === 'VERDE' ? 'bg-green-100 text-green-800' :
+                                            estacion.semaforo[0].color === 'AMARILLO' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
+                                        }`}>
+                                            <div class={`w-2 h-2 rounded-full ${
+                                                estacion.semaforo[0].color === 'VERDE' ? 'bg-green-500' :
+                                                estacion.semaforo[0].color === 'AMARILLO' ? 'bg-yellow-500' :
+                                                'bg-red-500'
+                                            }`}></div>
+                                            {estacion.semaforo[0].color}
+                                        </span>
+                                        {estacion.semaforo[0].contaminantes && (
+                                            <span class="text-xs text-gray-500">({estacion.semaforo[0].contaminantes})</span>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p class="text-gray-500">Sin datos de semáforo</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Mediciones recientes -->
+
+
+<!-- En la sección de mediciones -->
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+    <h4 class="text-lg font-semibold text-blue-800 mb-4">Información de Parámetros Medidos</h4>
+    <div class="grid gap-4">
+        {estacion.mediciones.map((medicion) => (
+            <div class="bg-white rounded-lg p-4 border border-blue-100">
+                <div class="flex justify-between items-start mb-2">
+                    <h5 class="font-semibold text-gray-800">{medicion.parametro.nombre} ({medicion.parametro.unidad})</h5>
+                    <span class={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        medicion.clasificacion === 'Excelente' ? 'bg-green-100 text-green-800' :
+                        medicion.clasificacion === 'Buena calidad' ? 'bg-blue-100 text-blue-800' :
+                        medicion.clasificacion === 'Aceptable' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                    }`}>
+                        {medicion.clasificacion}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">{medicion.parametro.definicion}</p>
+                <div class="text-xs text-orange-600">
+                    <strong>Contaminantes principales:</strong> {medicion.parametro.contaminantes_contribuyentes}
+                </div>
+            </div>
+        ))}
+    </div>
+</div>
+
+
+                </div>
+                <!-- Columna lateral -->
+                <div class="space-y-6">
+                    <!-- Información del registro -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Información del Registro</h2>
+                        <div class="space-y-3">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">Registrado por</h3>
+                                <p class="text-gray-800">
+                                    {estacion.usuario?.nombre || 'N/A'} {estacion.usuario?.ap_paterno || ''} {estacion.usuario?.ap_materno || ''}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">Fecha de creación</h3>
+                                <p class="text-gray-800">{formatFecha(estacion.created_at)}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">Última actualización</h3>
+                                <p class="text-gray-800">{formatFecha(estacion.updated_at)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Acciones rápidas -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Acciones</h2>
+                        <div class="space-y-3">
+                            <button
+                                id="editarBtn"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Editar Estación
+                            </button>
+                           
+                            <button
+                                id="eliminarBtn"
+                                class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Eliminar Estación
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+    </div>
+    <!-- Modal para confirmaciones -->
+    <div id="modalConfirmacion" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 m-4 max-w-md w-full">
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="modalTitulo">Confirmar acción</h3>
+            <p class="text-gray-600 mb-6" id="modalMensaje">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="cerrarModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium rounded-lg transition-colors duration-200">
+                    Cancelar
+                </button>
+                <button onclick="confirmarAccion()" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" id="modalBotonConfirmar">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+    <script define:vars={scriptData}>
+        const { id, estacion } = scriptData;
+        let accionPendiente = null;
+        // Función para mostrar modal
+        function mostrarModalConfirmacion(titulo, mensaje, accion, botonTexto = 'Confirmar', botonColor = 'blue') {
+            document.getElementById('modalTitulo').textContent = titulo;
+            document.getElementById('modalMensaje').textContent = mensaje;
+            document.getElementById('modalBotonConfirmar').textContent = botonTexto;
+            document.getElementById('modalBotonConfirmar').className = `px-4 py-2 bg-${botonColor}-600 text-white font-medium rounded-lg hover:bg-${botonColor}-700 transition-colors duration-200`;
+           
+            accionPendiente = accion;
+            document.getElementById('modalConfirmacion').classList.remove('hidden');
+        }
+        function cerrarModal() {
+            document.getElementById('modalConfirmacion').classList.add('hidden');
+            accionPendiente = null;
+        }
+        function confirmarAccion() {
+            if (accionPendiente) {
+                accionPendiente();
+            }
+            cerrarModal();
+        }
+        // Toggle activo/inactivo
+        document.getElementById('toggleActivoBtn')?.addEventListener('click', function() {
+            const nuevoEstado = !estacion.activo;
+            const accion = nuevoEstado ? 'activar' : 'desactivar';
+           
+            mostrarModalConfirmacion(
+                `${nuevoEstado ? 'Activar' : 'Desactivar'} Estación`,
+                `¿Estás seguro de que deseas ${accion} la estación "${estacion.nombre}"?`,
+                () => cambiarEstadoEstacion(nuevoEstado),
+                nuevoEstado ? 'Activar' : 'Desactivar',
+                nuevoEstado ? 'green' : 'yellow'
+            );
+        });
+        // Editar estación
+        document.getElementById('editarBtn')?.addEventListener('click', function() {
+            // Redirigir al formulario de edición
+            window.location.href = `/admin/formularios/editarEstacion/${id}`;
+        });
+        // Eliminar estación
+        document.getElementById('eliminarBtn')?.addEventListener('click', function() {
+            mostrarModalConfirmacion(
+                'Eliminar Estación',
+                `¿Estás seguro de que deseas eliminar la estación "${estacion.nombre}"? Esta acción no se puede deshacer.`,
+                () => eliminarEstacion(),
+                'Eliminar',
+                'red'
+            );
+        });
+        async function cambiarEstadoEstacion(nuevoEstado) {
+            try {
+                const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        activo: nuevoEstado
+                    })
+                });
+                if (response.ok) {
+                    alert(`✅ Estación ${nuevoEstado ? 'activada' : 'desactivada'} exitosamente`);
+                    location.reload();
+                } else {
+                    throw new Error(`Error al ${nuevoEstado ? 'activar' : 'desactivar'} estación`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`❌ Error al ${nuevoEstado ? 'activar' : 'desactivar'} la estación`);
+            }
+        }
+        async function eliminarEstacion() {
+            try {
+                const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    alert('✅ Estación eliminada exitosamente');
+                    window.location.href = '/admin/verEstaciones';
+                } else {
+                    throw new Error('Error al eliminar estación');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al eliminar la estación');
+            }
+        }
+    </script>
+</AdminLayout>

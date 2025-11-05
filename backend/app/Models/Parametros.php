@@ -21,5 +21,7 @@ class Parametros extends Model
         'norma_min',
         'norma_max',
         'descripcion',
+        'definicion',
+        'contaminantes_contribuyentes',
     ];
 }

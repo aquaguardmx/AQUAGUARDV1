@@ -59,6 +59,12 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                     <h3 class="info-title" id="waterBodyTitle"></h3>
                     <div id="waterBodyInfo"></div>
                     
+                    <!-- NUEVA SECCIÓN: Información de Parámetros Medidos -->
+                    <div class="parameter-info-section" id="parameterInfoSection" style="display: none;">
+                        <h4><i class="fas fa-flask"></i> Información de Parámetros Medidos</h4>
+                        <div id="parameterInfoContainer"></div>
+                    </div>
+                    
                     <div class="treatment-steps" id="treatmentSteps">
                         <h4><i class="fas fa-filter"></i> Recomendaciones de Tratamiento</h4>
                         <div id="stepsContainer"></div>
@@ -71,6 +77,9 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                             <span class="parameter-value" id="aptaStatus"></span>
                         </div>
                         <div id="additionalInfo"></div>
+                        
+                        <!-- NUEVA SECCIÓN: Usos del Agua y Información Educativa -->
+                        <div id="usosEducacionInfo"></div>
                     </div>
                 </div>
             </div>
@@ -107,6 +116,235 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
         let map;
         let ubicacionMarker = null;
         let currentLocation = null;
+
+        // NUEVAS FUNCIONES PARA USOS DEL AGUA
+        function usosSegunCalidad(propiedades) {
+            let usos = [];
+            // Consumo humano
+            if (
+                parseFloat(propiedades['DBO_mg/L'] || 0) <= 5 &&
+                parseFloat(propiedades['DQO_mg/L'] || 0) <= 10 &&
+                parseFloat(propiedades['SST_mg/L'] || 0) <= 10 &&
+                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 2 &&
+                parseFloat(propiedades['E_COLI_NMP_100mL'] || 0) <= 2
+            ) {
+                usos.push('Consumo humano (con tratamiento completo)');
+            }
+            // Riego agrícola
+            if (
+                parseFloat(propiedades['DBO_mg/L'] || 0) <= 30 &&
+                parseFloat(propiedades['SST_mg/L'] || 0) <= 50 &&
+                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 1000
+            ) {
+                usos.push('Riego agrícola');
+            }
+            // Recreación
+            if (
+                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 200 &&
+                parseFloat(propiedades['SST_mg/L'] || 0) <= 30
+            ) {
+                usos.push('Recreación (nado, pesca)');
+            }
+            // Industrial
+            if (
+                parseFloat(propiedades['SST_mg/L'] || 0) <= 100
+            ) {
+                usos.push('Usos industriales');
+            }
+            // Vida acuática
+            if (
+                parseFloat(propiedades['OD_PORC'] || 0) >= 80 &&
+                parseFloat(propiedades['TOX_D_48_UT'] || 0) <= 1
+            ) {
+                usos.push('Protección de vida acuática');
+            }
+            if (usos.length === 0) {
+                return 'No apta para usos directos. Requiere tratamiento avanzado.';
+            }
+            return usos.join(', ');
+        }
+
+        function usosTrasTratamiento(propiedades) {
+            let usos = [];
+            // Si tras tratamiento cumple con todos los límites, se puede usar para consumo humano
+            if (
+                propiedades['CALIDAD_DBO'] === "Excelente" &&
+                propiedades['CALIDAD_DQO'] === "Excelente" &&
+                propiedades['CALIDAD_SST'] === "Excelente" &&
+                propiedades['CALIDAD_COLI_FEC'] === "Excelente" &&
+                propiedades['CALIDAD_E_COLI'] === "Excelente" &&
+                (propiedades['CALIDAD_TOX_D_48'] === "No Toxico" || propiedades['CALIDAD_TOX_V_15'] === "No Toxico")
+            ) {
+                usos.push('Consumo humano');
+            }
+            // Riego agrícola
+            if (
+                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_DBO']) &&
+                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_SST']) &&
+                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_COLI_FEC'])
+            ) {
+                usos.push('Riego agrícola');
+            }
+            // Recreación
+            if (
+                ["Excelente", "Buena"].includes(propiedades['CALIDAD_COLI_FEC']) &&
+                ["Excelente", "Buena"].includes(propiedades['CALIDAD_SST'])
+            ) {
+                usos.push('Recreación (nado, pesca)');
+            }
+            // Industrial
+            if (
+                ["Excelente", "Buena", "Moderada"].includes(propiedades['CALIDAD_SST'])
+            ) {
+                usos.push('Usos industriales');
+            }
+            // Vida acuática
+            if (
+                propiedades['CALIDAD_OD_PORC'] === "Excelente" &&
+                (propiedades['CALIDAD_TOX_D_48'] === "No Toxico" || propiedades['CALIDAD_TOX_V_15'] === "No Toxico")
+            ) {
+                usos.push('Protección de vida acuática');
+            }
+            // Si hay toxicidad alta, solo uso industrial tras tratamiento avanzado
+            if (propiedades['CALIDAD_TOX_D_48'] === "Toxicidad alta" || propiedades['CALIDAD_TOX_V_15'] === "Toxicidad alta") {
+                usos = ['Solo uso industrial tras tratamiento avanzado'];
+            }
+            if (usos.length === 0) {
+                return 'No apta para usos directos. Requiere tratamiento avanzado.';
+            }
+            return usos.join(', ');
+        }
+
+        //Funciones para generar la información educativa adicional
+        function riesgosCuerpoAgua(propiedades) {
+            const riesgos = [];
+            if (propiedades['COLI_FEC_NMP_100mL'] > 200 || propiedades['E_COLI_NMP_100mL'] > 100) {
+                riesgos.push('Riesgo de enfermedades gastrointestinales');
+            }
+            if (parseFloat(propiedades['DBO_mg/L'] || 0) > 30) {
+                riesgos.push('Posible agotamiento de oxígeno en el agua');
+            }
+            if (propiedades['TOX_D_48_UT'] > 1 || propiedades['TOX_V_15_UT'] > 1) {
+                riesgos.push('Posible toxicidad para organismos acuáticos');
+            }
+            return riesgos.length > 0 ? riesgos.join(', ') : 'Bajo riesgo según parámetros medidos';
+        }
+
+        function conservacionCuerposAgua(tipo) {
+            if (tipo.includes('Río')) {
+                return 'Los ríos son ecosistemas vitales que conectan diferentes hábitats. Su conservación es crucial para mantener la biodiversidad y proveer agua para comunidades.';
+            } else {
+                return 'Los cuerpos de agua lénticos (lagos, lagunas) son importantes reservorios de agua dulce y hábitats para especies acuáticas. Su protección ayuda a mantener el equilibrio ecológico.';
+            }
+        }
+
+        function prepararPropiedadesParaUsos(estacion) {
+            const propiedades = {};
+            const mediciones = estacion.mediciones || [];
+            
+            // Extraer valores de las mediciones
+            mediciones.forEach(medicion => {
+                const paramNombre = medicion.parametro.nombre;
+                const valor = parseFloat(medicion.valor) || 0;
+                const clasificacion = medicion.clasificacion || 'Sin datos';
+                
+                // Mapear nombres de parámetros a las propiedades esperadas
+                switch(paramNombre) {
+                    case 'DBO':
+                        propiedades['DBO_mg/L'] = valor;
+                        propiedades['CALIDAD_DBO'] = clasificacion;
+                        break;
+                    case 'DQO':
+                        propiedades['DQO_mg/L'] = valor;
+                        propiedades['CALIDAD_DQO'] = clasificacion;
+                        break;
+                    case 'SST':
+                        propiedades['SST_mg/L'] = valor;
+                        propiedades['CALIDAD_SST'] = clasificacion;
+                        break;
+                    case 'CF':
+                        propiedades['COLI_FEC_NMP_100mL'] = valor;
+                        propiedades['CALIDAD_COLI_FEC'] = clasificacion;
+                        break;
+                    case 'E_COLI':
+                        propiedades['E_COLI_NMP_100mL'] = valor;
+                        propiedades['CALIDAD_E_COLI'] = clasificacion;
+                        break;
+                    case 'OD_PORC':
+                        propiedades['OD_PORC'] = valor;
+                        propiedades['CALIDAD_OD_PORC'] = clasificacion;
+                        break;
+                    case 'TOX_D_48':
+                        propiedades['TOX_D_48_UT'] = valor;
+                        propiedades['CALIDAD_TOX_D_48'] = clasificacion;
+                        break;
+                    case 'TOX_V_15':
+                        propiedades['TOX_V_15_UT'] = valor;
+                        propiedades['CALIDAD_TOX_V_15'] = clasificacion;
+                        break;
+                }
+            });
+            
+            return propiedades;
+        }
+
+        function generarUsosYEducacion(estacion) {
+            const propiedades = prepararPropiedadesParaUsos(estacion);
+            const usosActuales = usosSegunCalidad(propiedades);
+            const usosTratamiento = usosTrasTratamiento(propiedades);
+            const riesgos = riesgosCuerpoAgua(propiedades);
+            const conservacion = conservacionCuerposAgua(estacion.tipo?.nombre || 'Cuerpo de agua');
+            
+            return `
+                <div class="info-cards-group mt-3">
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fas fa-check-circle text-success"></i> 
+                            <span>Usos Recomendados (Sin Tratamiento)</span>
+                        </div>
+                        <div class="info-card-body">
+                            <div class="uso-content ${usosActuales.includes('No apta') ? 'text-danger' : 'text-success'}">
+                                <i class="fas ${usosActuales.includes('No apta') ? 'fa-times-circle' : 'fa-check-circle'} me-2"></i>
+                                ${usosActuales}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fas fa-cogs text-primary"></i> 
+                            <span>Usos Recomendados (Tras Tratamiento)</span>
+                        </div>
+                        <div class="info-card-body">
+                            <div class="uso-content ${usosTratamiento.includes('No apta') ? 'text-danger' : 'text-success'}">
+                                <i class="fas ${usosTratamiento.includes('No apta') ? 'fa-times-circle' : 'fa-check-circle'} me-2"></i>
+                                ${usosTratamiento}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> 
+                            <span>Riesgos Identificados</span>
+                        </div>
+                        <div class="info-card-body">
+                            <p class="mb-0">${riesgos}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fas fa-seedling text-success"></i> 
+                            <span>Importancia de Conservación</span>
+                        </div>
+                        <div class="info-card-body">
+                            <p class="mb-0">${conservacion}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         function initMap() {
             if (map) return;
@@ -300,6 +538,9 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
             
             document.getElementById('waterBodyInfo').innerHTML = infoHTML;
             
+            // NUEVO: Mostrar información detallada de parámetros
+            mostrarInformacionParametros(estacion);
+            
             // Recomendaciones de tratamiento
             document.getElementById('stepsContainer').innerHTML = generarRecomendacionesTratamiento(estacion);
             
@@ -311,12 +552,93 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
             // Información adicional
             document.getElementById('additionalInfo').innerHTML = generarInformacionAdicional(estacion);
             
+            // NUEVO: Mostrar usos y educación
+            document.getElementById('usosEducacionInfo').innerHTML = generarUsosYEducacion(estacion);
+            
             // Mostrar el panel
             document.getElementById('infoPanel').style.display = 'block';
             document.getElementById('infoPanel').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Funciones auxiliares
+        // Mostrar información detallada de parámetros
+        function mostrarInformacionParametros(estacion) {
+            const mediciones = estacion.mediciones || [];
+            const parameterSection = document.getElementById('parameterInfoSection');
+            const parameterContainer = document.getElementById('parameterInfoContainer');
+            
+            if (mediciones.length === 0) {
+                parameterSection.style.display = 'none';
+                return;
+            }
+            
+            let parametrosHTML = '';
+            
+            mediciones.forEach((medicion, index) => {
+                const parametro = medicion.parametro;
+                const tieneDefinicion = parametro.definicion && parametro.definicion.trim() !== '';
+                const tieneContaminantes = parametro.contaminantes_contribuyentes && parametro.contaminantes_contribuyentes.trim() !== '';
+                
+                parametrosHTML += `
+                    <div class="parameter-detail-card ${index > 0 ? 'mt-3' : ''}">
+                        <div class="parameter-header">
+                            <h5 class="parameter-name">${parametro.nombre} (${parametro.unidad})</h5>
+                            <span class="parameter-value-badge ${getClasificacionClass(medicion.clasificacion)}">
+                                ${medicion.valor} ${parametro.unidad} - ${medicion.clasificacion}
+                            </span>
+                        </div>
+                        
+                        ${tieneDefinicion ? `
+                            <div class="parameter-definition">
+                                <div class="definition-title">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                    <strong>Definición:</strong>
+                                </div>
+                                <p class="definition-text">${parametro.definicion}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${tieneContaminantes ? `
+                            <div class="parameter-contaminants">
+                                <div class="contaminants-title">
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    <strong>Principales Contaminantes Contribuyentes:</strong>
+                                </div>
+                                <p class="contaminants-text">${parametro.contaminantes_contribuyentes}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${!tieneDefinicion && !tieneContaminantes ? `
+                            <div class="parameter-no-info">
+                                <i class="fas fa-info-circle text-muted"></i>
+                                <span class="text-muted">Información detallada no disponible para este parámetro</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            parameterContainer.innerHTML = parametrosHTML;
+            parameterSection.style.display = 'block';
+        }
+
+        // Función auxiliar para clases de clasificación
+        function getClasificacionClass(clasificacion) {
+            switch(clasificacion?.toUpperCase()) {
+                case 'EXCELENTE':
+                    return 'badge bg-success';
+                case 'BUENA CALIDAD':
+                    return 'badge bg-primary';
+                case 'ACEPTABLE':
+                    return 'badge bg-warning';
+                case 'CONTAMINADA':
+                case 'FUERTEMENTE CONTAMINADA':
+                    return 'badge bg-danger';
+                default:
+                    return 'badge bg-secondary';
+            }
+        }
+
+        // Funciones auxiliares existentes
         function getQualityClass(color) {
             switch(color.toUpperCase()) {
                 case 'VERDE': return 'quality-good';
@@ -356,88 +678,189 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
             }
         }
 
-        function generarRecomendacionesTratamiento(estacion) {
-            const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                ? estacion.semaforo[0]
-                : null;
-            
-            if (!semaforoActual) {
-                return `
-                    <div class="step-card">
-                        <div class="step-title">Información Insuficiente</div>
-                        <div class="step-desc">
-                            <p>No hay datos recientes de calidad del agua para esta estación.</p>
-                            <p>Se recomienda realizar mediciones actualizadas para generar recomendaciones específicas.</p>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            let stepsHTML = '';
-            const contaminantes = semaforoActual.contaminantes ? semaforoActual.contaminantes.split(',') : [];
-            
-            // Recomendaciones basadas en el color del semáforo
-            switch(semaforoActual.color.toUpperCase()) {
-                case 'VERDE':
-                    stepsHTML = `
-                        <div class="step-card">
-                            <div class="step-title">Calidad Buena - Tratamiento Básico</div>
-                            <div class="step-desc">
-                                <ul>
-                                    <li>Filtración con carbón activado</li>
-                                    <li>Desinfección con cloro o luz UV</li>
-                                    <li>Sedimentación simple</li>
-                                    ${contaminantes.length > 0 ? `<li>Manejo específico para: ${contaminantes.join(', ')}</li>` : ''}
-                                </ul>
-                                <span class="badge bg-success">Recomendado: Consumo humano con tratamiento</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'AMARILLO':
-                    stepsHTML = `
-                        <div class="step-card">
-                            <div class="step-title">Calidad Moderada - Tratamiento Intermedio</div>
-                            <div class="step-desc">
-                                <ul>
-                                    <li>Coagulación y floculación</li>
-                                    <li>Filtración múltiple (arena, carbón)</li>
-                                    <li>Desinfección con ozono o UV intensivo</li>
-                                    <li>Tratamiento biológico secundario</li>
-                                    ${contaminantes.length > 0 ? `<li>Tratamiento específico para: ${contaminantes.join(', ')}</li>` : ''}
-                                </ul>
-                                <span class="badge bg-warning">Recomendado: Riego y uso industrial</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'ROJO':
-                    stepsHTML = `
-                        <div class="step-card">
-                            <div class="step-title">Calidad Mala - Tratamiento Avanzado</div>
-                            <div class="step-desc">
-                                <ul>
-                                    <li>Tratamiento terciario avanzado</li>
-                                    <li>Ósmosis inversa</li>
-                                    <li>Oxidación avanzada (AOPs)</li>
-                                    <li>Filtración por membranas</li>
-                                    <li>Desinfección múltiple</li>
-                                    ${contaminantes.length > 0 ? `<li>Tratamiento intensivo para: ${contaminantes.join(', ')}</li>` : ''}
-                                </ul>
-                                <span class="badge bg-danger">No apta para consumo sin tratamiento avanzado</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                    
-                default:
-                    stepsHTML = '<p>No se pueden generar recomendaciones específicas.</p>';
-            }
-            
-            return stepsHTML;
-        }
+function generarRecomendacionesTratamiento(estacion) {
+    let stepsHTML = '';
+    const mediciones = estacion.mediciones || [];
+    
+    // Obtener las clasificaciones de cada parámetro
+    const clasificaciones = {};
+    mediciones.forEach(medicion => {
+        const parametroNombre = medicion.parametro.nombre;
+        clasificaciones[parametroNombre] = medicion.clasificacion;
+    });
+
+    // Función auxiliar para obtener la clasificación
+    const getClasificacion = (parametro) => clasificaciones[parametro] || 'Sin datos';
+
+    // Sólidos Suspendidos Totales (SST)
+    const clasificacionSST = getClasificacion('SST');
+    if (clasificacionSST === "Fuertemente contaminada" || clasificacionSST === "Contaminada") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Cribado, desarenación intensiva, posible pre-tratamiento físico-químico</li>
+                        <li>Filtración por membranas para partículas finas</li>
+                        <li>Coagulación-floculación para mejorar la sedimentación</li>
+                    </ul>
+                    <span class="badge bg-danger">Calidad: Mala</span>
+                    <span class="normativa">NOM-230-SSA1-2002</span>
+                </div>
+            </div>
+        `;
+    } else if (clasificacionSST === "Aceptable" || clasificacionSST === "Buena calidad") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Cribado simple, posible filtración granular</li>
+                        <li>Sedimentación primaria</li>
+                        <li>Filtración con arena o antracita</li>
+                    </ul>
+                    <span class="badge bg-warning">Calidad: Moderada</span>
+                    <span class="normativa">NOM-230-SSA1-2002</span>
+                </div>
+            </div>
+        `;
+    } else if (clasificacionSST === "Excelente") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Filtración básica (medios granulares)</li>
+                        <li>Protección contra resuspensión</li>
+                    </ul>
+                    <span class="badge bg-success">Calidad: Buena</span>
+                    <span class="normativa">NOM-230-SSA1-2002</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // DBO/DQO (Materia orgánica)
+    const clasificacionDBO = getClasificacion('DBO');
+    const clasificacionDQO = getClasificacion('DQO');
+    
+    if (clasificacionDBO === "Fuertemente contaminada" || clasificacionDQO === "Fuertemente contaminada" || 
+        clasificacionDBO === "Contaminada" || clasificacionDQO === "Contaminada") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Tratamiento secundario avanzado (biorreactores de membrana - MBR)</li>
+                        <li>Tratamiento terciario (carbón activado granular)</li>
+                        <li>Oxidación avanzada (AOPs, ozonización)</li>
+                    </ul>
+                    <span class="badge bg-danger">Calidad: Mala</span>
+                    <span class="normativa">NOM-002-SEMARNAT-1996</span>
+                </div>   
+            </div>
+        `;
+    } else if (clasificacionDBO === "Aceptable" || clasificacionDQO === "Aceptable" || 
+              clasificacionDBO === "Buena calidad" || clasificacionDQO === "Buena calidad") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Tratamiento secundario biológico (biofiltración, lodos activados)</li>
+                        <li>Aireación extendida, estanques de oxidación</li>
+                        <li>Adsorción con carbón activado</li>
+                    </ul>
+                    <span class="badge bg-warning">Calidad: Moderada</span>
+                    <span class="normativa">NOM-002-SEMARNAT-1996</span>
+                </div>
+            </div>
+        `;
+    } else if (clasificacionDBO === "Excelente" || clasificacionDQO === "Excelente") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>No requiere tratamiento específico para materia orgánica</li>
+                        <li>Desinfección básica según otros parámetros</li>
+                        <li>Monitoreo preventivo</li>
+                    </ul>
+                    <span class="badge bg-success">Calidad: Buena</span>
+                    <span class="normativa">NOM-002-SEMARNAT-1996</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Patógenos (E. coli, coliformes fecales)
+    const clasificacionEColi = getClasificacion('E_COLI');
+    const clasificacionColiFec = getClasificacion('CF');
+
+    if (clasificacionColiFec === "Fuertemente contaminada" || clasificacionEColi === "Fuertemente contaminada" ||
+        clasificacionColiFec === "Contaminada" || clasificacionEColi === "Contaminada") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Desinfección avanzada (ozono + UV combinados)</li>
+                        <li>Cloración con control estricto de subproductos</li>
+                        <li>Filtración por membranas (ultrafiltración)</li>
+                    </ul>
+                    <span class="badge bg-danger">Calidad: Mala</span>
+                    <span class="normativa">NOM-127-SSA1-2021</span>
+                </div>
+            </div>
+        `;
+    } else if (clasificacionColiFec === "Aceptable" || clasificacionEColi === "Aceptable" ||
+              clasificacionColiFec === "Buena calidad" || clasificacionEColi === "Buena calidad") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Desinfección intensiva (cloración controlada)</li>
+                        <li>Radiación UV de media presión</li>
+                        <li>Ozonización con contacto adecuado</li>
+                    </ul>
+                    <span class="badge bg-warning">Calidad: Moderada</span>
+                    <span class="normativa">NOM-127-SSA1-2021</span>
+                </div>
+            </div>
+        `;
+    } else if (clasificacionColiFec === "Excelente" || clasificacionEColi === "Excelente") {
+        stepsHTML += `
+            <div class="step-card">
+                <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
+                <div class="step-desc">
+                    <ul>
+                        <li>Desinfección básica (cloración estándar)</li>
+                        <li>Radiación UV de baja presión</li>
+                        <li>Filtración convencional</li>
+                    </ul>
+                    <span class="badge bg-success">Calidad: Buena</span>
+                    <span class="normativa">NOM-127-SSA1-2021</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Si no hay recomendaciones específicas
+    if (stepsHTML === '') {
+        stepsHTML = `
+            <div class="step-card">
+                <div class="step-title">Información Insuficiente</div>
+                <div class="step-desc">
+                    <p>No hay datos suficientes para generar recomendaciones específicas.</p>
+                    <span class="badge bg-secondary">Sin datos suficientes</span>
+                </div>
+            </div>
+        `;
+    }
+
+    return stepsHTML;
+}
 
         function generarInformacionAdicional(estacion) {
             const mediciones = estacion.mediciones || [];
@@ -447,17 +870,16 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                 medicionesHTML = `
                     <div class="info-card">
                         <div class="info-card-header">
-                            <i class="fas fa-flask"></i> <span>Últimas Mediciones</span>
+                            <i class="fas fa-flask"></i> <span>Resumen de Mediciones</span>
                         </div>
                         <div class="info-card-body">
-                            ${mediciones.slice(0, 5).map(med => `
+                            ${mediciones.slice(0, 3).map(med => `
                                 <div class="medicion-item">
-                                    <strong>${med.parametro.nombre}</strong>: ${med.valor} ${med.parametro.unidad}<br>
-                                    <small><strong>Descripción:</strong> ${med.parametro.descripcion || 'Sin descripción disponible'}</small><br>
-                                    <small><strong>Clasificación:</strong> ${med.clasificacion}</small>
+                                    <strong>${med.parametro.nombre}</strong>: ${med.valor} ${med.parametro.unidad}
+                                    <span class="badge ${getClasificacionClass(med.clasificacion)}">${med.clasificacion}</span>
                                 </div>
                             `).join('')}
-                            ${mediciones.length > 5 ? `<p><small>+ ${mediciones.length - 5} mediciones más</small></p>` : ''}
+                            ${mediciones.length > 3 ? `<p><small>+ ${mediciones.length - 3} mediciones más</small></p>` : ''}
                         </div>
                     </div>
                 `;
@@ -698,57 +1120,151 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
             inicializarEventListeners();
             cargarCuerposAgua();
         }
-
-
-
-
-        //modal para el login antes de registar una estacion (cuerpo d agua)
-function manejarReporteEstacion() {
-    const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    
-    if (!authToken) {
-        // Mostrar modal de autenticación con redirect
-        mostrarModalAutenticacion();
-    } else {
-        // Redirigir directamente al formulario
-        window.location.href = '/estaciones/nueva';
-    }
-}
-
-function mostrarModalAutenticacion() {
-    const modalHTML = `
-        <div class="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center;">
-            <div class="modal-content" style="background:white; padding:30px; border-radius:15px; max-width:400px; width:90%; text-align:center;">
-                <h3 style="color:#0077b6; margin-bottom:15px;">Reportar Cuerpo de Agua</h3>
-                <p style="margin-bottom:20px; color:#666;">Necesitas una cuenta para contribuir a nuestro mapa de calidad del agua.</p>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button onclick="irALogin()" style="background:#0077b6; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:600;">
-                        Iniciar Sesión
-                    </button>
-                    <button onclick="irARegistro()" style="background:#28a745; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:600;">
-                        Crear Cuenta
-                    </button>
-                    <button onclick="cerrarModal()" style="background:transparent; color:#666; border:1px solid #ddd; padding:12px; border-radius:8px; cursor:pointer;">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function irALogin() {
-    // Agregar parámetro redirect
-    window.location.href = '/auth/login?redirect=/usuario/registrarEstacion';
-}
-
-function irARegistro() {
-    // Agregar parámetro redirect
-    window.location.href = '/auth/register?redirect=/usuario/registrarEstacion';
-}
     </script>
+
+    <style>
+        /* NUEVOS ESTILOS PARA LA INFORMACIÓN DE PARÁMETROS */
+        .parameter-info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #0077b6;
+        }
+
+        .parameter-detail-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .parameter-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .parameter-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+            flex: 1;
+        }
+
+        .parameter-value-badge {
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .parameter-definition,
+        .parameter-contaminants {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #0077b6;
+        }
+
+        .parameter-contaminants {
+            border-left-color: #ffc107;
+        }
+
+        .definition-title,
+        .contaminants-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .definition-text,
+        .contaminants-text {
+            margin: 0;
+            line-height: 1.5;
+            color: #495057;
+        }
+
+        .parameter-no-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-style: italic;
+        }
+
+        /* Estilos para las tarjetas de información */
+        .info-cards-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .info-card-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .info-card-body {
+            padding: 15px;
+        }
+
+        .medicion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .uso-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .parameter-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .parameter-value-badge {
+                align-self: flex-start;
+            }
+            
+            .info-cards-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 
 </body>
 </html>
