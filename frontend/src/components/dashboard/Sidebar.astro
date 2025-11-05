@@ -113,6 +113,7 @@
                             >Usuarios</a
                         >
                     </li>
+                    
                 </ul>
             </li>
             <li>
@@ -231,6 +232,58 @@
                     </li>
                 </ul>
             </li>
+            <li>
+                <button
+                    type="button"
+                    class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    aria-controls="dropdown-cuerpos"
+                    data-collapse-toggle="dropdown-cuerpos"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-6"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 2c3.09 0 6 2.91 6 6 0 4.5-6 9.5-6 9.5s-6-5-6-9.5c0-3.09 2.91-6 6-6z"
+                        />
+                    </svg>
+
+                    <span
+                        class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap"
+                        >Cuerpos de Agua</span
+                    >
+                    <svg
+                        class="w-3 h-3"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 10 6"
+                    >
+                        <path
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="m1 1 4 4 4-4"></path>
+                    </svg>
+                </button>
+                <ul id="dropdown-cuerpos" class="hidden py-2 space-y-2">
+                    <li>
+                        <a
+                            href="/admin/estaciones/verEstaciones"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                            >Ver Cuerpos de Agua</a
+                        >
+                    </li>
+                </ul>
+            </li>
+
             <li></li>
         </ul>
     </div>

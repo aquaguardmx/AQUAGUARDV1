@@ -1,0 +1,609 @@
+---
+// src/pages/admin/verEstaciones.astro
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+interface Estacion {
+  id_estacion: number;
+  clave_sitio: string;
+  nombre: string;
+  latitud: number | string; // Puede ser number o string
+  longitud: number | string; // Puede ser number o string
+  activo: boolean;
+  id_tipo: number;
+  id_subtipo: number;
+  id_cuenca: number;
+  id_municipio: number;
+  id_usuario: number;
+  created_at: string;
+  updated_at: string;
+  municipio: {
+    id_municipio: number;
+    nombre: string;
+    estado: {
+      id_estado: number;
+      nombre: string;
+    };
+  };
+  cuenca: {
+    id_cuenca: number;
+    nombre: string;
+  };
+  tipo: {
+    id_tipo: number;
+    nombre: string;
+  };
+  subtipo: {
+    id_subtipo: number;
+    nombre: string;
+  };
+  usuario: {
+    id_usuario: number;
+    nombre: string;
+    ap_paterno: string;
+    ap_materno: string;
+  };
+  mediciones: Array<{
+    id_medicion: number;
+    valor: number;
+    clasificacion: string;
+    parametro: {
+      id_parametro: number;
+      nombre: string;
+      unidad: string;
+    };
+  }>;
+  semaforo: Array<{
+    color: string;
+    contaminantes: string;
+  }>;
+}
+// Configuración de paginación
+const PAGE_SIZE = 10; // Número de estaciones por página
+const currentPage = Astro.url.searchParams.get('page') ? parseInt(Astro.url.searchParams.get('page')!) : 1;
+const totalEstaciones = 0; // Se calculará en el script con datos completos
+// Fetch de estaciones con paginación (asumiendo que la API soporta ?page y ?limit)
+let estaciones: Estacion[] = [];
+let totalPages = 1;
+let error = null;
+try {
+  const pageParam = `?page=${currentPage}&limit=${PAGE_SIZE}`;
+  const res = await fetch(`http://localhost:8000/api/admin/estaciones${pageParam}`);
+ 
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}: ${res.statusText}`);
+  }
+ 
+  const data = await res.json();
+ 
+  // Asegurarnos de que estaciones sea un array y obtener metadatos de paginación
+  if (data.estaciones && Array.isArray(data.estaciones)) {
+    estaciones = data.estaciones;
+    totalPages = data.total_pages || Math.ceil((data.total_count || data.estaciones.length) / PAGE_SIZE);
+  } else if (Array.isArray(data)) {
+    estaciones = data;
+    totalPages = 1; // Si no hay metadatos, asume una página
+  } else {
+    throw new Error("Formato de respuesta inesperado");
+  }
+} catch (err) {
+  console.error("Error cargando estaciones:", err);
+  error = err instanceof Error ? err.message : "Error desconocido";
+}
+// Función para formatear coordenadas de manera segura
+const formatCoordenada = (coord: number | string | undefined): string => {
+  if (coord === undefined || coord === null) return 'N/A';
+ 
+  // Convertir a número si es string
+  const numCoord = typeof coord === 'string' ? parseFloat(coord) : coord;
+ 
+  // Verificar si es un número válido
+  if (isNaN(numCoord)) return 'N/A';
+ 
+  return numCoord.toFixed(4);
+};
+// Función para formatear fecha
+const formatFecha = (fecha: string) => {
+  return new Date(fecha).toLocaleDateString('es-MX', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+// Función para escapar comillas en nombres (para JavaScript)
+const escapeQuotes = (str: string): string => {
+  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+};
+// Estadísticas (basadas en datos paginados o total si la API lo proporciona)
+const estacionesActivas = estaciones.filter(e => e.activo).length; // Solo de la página actual, idealmente de total
+const estacionesEspera = estaciones.length - estacionesActivas;
+
+// Datos para el script del cliente (incluyendo metadatos de paginación)
+const scriptData = {
+  currentPage,
+  totalPages,
+  estaciones: estaciones.map(estacion => ({
+    id: estacion.id_estacion,
+    nombre: estacion.nombre,
+    activo: estacion.activo,
+    municipio: {
+      nombre: estacion.municipio?.nombre || '',
+      estado: {
+        nombre: estacion.municipio?.estado?.nombre || ''
+      }
+    }
+  }))
+};
+---
+<AdminLayout title="Gestión de Estaciones">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Encabezado con título y botón para crear nueva estación -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        Gestión de Estaciones
+                    </h1>
+                </div>
+                <p class="text-gray-600 ml-5">
+                    {estaciones.length} estaciones en esta página (Página {currentPage} de {totalPages})
+                </p>
+            </div>
+            <a
+                href="/admin/formularios/formularioAgregarEstacionAdmin"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Nueva Estación
+            </a>
+        </div>
+        {error ? (
+            <!-- Mostrar error si hay problema con la API -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-800">Error al cargar estaciones</h3>
+                        <p class="text-red-600 mt-1">{error}</p>
+                    </div>
+                </div>
+            </div>
+        ) : (
+            <>
+                <!-- Tarjetas de estadísticas (ajustadas para página actual) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Total Estaciones (de esta página) -->
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 text-sm font-medium">Estaciones en Página</p>
+                                <h3 class="text-3xl font-bold mt-2">{estaciones.length}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Estaciones Activas -->
+                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-emerald-100 text-sm font-medium">Activas</p>
+                                <h3 class="text-3xl font-bold mt-2">{estacionesActivas}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- En Espera -->
+                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-amber-100 text-sm font-medium">En Espera</p>
+                                <h3 class="text-3xl font-bold mt-2">{estacionesEspera}</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filtros y búsqueda -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <label for="search" class="block text-sm font-semibold text-gray-700 mb-2">Buscar estación</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="search"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 transition-all duration-200"
+                                    placeholder="Buscar por nombre, ubicación..."
+                                    value={Astro.url.searchParams.get('search') || ''}
+                                    oninput="filtrarEstaciones()"
+                                >
+                            </div>
+                        </div>
+                        <div class="md:w-48">
+                            <label for="status" class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
+                            <select
+                                id="status"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition-all duration-200"
+                                onchange="filtrarEstaciones()"
+                            >
+                                <option value="all" {Astro.url.searchParams.get('status') === 'all' ? 'selected' : ''}>Todos los estados</option>
+                                <option value="active" {Astro.url.searchParams.get('status') === 'active' ? 'selected' : ''}>Activas</option>
+                                <option value="inactive" {Astro.url.searchParams.get('status') === 'inactive' ? 'selected' : ''}>En espera</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Lista de estaciones -->
+                {estaciones.length > 0 ? (
+                    <>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estación</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubicación</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coordenadas</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semáforo</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mediciones Recientes</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="estacionesList">
+                                        {estaciones.map((estacion) => (
+                                            <tr class="estacion-item hover:bg-gray-50 transition-colors duration-200" 
+                                                data-id={estacion.id_estacion}
+                                                data-nombre={estacion.nombre.toLowerCase()}
+                                                data-municipio={estacion.municipio?.nombre?.toLowerCase() || ''}
+                                                data-estado={estacion.municipio?.estado?.nombre?.toLowerCase() || ''}
+                                                data-activo={estacion.activo}>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-10 w-10">
+                                                            <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600 font-medium text-sm">
+                                                                {estacion.clave_sitio?.substring(0, 2).toUpperCase() || 'ES'}
+                                                            </span>
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <a href={`/admin/estaciones/${estacion.id_estacion}`} class="font-medium text-gray-900 hover:text-blue-600">
+                                                                {estacion.nombre}
+                                                            </a>
+                                                            <div class="text-sm text-gray-500">{estacion.clave_sitio}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {estacion.municipio?.nombre || 'N/A'}, {estacion.municipio?.estado?.nombre || 'N/A'}
+                                                    <div class="text-sm text-gray-500 mt-1">Cuenca: {estacion.cuenca?.nombre || 'N/A'}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {formatCoordenada(estacion.latitud)}° N, {formatCoordenada(estacion.longitud)}° W
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    {estacion.semaforo && estacion.semaforo.length > 0 ? (
+                                                        <span class={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                                                            estacion.semaforo[0].color === 'VERDE' ? 'bg-green-100 text-green-800' :
+                                                            estacion.semaforo[0].color === 'AMARILLO' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            <div class={`w-2 h-2 rounded-full ${
+                                                                estacion.semaforo[0].color === 'VERDE' ? 'bg-green-500' :
+                                                                estacion.semaforo[0].color === 'AMARILLO' ? 'bg-yellow-500' :
+                                                                'bg-red-500'
+                                                            }`}></div>
+                                                            {estacion.semaforo[0].color}
+                                                        </span>
+                                                    ) : (
+                                                        <span class="text-gray-500">Sin datos</span>
+                                                    )}
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="space-y-1">
+                                                        {estacion.mediciones && estacion.mediciones.slice(0, 2).map((medicion) => (
+                                                            <div class="flex justify-between items-center text-xs">
+                                                                <span class="text-gray-600 truncate">{medicion.parametro?.nombre || 'Parámetro'}</span>
+                                                                <div class="flex items-center gap-1 min-w-0">
+                                                                    <span class="font-medium truncate">{medicion.valor} {medicion.parametro?.unidad || ''}</span>
+                                                                    <span class={`px-1 py-0.5 rounded text-xs ${
+                                                                        medicion.clasificacion === 'Excelente' ? 'bg-green-100 text-green-800' :
+                                                                        medicion.clasificacion === 'Buena calidad' ? 'bg-blue-100 text-blue-800' :
+                                                                        medicion.clasificacion === 'Aceptable' ? 'bg-yellow-100 text-yellow-800' :
+                                                                        'bg-red-100 text-red-800'
+                                                                    }`}>
+                                                                        {medicion.clasificacion}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {(!estacion.mediciones || estacion.mediciones.length === 0) && (
+                                                            <p class="text-gray-500 text-xs text-center py-1">Sin mediciones</p>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                        estacion.activo
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {estacion.activo ? (
+                                                            <>
+                                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                                </svg>
+                                                                Activa
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                </svg>
+                                                                En Espera
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                    {!estacion.activo && (
+                                                        <button
+                                                            onclick="aprobarEstacion(event, {id: {estacion.id_estacion}, nombre: '{escapeQuotes(estacion.nombre)}'})"
+                                                            class="text-green-600 hover:text-green-900 p-1 rounded transition-colors duration-200"
+                                                            title="Aprobar estación"
+                                                        >
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                    <a
+                                                        href={`/admin/formularios/editarEstacion/${estacion.id_estacion}`}
+                                                        class="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors duration-200"
+                                                        title="Editar estación"
+                                                    >
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                    </a>
+                                                    <button
+                                                        onclick="eliminarEstacion(event, {id: {estacion.id_estacion}, nombre: '{escapeQuotes(estacion.nombre)}'})"
+                                                        class="text-red-600 hover:text-red-900 p-1 rounded transition-colors duration-200"
+                                                        title="Eliminar estación"
+                                                    >
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Paginación -->
+                        <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-xl">
+                            <div class="flex flex-1 justify-between sm:hidden">
+                                <a href={`/admin/estaciones/verEstaciones?page=${currentPage - 1}`} class={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    Anterior
+                                </a>
+                                <a href={`/admin/estaciones/verEstaciones?page=${currentPage + 1}`} class={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    Siguiente
+                                </a>
+                            </div>
+                            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Mostrando <span class="font-medium">{((currentPage - 1) * PAGE_SIZE) + 1}</span> a{' '}
+                                        <span class="font-medium">{Math.min(currentPage * PAGE_SIZE, totalEstaciones)}</span> de{' '}
+                                        <span class="font-medium">{totalEstaciones}</span> resultados
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <a
+                                                key={page}
+                                                href={`/admin/estaciones/verEstaciones?page=${page}`}
+                                                aria-current={`${page === currentPage ? 'page' : undefined}`}
+                                                class={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                                    page === currentPage
+                                                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                } rounded-l-md ${page === 1 ? 'rounded-l-md' : ''} ${page === totalPages ? 'rounded-r-md' : ''}`}
+                                            >
+                                                {page}
+                                            </a>
+                                        ))}
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <!-- Estado vacío -->
+                    <div class="bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 p-16 text-center">
+                        <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">No hay estaciones disponibles</h3>
+                        <p class="text-gray-500 mb-8 max-w-md mx-auto">Comienza registrando la primera estación de monitoreo de calidad del agua.</p>
+                        <a
+                            href="/admin/formularios/formularioAgregarEstacion"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Registrar primera estación
+                        </a>
+                    </div>
+                )}
+            </>
+        )}
+    </div>
+    <!-- Modal para confirmaciones -->
+    <div id="modalConfirmacion" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 m-4 max-w-md w-full">
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="modalTitulo">Confirmar acción</h3>
+            <p class="text-gray-600 mb-6" id="modalMensaje">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="cerrarModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium rounded-lg transition-colors duration-200">
+                    Cancelar
+                </button>
+                <button onclick="confirmarAccion()" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" id="modalBotonConfirmar">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+    <script define:vars={scriptData}>
+        const { currentPage, totalPages, estaciones: estacionesData } = scriptData;
+        let accionPendiente = null;
+        let estacionSeleccionada = null;
+        // Funciones de filtrado (client-side mostrando/ocultando filas)
+        function filtrarEstaciones() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const statusFilter = document.getElementById('status').value;
+            const items = document.querySelectorAll('.estacion-item');
+            let visibleCount = 0;
+            items.forEach(item => {
+                const nombre = item.dataset.nombre || '';
+                const municipio = item.dataset.municipio || '';
+                const estado = item.dataset.estado || '';
+                const activo = item.dataset.activo === 'true';
+                
+                const coincideBusqueda = nombre.includes(searchTerm) ||
+                                       municipio.includes(searchTerm) ||
+                                       estado.includes(searchTerm);
+               
+                const coincideEstado = statusFilter === 'all' ||
+                                     (statusFilter === 'active' && activo) ||
+                                     (statusFilter === 'inactive' && !activo);
+               
+                if (coincideBusqueda && coincideEstado) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            // Actualizar contador si es necesario
+            console.log(`Estaciones visibles: ${visibleCount}`);
+        }
+        // Funciones de modal
+        function mostrarModalConfirmacion(titulo, mensaje, accion, botonTexto = 'Confirmar', botonColor = 'blue') {
+            document.getElementById('modalTitulo').textContent = titulo;
+            document.getElementById('modalMensaje').textContent = mensaje;
+            document.getElementById('modalBotonConfirmar').textContent = botonTexto;
+            document.getElementById('modalBotonConfirmar').className = `px-4 py-2 bg-${botonColor}-600 text-white font-medium rounded-lg hover:bg-${botonColor}-700 transition-colors duration-200`;
+           
+            accionPendiente = accion;
+            document.getElementById('modalConfirmacion').classList.remove('hidden');
+        }
+        function cerrarModal() {
+            document.getElementById('modalConfirmacion').classList.add('hidden');
+            accionPendiente = null;
+            estacionSeleccionada = null;
+        }
+        function confirmarAccion() {
+            if (accionPendiente) {
+                accionPendiente();
+            }
+            cerrarModal();
+        }
+        // Funciones de gestión de estaciones (con stopPropagation para botones)
+        function aprobarEstacion(event, estacion) {
+            event.preventDefault();
+            event.stopPropagation();
+            mostrarModalConfirmacion(
+                'Aprobar Estación',
+                `¿Estás seguro de que deseas aprobar la estación "${estacion.nombre}"?`,
+                () => ejecutarAprobarEstacion(estacion.id),
+                'Aprobar',
+                'green'
+            );
+        }
+        async function ejecutarAprobarEstacion(id) {
+            try {
+                const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        activo: true
+                    })
+                });
+                if (response.ok) {
+                    alert('✅ Estación aprobada exitosamente');
+                    location.reload();
+                } else {
+                    throw new Error('Error al aprobar estación');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al aprobar la estación');
+            }
+        }
+        function eliminarEstacion(event, estacion) {
+            event.preventDefault();
+            event.stopPropagation();
+            mostrarModalConfirmacion(
+                'Eliminar Estación',
+                `¿Estás seguro de que deseas eliminar la estación "${estacion.nombre}"? Esta acción no se puede deshacer.`,
+                () => ejecutarEliminarEstacion(estacion.id),
+                'Eliminar',
+                'red'
+            );
+        }
+        async function ejecutarEliminarEstacion(id) {
+            try {
+                const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    alert('✅ Estación eliminada exitosamente');
+                    location.reload();
+                } else {
+                    throw new Error('Error al eliminar estación');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al eliminar la estación');
+            }
+        }
+    </script>
+</AdminLayout>
