@@ -25,10 +25,12 @@ export interface Curso {
   autor: Autor;
   categoria: Categoria;
   publicado: boolean;
+  fecha_creacion?: string; // Añadido para ordenar por fecha
 }
 
 // 2. OBTENCIÓN DE DATOS
 let cursos: Curso[] = [];
+let cursosRecientes: Curso[] = [];
 let fetchError = false;
 
 try {
@@ -37,6 +39,17 @@ try {
   if (response.ok) {
     const data = await response.json();
     cursos = data.filter((curso: Curso) => curso.publicado);
+    
+    // Ordenar cursos por fecha (más recientes primero) y tomar solo 6
+    cursosRecientes = cursos
+      .sort((a, b) => {
+        // Si hay fecha_creacion, usarla, sino ordenar por ID (suponiendo que IDs más altos son más recientes)
+        if (a.fecha_creacion && b.fecha_creacion) {
+          return new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime();
+        }
+        return b.id_curso - a.id_curso;
+      })
+      .slice(0, 6);
   } else {
     fetchError = true;
   }
@@ -47,206 +60,224 @@ try {
 
 <Layout title="Inicio">
   <!-- Header con funcionalidad de cierre de sesión -->
-  <Header currentPath="/" user={{ name: "Ana García", isLoggedIn: true }} />
+  <Header />
 
-  <!-- Hero Section Mejorada -->
-  <section
-    class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600"
-  >
+  <!-- Hero Section Corregida -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600">
     <!-- Elementos de fondo animados -->
     <div class="absolute inset-0 bg-black/20"></div>
-
-    <!-- Ondas animadas -->
-    <div class="absolute bottom-0 left-0 right-0">
-      <svg
-        class="w-full h-24 md:h-32 text-blue-800/30"
-        viewBox="0 0 1200 120"
-        preserveAspectRatio="none"
-      >
-        <path
-          d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-          opacity=".25"
-          fill="currentColor"></path>
-        <path
-          d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
-          opacity=".5"
-          fill="currentColor"></path>
-        <path
-          d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
-          fill="currentColor"></path>
-      </svg>
-    </div>
-
-    <!-- Burbujas flotantes -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="bubble bubble-1"></div>
-      <div class="bubble bubble-2"></div>
-      <div class="bubble bubble-3"></div>
-      <div class="bubble bubble-4"></div>
-      <div class="bubble bubble-5"></div>
-      <div class="bubble bubble-6"></div>
-    </div>
-
-    <!-- Contenido principal -->
-    <div class="container mx-auto px-6 text-center relative z-10">
-      <!-- Badge destacado -->
-      <div
-        class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-8"
-      >
+      <!-- Ondas animadas mejoradas -->
+      <div class="absolute bottom-0 left-0 right-0">
         <svg
-          class="w-4 h-4 text-blue-200"
-          fill="currentColor"
-          viewBox="0 0 20 20"
+          class="w-full h-20 md:h-28 text-blue-800/30"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
         >
           <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"></path>
-        </svg>
-        <span class="text-blue-100 text-sm font-medium"
-          >+5,000 estudiantes activos</span
-        >
-      </div>
+            d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+            opacity=".25"
+            fill="currentColor">
+          </path>
+          <path
+        d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
+        opacity=".5"
+        fill="currentColor"></path>
+      <path
+        d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
+        fill="currentColor"></path>
+    </svg>
+  </div>
 
-      <!-- Título principal -->
+  <!-- Burbujas flotantes mejoradas -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+  </div>
+
+  <!-- Contenido principal corregido -->
+  <div class="container mx-auto px-6 text-center relative z-10 py-16">
+    <!-- Badge destacado -->
+    <div
+      class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-5 py-2 mb-8 animate-pulse"
+    >
+      <svg
+        class="w-4 h-4 text-blue-200"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          clip-rule="evenodd"></path>
+      </svg>
+      <span class="text-blue-100 text-sm font-medium tracking-wide"
+        >+5,000 estudiantes activos</span
+      >
+    </div>
+
+    <!-- Título principal corregido -->
+    <div class="mb-10">
       <h1
         class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
       >
         Protege Nuestro
         <span
-          class="block bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent mt-2"
+          class="block bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent mt-3"
         >
           Futuro Azul
         </span>
       </h1>
+    </div>
 
-      <!-- Descripción -->
+    <!-- Descripción corregida -->
+    <div class="mb-12">
       <p
-        class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed mb-8"
+        class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed"
       >
         Aprende, protege y transforma. Tu plataforma de e-learning especializada
         en
         <span class="font-semibold text-white">cuidado ambiental</span> y
         <span class="font-semibold text-white">cultura del agua</span>.
       </p>
+    </div>
 
-      <!-- Estadísticas -->
-      <div class="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold text-white">50+</div>
-          <div class="text-blue-200 text-sm">Cursos Especializados</div>
-        </div>
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold text-white">98%</div>
-          <div class="text-blue-200 text-sm">Satisfacción Estudiantes</div>
-        </div>
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold text-white">24/7</div>
-          <div class="text-blue-200 text-sm">Acceso Continuo</div>
-        </div>
+    <!-- Estadísticas corregidas -->
+    <div class="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
+      <div class="text-center">
+        <div class="text-2xl md:text-3xl font-bold text-white mb-2">50+</div>
+        <div class="text-blue-200 text-sm font-medium">Cursos Especializados</div>
       </div>
-
-      <!-- Botones de acción -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a
-          href="#cursos"
-          class="group bg-white text-blue-700 hover:bg-blue-50 font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl flex items-center gap-2"
-        >
-          <span>Explorar Cursos</span>
-          <svg
-            class="w-5 h-5 group-hover:translate-x-1 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-          </svg>
-        </a>
-
-        <a
-          href="#video-demo"
-          class="group border-2 border-white/30 text-white hover:bg-white/10 font-semibold py-4 px-8 rounded-xl transition-all duration-300 backdrop-blur-sm flex items-center gap-2"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-            ></path>
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>Ver Demo</span>
-        </a>
+      <div class="text-center">
+        <div class="text-2xl md:text-3xl font-bold text-white mb-2">98%</div>
+        <div class="text-blue-200 text-sm font-medium">Satisfacción Estudiantes</div>
+      </div>
+      <div class="text-center">
+        <div class="text-2xl md:text-3xl font-bold text-white mb-2">24/7</div>
+        <div class="text-blue-200 text-sm font-medium">Acceso Continuo</div>
       </div>
     </div>
 
-    <!-- Scroll indicator -->
-    <div
-      class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce"
-    >
-      <div
-        class="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center"
+    <!-- Botones de acción corregidos -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a
+        href="#cursos"
+        class="group bg-white text-blue-700 hover:bg-blue-50 font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl flex items-center gap-2"
       >
-        <div class="w-1 h-3 bg-white/70 rounded-full mt-2"></div>
-      </div>
+        <span>Explorar Cursos</span>
+        <svg
+          class="w-5 h-5 group-hover:translate-x-1 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+      </a>
+
+      <a
+        href="#video-demo"
+        class="group border-2 border-white/30 text-white hover:bg-white/10 font-semibold py-4 px-8 rounded-xl transition-all duration-300 backdrop-blur-sm flex items-center gap-2"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+          ></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Ver Demo</span>
+      </a>
     </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div
+    class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce"
+  >
+    <div
+      class="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center backdrop-blur-sm"
+    >
+      <div class="w-1 h-3 bg-white/70 rounded-full mt-2"></div>
+    </div>
+  </div>
   </section>
 
   <!-- Main Content - Cursos Mejorados -->
   <main
-    class="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800"
+    class="bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
     id="cursos"
   >
     <div class="container mx-auto px-6 py-20">
-      <!-- Filtros y Búsqueda -->
+      <!-- Header de sección mejorado -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-3 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-6 py-3 rounded-full text-sm font-semibold mb-6">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+          </svg>
+          <span>Novedades Educativas</span>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+          Nuestros <span class="text-blue-600 dark:text-blue-400">Cursos Más Recientes</span>
+        </h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          Descubre los últimos contenidos especializados en cuidado ambiental y gestión del agua
+        </p>
+      </div>
+
+      <!-- Filtros y Búsqueda Mejorados -->
       <div
-        class="flex flex-col md:flex-row gap-4 justify-between items-center mb-12 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-blue-100 dark:border-gray-700"
+        class="flex flex-col md:flex-row gap-6 justify-between items-center mb-16 p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-blue-200/50 dark:border-gray-600/50"
       >
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap gap-3 justify-center">
           <button
-            class="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-medium transition-all hover:bg-blue-600 active:scale-95"
+            class="px-6 py-3 bg-blue-500 text-white rounded-full text-sm font-semibold transition-all hover:bg-blue-600 active:scale-95 shadow-lg hover:shadow-xl"
           >
             Todos
           </button>
           <button
-            class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-full text-sm font-medium transition-all hover:border-blue-500 hover:text-blue-500"
+            class="px-6 py-3 bg-white/90 dark:bg-gray-700/90 text-gray-700 dark:text-gray-300 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-full text-sm font-semibold transition-all hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 shadow-md hover:shadow-lg"
           >
             Conservación
           </button>
           <button
-            class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-full text-sm font-medium transition-all hover:border-blue-500 hover:text-blue-500"
+            class="px-6 py-3 bg-white/90 dark:bg-gray-700/90 text-gray-700 dark:text-gray-300 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-full text-sm font-semibold transition-all hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 shadow-md hover:shadow-lg"
           >
             Tecnología
           </button>
           <button
-            class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-full text-sm font-medium transition-all hover:border-blue-500 hover:text-blue-500"
+            class="px-6 py-3 bg-white/90 dark:bg-gray-700/90 text-gray-700 dark:text-gray-300 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-full text-sm font-semibold transition-all hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 shadow-md hover:shadow-lg"
           >
             Educación
           </button>
         </div>
 
-        <div class="relative w-full md:w-64">
+        <div class="relative w-full md:w-80">
           <input
             type="text"
             placeholder="Buscar cursos..."
-            class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full pl-12 pr-6 py-4 bg-white/90 dark:bg-gray-700/90 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-700 dark:text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 backdrop-blur-sm transition-all duration-300"
           />
           <svg
-            class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+            class="w-6 h-6 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -260,16 +291,16 @@ try {
         </div>
       </div>
 
-      <!-- Estados de carga y error -->
+      <!-- Estados de carga y error mejorados -->
       {
         fetchError && (
           <div
-            class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-6 rounded-2xl mb-8 flex items-start shadow-lg"
+            class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-8 rounded-2xl mb-8 flex items-start shadow-2xl backdrop-blur-sm"
             role="alert"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 mr-3 flex-shrink-0 mt-0.5"
+              class="h-8 w-8 mr-4 flex-shrink-0 mt-0.5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -282,11 +313,11 @@ try {
               />
             </svg>
             <div>
-              <p class="font-bold mb-1 text-lg">Error de Conexión</p>
-              <p class="text-sm">
+              <p class="font-bold mb-2 text-xl">Error de Conexión</p>
+              <p class="text-base">
                 No se pudieron cargar los cursos. Asegúrate de que tu servidor
                 API en{" "}
-                <code class="bg-red-100 dark:bg-red-800 px-2 py-1 rounded text-sm font-mono">
+                <code class="bg-red-100 dark:bg-red-800 px-3 py-1 rounded-lg text-base font-mono">
                   http://localhost:8000
                 </code>{" "}
                 esté funcionando correctamente.
@@ -297,11 +328,11 @@ try {
       }
 
       {
-        !fetchError && cursos.length === 0 && (
-          <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-blue-100 dark:border-gray-700">
-            <div class="w-24 h-24 mx-auto mb-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        !fetchError && cursosRecientes.length === 0 && (
+          <div class="text-center py-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-blue-100/50 dark:border-gray-700/50">
+            <div class="w-32 h-32 mx-auto mb-8 bg-blue-100/50 dark:bg-blue-900/30 rounded-full flex items-center justify-center backdrop-blur-sm">
               <svg
-                class="w-12 h-12 text-blue-500 dark:text-blue-400"
+                class="w-16 h-16 text-blue-500 dark:text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -314,27 +345,27 @@ try {
                 />
               </svg>
             </div>
-            <h3 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <h3 class="text-3xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
               No hay cursos disponibles
             </h3>
-            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8 text-lg">
               Estamos preparando nuevos contenidos especializados en cuidado del
               agua. Vuelve pronto para descubrir nuestras novedades.
             </p>
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl text-lg">
               Notificarme cuando estén disponibles
             </button>
           </div>
         )
       }
 
-      <!-- Grid de cursos mejorado -->
+      <!-- Grid de cursos mejorado - Solo 6 cursos -->
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {
-          cursos.map((curso) => (
+          cursosRecientes.map((curso) => (
             <a
               href={`/detalle-curso/${curso.id_curso}`}
-              class="group block bg-white dark:bg-gray-800 rounded-2xl shadow-xl hover:shadow-2xl overflow-hidden transition-all duration-500 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-2"
+              class="group block bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl hover:shadow-3xl overflow-hidden transition-all duration-500 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/80 dark:hover:border-blue-600/80 hover:-translate-y-4"
             >
               <article class="flex flex-col h-full">
                 <div class="relative overflow-hidden">
@@ -343,19 +374,26 @@ try {
                       <img
                         src={curso.portada_url}
                         alt={`Portada del curso ${curso.titulo}`}
-                        class="w-full h-52 object-cover transition-transform duration-700 group-hover:scale-110"
+                        class="w-full h-60 object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      <!-- Badge Nuevo -->
+                      <div class="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        NUEVO
+                      </div>
                     </div>
                   ) : (
-                    <div class="w-full h-52 bg-blue-900 flex items-center justify-center relative">
+                    <div class="w-full h-60 bg-gradient-to-br from-blue-900 to-teal-700 flex items-center justify-center relative">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-6"
+                        class="size-12 text-white/80"
                       >
                         <path
                           stroke-linecap="round"
@@ -363,12 +401,11 @@ try {
                           d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
                         />
                       </svg>
-
-                      <div class="absolute inset-0 bg-black/10" />
+                      <div class="absolute inset-0 bg-black/20" />
                     </div>
                   )}
 
-                  <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
+                  <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 shadow-lg">
                     <svg
                       class="w-4 h-4"
                       fill="none"
@@ -386,20 +423,21 @@ try {
                   </div>
                 </div>
 
-                <div class="p-6 flex flex-col flex-grow">
-                  <div class="mb-4">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-3 line-clamp-2 leading-tight">
+                <div class="p-8 flex flex-col flex-grow">
+                  <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-4 line-clamp-2 leading-tight">
                       {curso.titulo}
                     </h3>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
-                      {curso.descripcion}
-                    </p>
+                    <p
+                      class="text-gray-600 dark:text-gray-300 text-base leading-relaxed line-clamp-3"
+                      set:html={curso.descripcion}
+                    />
                   </div>
 
-                  <div class="flex items-center justify-between mb-4 text-sm">
-                    <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <div class="flex items-center justify-between mb-6 text-sm">
+                    <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
                       <svg
-                        class="w-4 h-4"
+                        class="w-5 h-5 text-yellow-500"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -411,16 +449,16 @@ try {
                     </div>
                   </div>
 
-                  <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-medium text-sm shadow-lg">
+                  <div class="mt-auto pt-6 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold text-base shadow-lg">
                         {curso.autor.nombre.charAt(0)}
                       </div>
                       <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
                           Instructor
                         </p>
-                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <p class="text-base font-bold text-gray-800 dark:text-gray-200">
                           {curso.autor.nombre}
                         </p>
                       </div>
@@ -433,116 +471,113 @@ try {
         }
       </div>
 
-      <!-- CTA Final -->
+      <!-- CTA Final Mejorado -->
       <div
-        class="text-center mt-16 bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 rounded-2xl p-12 text-white shadow-2xl"
+        class="text-center mt-20 bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 rounded-3xl p-16 text-white shadow-3xl backdrop-blur-lg relative overflow-hidden"
       >
-        <h3 class="text-2xl md:text-3xl font-bold mb-4">
-          ¿No encuentras lo que buscas?
-        </h3>
-        <p class="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-          Contáctanos y te ayudaremos a encontrar el curso perfecto para tus
-          necesidades de formación ambiental.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            class="bg-white text-blue-600 hover:bg-blue-50 font-semibold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg"
-          >
-            Solicitar Asesoría
-          </button>
-          <button
-            class="border-2 border-white text-white hover:bg-white/10 font-semibold py-3 px-8 rounded-lg transition-all backdrop-blur-sm"
-          >
-            Ver Catálogo Completo
-          </button>
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold mb-6">
+            ¿Listo para comenzar tu viaje educativo?
+          </h3>
+          <p class="text-blue-100 text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
+            Descubre todos nuestros cursos especializados en cuidado ambiental y únete a nuestra comunidad de aprendizaje.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-5 justify-center">
+            <button
+              class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-12 rounded-xl transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl text-lg"
+            >
+              Ver Catálogo Completo
+            </button>
+            <button
+              class="border-2 border-white text-white hover:bg-white/15 font-bold py-4 px-12 rounded-xl transition-all backdrop-blur-md hover:border-white/80 text-lg"
+            >
+              Solicitar Asesoría
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </main>
-  
+
   <Footer />
 </Layout>
+
 <style>
-  /* Animaciones de burbujas */
+  /* Animaciones de burbujas mejoradas */
   .bubble {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float 15s infinite ease-in-out;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    animation: float 20s infinite ease-in-out;
+    backdrop-filter: blur(10px);
   }
 
   .bubble-1 {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     top: 10%;
     left: 10%;
     animation-delay: 0s;
   }
 
   .bubble-2 {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     top: 20%;
     right: 15%;
-    animation-delay: 2s;
+    animation-delay: 3s;
   }
 
   .bubble-3 {
-    width: 30px;
-    height: 30px;
+    width: 45px;
+    height: 45px;
     bottom: 30%;
     left: 20%;
-    animation-delay: 4s;
-  }
-
-  .bubble-4 {
-    width: 50px;
-    height: 50px;
-    bottom: 20%;
-    right: 25%;
     animation-delay: 6s;
   }
 
+  .bubble-4 {
+    width: 70px;
+    height: 70px;
+    bottom: 20%;
+    right: 25%;
+    animation-delay: 9s;
+  }
+
   .bubble-5 {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
     top: 40%;
     left: 5%;
-    animation-delay: 8s;
+    animation-delay: 12s;
   }
 
   .bubble-6 {
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 65px;
     top: 60%;
     right: 5%;
-    animation-delay: 10s;
+    animation-delay: 15s;
   }
 
   @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0) translateX(0);
+    0%, 100% {
+      transform: translateY(0) translateX(0) rotate(0deg);
     }
     25% {
-      transform: translateY(-20px) translateX(10px);
+      transform: translateY(-30px) translateX(15px) rotate(5deg);
     }
     50% {
-      transform: translateY(-40px) translateX(-10px);
+      transform: translateY(-50px) translateX(-15px) rotate(-5deg);
     }
     75% {
-      transform: translateY(-20px) translateX(10px);
+      transform: translateY(-30px) translateX(15px) rotate(5deg);
     }
   }
 
-  /* Efectos de gradiente animado */
-  .gradient-bg {
-    background: linear-gradient(-45deg, #1e3a8a, #1e40af, #0d9488, #14b8a6);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-  }
-
-  @keyframes gradientShift {
+  /* Animación de gradiente para texto */
+  @keyframes gradient {
     0% {
       background-position: 0% 50%;
     }
@@ -554,9 +589,19 @@ try {
     }
   }
 
-  /* Mejoras de sombras y efectos */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 6s ease infinite;
+  }
+
+  /* Mejoras de sombras */
   .shadow-3xl {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Efectos de glassmorphism */
+  .backdrop-blur-lg {
+    backdrop-filter: blur(20px);
   }
 
   /* Responsive improvements */
@@ -566,7 +611,7 @@ try {
     }
   }
 
-  /* Utilidades CSS */
+  /* Utilidades CSS mejoradas */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -581,27 +626,27 @@ try {
     overflow: hidden;
   }
 
-  /* Efectos de hover mejorados */
-  .card-hover {
-    transition: all 0.3s ease;
-  }
-
-  .card-hover:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Animaciones suaves */
+  /* Transiciones suaves mejoradas */
   .transition-all {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Mejoras de accesibilidad */
   @media (prefers-reduced-motion: reduce) {
-    .card-hover,
+    .bubble,
+    .animate-gradient,
     .transition-all {
+      animation: none;
       transition: none;
-      transform: none;
     }
+  }
+
+  /* Efectos hover mejorados */
+  .group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+  }
+
+  .group:hover .group-hover\:translate-x-2 {
+    transform: translateX(0.5rem);
   }
 </style>

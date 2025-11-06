@@ -1,273 +1,497 @@
 ---
 // src/components/Header.astro
 
-// Interfaces para tipado seguro
 interface NavItem {
   name: string;
   href: string;
-  icon?: string;
 }
 
-// Props del componente
-export interface Props {
-  currentPath?: string;
-  user?: {
-    name: string;
-    isLoggedIn: boolean;
-  };
-}
-
-// Datos de navegación
 const navItems: NavItem[] = [
-  { name: 'Inicio', href: '/' },
-  { name: 'Cursos', href: '/cursos' },
-  { name: 'Blog', href: '/blog' },
-  { name: 'Recursos', href: '/recursos' },
-  { name: 'Sobre Nosotros', href: '/nosotros' },
+  { name: "Inicio", href: "/usuario/index-elearning" },
+  { name: "Cursos", href: "/usuario/cursos" },
+  { name: "Mis Cursos", href: "/usuario/mis-cursos" },
+  { name: "Recursos", href: "/recursos" },
+  { name: "Sobre Nosotros", href: "/nosotros" },
 ];
 
-const { currentPath = '/', user = { name: '', isLoggedIn: false } } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+// Función mejorada para determinar si un item está activo
+// Función mejorada para determinar si un item está activo
+// Función corregida - más específica
+function isActiveItem(itemHref: string, currentPath: string): boolean {
+  // Normalizar rutas
+  const normalizedCurrent = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
+  const normalizedHref = itemHref.endsWith('/') ? itemHref.slice(0, -1) : itemHref;
+  
+  // Caso especial para página de inicio
+  if (normalizedHref === "" || normalizedHref === "/") {
+    return normalizedCurrent === "" || normalizedCurrent === "/";
+  }
+  
+  // Para otras rutas
+  return normalizedCurrent === normalizedHref || 
+         normalizedCurrent.startsWith(normalizedHref + '/');
+}
 ---
 
 <header class="bg-white shadow-sm border-b border-blue-50 sticky top-0 z-50">
   <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <!-- Logo -->
-      <div class="flex-shrink-0 flex items-center">
+      <div class="flex items-center space-x-2 flex-shrink-0">
         <a href="/" class="flex items-center space-x-2">
-          <div class="w-10 h-10 flex items-center justify-center">
-            <img src="/img/logo.png" alt="AquaLearn" class="w-10 h-10">
-          </div>
-          <span class="text-xl font-bold text-blue-600">AquaLearn</span>
+          <img src="/img/logo.png" alt="AquaLearn" class="w-8 h-8 sm:w-10 sm:h-10" />
+          <span class="text-lg sm:text-xl font-bold text-blue-600">AquaLearn</span>
         </a>
       </div>
 
       <!-- Navegación Desktop -->
-      <div class="hidden md:flex items-center space-x-8">
-        {navItems.map((item) => {
-          const isActive = currentPath === item.href;
-          return (
-            <a
-              href={item.href}
-              class={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                isActive
-                  ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-400'
-                  : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
-              }`}
-            >
-              {item.name}
-            </a>
-          );
-        })}
+      <div class="hidden lg:flex items-center space-x-6 xl:space-x-8">
+        {
+          navItems.map((item) => {
+            const isActive = isActiveItem(item.href, currentPath);
+            console.log(`Item: ${item.name}, Activo: ${isActive}`); // Para debug
+            return (
+              <a
+                href={item.href}
+                class={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover-lift ${
+                  isActive
+                    ? "text-blue-600 bg-blue-50 border-b-2 border-blue-400"
+                    : "text-gray-600 hover:text-blue-500 hover:bg-blue-50"
+                }`}
+                data-active={isActive}
+                data-href={item.href}
+                data-current={currentPath}
+              >
+                {item.name}
+              </a>
+            );
+          })
+        }
       </div>
 
-      <!-- Botones de acción -->
-      <div class="flex items-center space-x-4">
-        <!-- Botón de búsqueda -->
-        <button
-          type="button"
-          class="p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200"
-          id="search-button"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
+      <!-- Contenedor del menú / login - SOLO DESKTOP -->
+      <div id="user-section" class="hidden lg:flex items-center space-x-4">
+        <!-- Aquí se rellena dinámicamente con JS -->
+      </div>
 
-        <!-- Menú de usuario -->
-        {user.isLoggedIn ? (
-          <div class="relative" id="user-menu">
-            <button
-              type="button"
-              class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-              id="user-menu-button"
-            >
-              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-blue-600">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
-              <span class="text-sm text-gray-700 hidden sm:block">{user.name}</span>
-              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            
-            <!-- Dropdown del usuario -->
-            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-blue-100 py-1 z-50" id="user-dropdown">
-              <a href="/perfil" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Mi Perfil</a>
-              <a href="/mis-cursos" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Mis Cursos</a>
-              <a href="/configuracion" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Configuración</a>
-              <div class="border-t border-blue-100 my-1"></div>
-              <a href="/logout" class="block px-4 py-2 text-sm text-blue-500 hover:bg-blue-50">Cerrar Sesión</a>
-            </div>
-          </div>
-        ) : (
-          <div class="flex items-center space-x-3">
-            <a
-              href="/login"
-              class="text-sm text-gray-700 hover:text-blue-500 font-medium transition-colors duration-200"
-            >
-              Iniciar Sesión
-            </a>
-            <a
-              href="/registro"
-              class="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              Registrarse
-            </a>
-          </div>
-        )}
-
+      <!-- Botones móviles - SOLO MÓVIL -->
+      <div class="flex items-center space-x-2 lg:hidden">
+        <!-- Botón usuario móvil - SOLO se muestra en móvil cuando está logueado -->
+        <div id="mobile-user-button" class="hidden">
+          <!-- Botón simple de usuario para móvil -->
+        </div>
+        
         <!-- Botón menú móvil -->
         <button
           type="button"
-          class="md:hidden p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200"
+          class="p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200 rounded-lg hover:bg-blue-50"
           id="mobile-menu-button"
+          aria-label="Abrir menú"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            id="menu-icon"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- Menú móvil -->
-    <div class="hidden md:hidden" id="mobile-menu">
-      <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-blue-50">
-        {navItems.map((item) => {
-          const isActive = currentPath === item.href;
-          return (
-            <a
-              href={item.href}
-              class={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                isActive
-                  ? 'text-blue-600 bg-blue-50 border-l-4 border-blue-400'
-                  : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
-              }`}
-            >
-              {item.name}
-            </a>
-          );
-        })}
+    <!-- Menú móvil - OCULTO POR DEFAULT -->
+    <div class="hidden lg:hidden" id="mobile-menu">
+      <div class="px-2 pt-2 pb-4 space-y-1 bg-white border-t border-blue-50 shadow-lg">
+        {
+          navItems.map((item) => {
+            const isActive = isActiveItem(item.href, currentPath);
+            return (
+              <a
+                href={item.href}
+                class={`block px-3 py-3 rounded-md text-base font-medium transition-colors duration-200 border-l-4 ${
+                  isActive
+                    ? "text-blue-600 bg-blue-50 border-blue-400"
+                    : "text-gray-600 hover:text-blue-500 hover:bg-blue-50 border-transparent"
+                }`}
+                data-active={isActive}
+                data-href={item.href}
+                data-current={currentPath}
+              >
+                {item.name}
+              </a>
+            );
+          })
+        }
         
-        <!-- Enlaces de usuario en móvil -->
-        {user.isLoggedIn ? (
-          <div class="border-t border-blue-100 pt-2 mt-2">
-            <a href="/perfil" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Mi Perfil</a>
-            <a href="/mis-cursos" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Mis Cursos</a>
-            <a href="/logout" class="block px-3 py-2 text-blue-500 hover:bg-blue-50">Cerrar Sesión</a>
-          </div>
-        ) : (
-          <div class="border-t border-blue-100 pt-2 mt-2">
-            <a href="/login" class="block px-3 py-2 text-gray-600 hover:text-blue-500 hover:bg-blue-50">Iniciar Sesión</a>
-            <a href="/registro" class="block px-3 py-2 text-blue-500 hover:bg-blue-50 font-medium">Registrarse</a>
-          </div>
-        )}
+        <!-- Sección de usuario en móvil - SOLO se muestra aquí -->
+        <div class="border-t border-blue-100 pt-4 mt-4" id="mobile-menu-user">
+          <!-- Contenido dinámico para móvil -->
+        </div>
       </div>
     </div>
   </nav>
 </header>
 
-<script is:inline>
-// Script para funcionalidad del menú móvil y validación de null
-document.addEventListener('DOMContentLoaded', function() {
-  const mobileMenuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
-  const userMenuButton = document.getElementById('user-menu-button');
-  const userDropdown = document.getElementById('user-dropdown');
-
-  // Menú móvil
-  if (mobileMenuButton && mobileMenu) {
-    mobileMenuButton.addEventListener('click', function() {
-      if (mobileMenu.classList.contains('hidden')) {
-        mobileMenu.classList.remove('hidden');
-      } else {
-        mobileMenu.classList.add('hidden');
-      }
+<script>
+  // Script para debug - mostrar en consola qué está pasando
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Header cargado - Ruta actual:', window.location.pathname);
+    const activeLinks = document.querySelectorAll('[data-active="true"]');
+    console.log('Enlaces activos encontrados:', activeLinks.length);
+    activeLinks.forEach(link => {
+      console.log('Enlace activo:', {
+        texto: link.textContent,
+        href: link.getAttribute('data-href'),
+        current: link.getAttribute('data-current')
+      });
     });
-  }
-
-  // Dropdown del usuario
-  if (userMenuButton && userDropdown) {
-    userMenuButton.addEventListener('click', function() {
-      if (userDropdown.classList.contains('hidden')) {
-        userDropdown.classList.remove('hidden');
-      } else {
-        userDropdown.classList.add('hidden');
-      }
-    });
-
-    // Cerrar dropdown al hacer clic fuera
-    document.addEventListener('click', function(event) {
-      if (userMenuButton && userDropdown && 
-          !userMenuButton.contains(event.target) && 
-          !userDropdown.contains(event.target)) {
-        userDropdown.classList.add('hidden');
-      }
-    });
-  }
-
-  // Cerrar menús al hacer clic fuera (móvil)
-  document.addEventListener('click', function(event) {
-    if (mobileMenu && mobileMenuButton && 
-        !mobileMenu.contains(event.target) && 
-        !mobileMenuButton.contains(event.target) &&
-        !mobileMenu.classList.contains('hidden')) {
-      mobileMenu.classList.add('hidden');
-    }
   });
-});
+</script>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", () => {
+    const userSection = document.getElementById("user-section");
+    const mobileUserButton = document.getElementById("mobile-user-button");
+    const mobileMenuUser = document.getElementById("mobile-menu-user");
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const menuIcon = document.getElementById("menu-icon");
+
+    // Recuperar datos del usuario
+    const userDataRaw =
+      localStorage.getItem("userData") || sessionStorage.getItem("userData");
+    const authToken =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+
+    let user = null;
+    try {
+      user = userDataRaw ? JSON.parse(userDataRaw) : null;
+    } catch (err) {
+      console.error("Error parseando userData:", err);
+    }
+
+    // Función para cerrar sesión
+    function logout() {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("userData");
+      window.location.href = "/login";
+    }
+
+    // Función para crear elementos de usuario DESKTOP
+    function createDesktopUserElements() {
+      if (authToken && user) {
+        // Usuario logueado - Desktop
+        return `
+          <div class="relative" id="user-menu">
+            <button
+              type="button"
+              class="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200 hover-lift"
+              id="user-menu-button"
+              aria-label="Menú de usuario"
+            >
+              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-blue-600">
+                  ${(user.nombre || user.name || "U").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span class="text-sm text-gray-700 hidden xl:block">${user.nombre || user.name || "Usuario"}</span>
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-blue-100 py-2 z-50 shadow-aqua" id="user-dropdown">
+              <div class="px-4 py-2 border-b border-blue-100">
+                <p class="text-sm font-medium text-gray-900 truncate">${user.nombre || user.name || "Usuario"}</p>
+                <p class="text-xs text-gray-500 truncate">${user.email || ""}</p>
+              </div>
+              <a href="/perfil" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Mi Perfil</span>
+              </a>
+              <a href="/mis-cursos" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Mis Cursos</span>
+              </a>
+              <div class="border-t border-blue-100 my-1"></div>
+              <button id="logoutBtn" class="flex items-center space-x-2 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        // Usuario no logueado - Desktop
+        return `
+          <div class="flex items-center space-x-3">
+            <a href="/auth/login" class="text-sm text-gray-700 hover:text-blue-500 font-medium transition-colors">Iniciar Sesión</a>
+            <a href="/registro" class="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md btn-aqua">
+              Registrarse
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    // Función para crear elementos de usuario MÓVIL (solo en el menú desplegable)
+    function createMobileUserElements() {
+      if (authToken && user) {
+        // Usuario logueado - Móvil (dentro del menú)
+        return `
+          <div class="space-y-3">
+            <div class="flex items-center space-x-3 px-3 py-2 bg-blue-50 rounded-lg">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-blue-600">
+                  ${(user.nombre || user.name || "U").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">${user.nombre || user.name || "Usuario"}</p>
+                <p class="text-xs text-gray-500 truncate">${user.email || ""}</p>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <a href="/perfil" class="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-md transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Mi Perfil</span>
+              </a>
+              <a href="/mis-cursos" class="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-md transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Mis Cursos</span>
+              </a>
+              <button id="mobile-logoutBtn" class="flex items-center space-x-2 w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        // Usuario no logueado - Móvil (dentro del menú)
+        return `
+          <div class="space-y-3">
+            <a href="/auth/login" class="block w-full text-center px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition-colors">
+              Iniciar Sesión
+            </a>
+            <a href="/registro" class="block w-full text-center px-4 py-3 bg-gradient-to-r from-blue-500 to-teal-400 text-white rounded-lg font-medium hover:from-blue-600 hover:to-teal-500 transition-all shadow-sm hover:shadow-md btn-aqua">
+              Registrarse
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    // Función para crear botón de usuario móvil (solo ícono)
+    function createMobileUserButton() {
+      if (authToken && user) {
+        return `
+          <button
+            type="button"
+            class="p-2 text-gray-500 hover:text-blue-500 transition-colors duration-200 rounded-lg hover:bg-blue-50"
+            id="mobile-user-icon"
+            aria-label="Perfil de usuario"
+          >
+            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-xs font-medium text-blue-600">
+                ${(user.nombre || user.name || "U").charAt(0).toUpperCase()}
+              </span>
+            </div>
+          </button>
+        `;
+      }
+      return ''; // No mostrar nada si no está logueado
+    }
+
+    // Insertar elementos en las secciones correspondientes
+    if (userSection) {
+      userSection.innerHTML = createDesktopUserElements();
+      userSection.classList.remove('hidden'); // Mostrar solo en desktop
+    }
+
+    if (mobileUserButton) {
+      mobileUserButton.innerHTML = createMobileUserButton();
+      // Solo mostrar el botón de usuario en móvil si está logueado
+      if (authToken && user) {
+        mobileUserButton.classList.remove('hidden');
+      }
+    }
+
+    if (mobileMenuUser) {
+      mobileMenuUser.innerHTML = createMobileUserElements();
+    }
+
+    // Configurar dropdowns y eventos
+    const userMenuButton = document.getElementById("user-menu-button");
+    const userDropdown = document.getElementById("user-dropdown");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const mobileLogoutBtn = document.getElementById("mobile-logoutBtn");
+
+    // Dropdown desktop
+    if (userMenuButton && userDropdown) {
+      userMenuButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle("hidden");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+          userDropdown.classList.add("hidden");
+        }
+      });
+    }
+
+    // Menú móvil
+    let isMobileMenuOpen = false;
+    
+    if (mobileMenuButton && mobileMenu && menuIcon) {
+      mobileMenuButton.addEventListener("click", () => {
+        isMobileMenuOpen = !isMobileMenuOpen;
+        mobileMenu.classList.toggle("hidden");
+        
+        // Cambiar ícono
+        if (isMobileMenuOpen) {
+          menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+        } else {
+          menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+        }
+      });
+    }
+
+    // Cerrar menú móvil al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (isMobileMenuOpen && mobileMenuButton && !mobileMenuButton.contains(e.target) && mobileMenu && !mobileMenu.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        isMobileMenuOpen = false;
+        if (menuIcon) {
+          menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+        }
+      }
+    });
+
+    // Cerrar sesión
+    if (logoutBtn) logoutBtn.addEventListener("click", logout);
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", logout);
+
+    // Cerrar menú móvil al hacer clic en un enlace
+    const mobileLinks = document.querySelectorAll('#mobile-menu a');
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        isMobileMenuOpen = false;
+        if (menuIcon) {
+          menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+        }
+      });
+    });
+  });
 </script>
 
 <style is:global>
-/* Mejoras de accesibilidad y transiciones */
-.header-transition {
-  transition: all 0.3s ease;
-}
-
-/* Efectos hover mejorados con temática acuática */
-.hover-lift:hover {
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
-}
-
-/* Efecto de onda sutil en botones */
-.btn-aqua {
-  background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-aqua::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn-aqua:hover::before {
-  left: 100%;
-}
-
-/* Mejoras para reducir movimiento */
-@media (prefers-reduced-motion: reduce) {
-  .header-transition, .hover-lift, .btn-aqua::before {
-    transition: none;
-    transform: none;
+  /* Mejoras de accesibilidad y transiciones */
+  .header-transition {
+    transition: all 0.3s ease;
   }
-  
+
+  /* Efectos hover mejorados con temática acuática */
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+
+  /* Efecto de onda sutil en botones */
+  .btn-aqua {
+    background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
   .btn-aqua::before {
-    display: none;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
   }
-}
 
-/* Sombras suaves con tonos azules */
-.shadow-aqua {
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
-}
+  .btn-aqua:hover::before {
+    left: 100%;
+  }
+
+  /* Mejoras para reducir movimiento */
+  @media (prefers-reduced-motion: reduce) {
+    .header-transition,
+    .hover-lift,
+    .btn-aqua::before {
+      transition: none;
+      transform: none;
+    }
+
+    .btn-aqua::before {
+      display: none;
+    }
+  }
+
+  /* Sombras suaves con tonos azules */
+  .shadow-aqua {
+    box-shadow:
+      0 4px 6px -1px rgba(59, 130, 246, 0.1),
+      0 2px 4px -1px rgba(59, 130, 246, 0.06);
+  }
+
+  /* Breakpoints específicos para mejor responsividad */
+  @media (max-width: 1023px) {
+    /* Ocultar elementos de desktop en móvil */
+    #user-section {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* Ocultar elementos de móvil en desktop */
+    .lg\\:hidden {
+      display: none !important;
+    }
+  }
+
+  /* Mejoras de touch para dispositivos móviles */
+  @media (hover: none) {
+    .hover-lift:hover {
+      transform: none;
+    }
+    
+    .btn-aqua::before {
+      display: none;
+    }
+  }
 </style>

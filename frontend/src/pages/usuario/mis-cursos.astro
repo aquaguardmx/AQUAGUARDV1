@@ -1,192 +1,691 @@
 ---
 // src/pages/mis-cursos.astro
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
 
-// ¡Hemos borrado toda la lógica de fetch de aquí!
-// Las interfaces ahora se usarán en el script de abajo.
+// Interfaces para los datos
+interface CursoInscrito {
+  id_curso: number;
+  titulo: string;
+  descripcion: string;
+  portada_url: string | null;
+  tiempo_estimado_min: number;
+  progreso: number;
+  ultima_leccion: string;
+  fecha_inscripcion: string;
+  instructor: string;
+  categoria: string;
+  nivel: 'principiante' | 'intermedio' | 'avanzado';
+  lecciones_completadas: number;
+  total_lecciones: number;
+}
+
+// Datos de ejemplo con imágenes optimizadas
+const cursosInscritos: CursoInscrito[] = [
+  {
+    id_curso: 1,
+    titulo: "Fundamentos de Conservación del Agua",
+    descripcion: "Aprende los principios básicos para preservar y optimizar el uso del agua en tu comunidad.",
+    portada_url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    tiempo_estimado_min: 180,
+    progreso: 75,
+    ultima_leccion: "Técnicas de Riego Eficiente",
+    fecha_inscripcion: "2024-01-15",
+    instructor: "María González",
+    categoria: "Conservación",
+    nivel: "principiante",
+    lecciones_completadas: 9,
+    total_lecciones: 12
+  },
+  {
+    id_curso: 2,
+    titulo: "Tecnologías de Purificación Avanzada",
+    descripcion: "Domina las últimas tecnologías en tratamiento y purificación de recursos hídricos.",
+    portada_url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    tiempo_estimado_min: 240,
+    progreso: 30,
+    ultima_leccion: "Sistemas de Ósmosis Inversa",
+    fecha_inscripcion: "2024-02-10",
+    instructor: "Carlos Rodríguez",
+    categoria: "Tecnología",
+    nivel: "avanzado",
+    lecciones_completadas: 4,
+    total_lecciones: 16
+  },
+  {
+    id_curso: 3,
+    titulo: "Educación Ambiental para Comunidades",
+    descripcion: "Estrategias efectivas para implementar programas de concienciación ambiental.",
+    portada_url: "https://images.unsplash.com/photo-1569163139394-de44cb2c8cb7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    tiempo_estimado_min: 150,
+    progreso: 100,
+    ultima_leccion: "Evaluación de Impacto",
+    fecha_inscripcion: "2024-01-05",
+    instructor: "Ana Martínez",
+    categoria: "Educación",
+    nivel: "intermedio",
+    lecciones_completadas: 10,
+    total_lecciones: 10
+  },
+  {
+    id_curso: 4,
+    titulo: "Gestión Sostenible de Recursos Hídricos",
+    descripcion: "Aprende a gestionar los recursos hídricos de manera sostenible y eficiente.",
+    portada_url: "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+    tiempo_estimado_min: 200,
+    progreso: 45,
+    ultima_leccion: "Planificación de Cuencas",
+    fecha_inscripcion: "2024-03-01",
+    instructor: "Roberto Sánchez",
+    categoria: "Gestión",
+    nivel: "intermedio",
+    lecciones_completadas: 6,
+    total_lecciones: 15
+  }
+];
+
+const cursosCompletados = cursosInscritos.filter(curso => curso.progreso === 100);
+const cursosEnProgreso = cursosInscritos.filter(curso => curso.progreso < 100);
+
+// Obtener datos del usuario
+let usuario = {
+  nombre: "Estudiante",
+  cursos_completados: cursosCompletados.length,
+  horas_estudiadas: 45,
+  nivel: "Avanzado"
+};
 ---
 
-<Layout title="Mis Cursos">
-  <main class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
-    <div class="container mx-auto px-4">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Mis Cursos</h1>
-        <p class="text-gray-600 dark:text-gray-400">
-          Gestiona y continúa con tu aprendizaje
-        </p>
+<Layout title="Mis Cursos - AquaLearn">
+  <Header currentPath="/mis-cursos" />
+
+  <!-- Hero Section para Mis Cursos -->
+  <section class="relative bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 py-20 overflow-hidden">
+    <!-- Elementos de fondo -->
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg class="w-full h-20 text-blue-800/30" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor"></path>
+        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="currentColor"></path>
+        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="currentColor"></path>
+      </svg>
+    </div>
+
+    <!-- Burbujas decorativas -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+    </div>
+
+    <div class="container mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-5 py-2 mb-6">
+        <svg class="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-blue-100 text-sm font-medium">Tu progreso de aprendizaje</span>
       </div>
 
-      <div id="cursos-container">
-        <div class="flex justify-center items-center py-12">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+        Mis <span class="bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent">Cursos</span>
+      </h1>
+      <p class="text-xl text-blue-100 max-w-2xl mx-auto mb-8">
+        Continúa tu viaje educativo y lleva tu conocimiento sobre el cuidado del agua al siguiente nivel
+      </p>
+    </div>
+  </section>
+
+  <!-- Estadísticas del Estudiante -->
+  <section class="bg-white py-16">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-gradient-to-br from-blue-500 to-teal-400 rounded-2xl p-8 text-white text-center shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
+          <div class="text-4xl font-bold mb-3">{cursosInscritos.length}</div>
+          <div class="text-blue-100 font-medium text-lg">Cursos Inscritos</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl p-8 text-white text-center shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
+          <div class="text-4xl font-bold mb-3">{usuario.cursos_completados}</div>
+          <div class="text-green-100 font-medium text-lg">Cursos Completados</div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-500 to-pink-400 rounded-2xl p-8 text-white text-center shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
+          <div class="text-4xl font-bold mb-3">{usuario.horas_estudiadas}</div>
+          <div class="text-purple-100 font-medium text-lg">Horas de Estudio</div>
         </div>
       </div>
+    </div>
+  </section>
 
+  <!-- Contenido Principal -->
+  <main class="bg-gradient-to-b from-blue-50 to-white py-16">
+    <div class="container mx-auto px-4 sm:px-6">
+      
+      <!-- Cursos en Progreso -->
+      <div class="mb-16">
+        <!-- Encabezado Mejorado -->
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-6 py-3 mb-6 shadow-sm">
+            <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+            <span class="text-gray-700 font-medium">Activo ahora</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Continuar Aprendiendo</h2>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto">Retoma donde lo dejaste y alcanza tus metas</p>
+        </div>
+
+        {cursosEnProgreso.length > 0 ? (
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            {cursosEnProgreso.map((curso) => (
+              <!-- Tarjeta de Curso Mejorada -->
+              <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                <div class="flex flex-col h-full">
+                  <!-- Header de la tarjeta -->
+                  <div class="relative h-48 overflow-hidden">
+                    <img 
+                      src={curso.portada_url} 
+                      alt={curso.titulo}
+                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    
+                    <!-- Badges superpuestos -->
+                    <div class="absolute top-4 left-4 flex flex-col gap-2">
+                      <span class={`px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg ${
+                        curso.nivel === 'principiante' ? 'bg-green-500' :
+                        curso.nivel === 'intermedio' ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}>
+                        {curso.nivel.toUpperCase()}
+                      </span>
+                      <span class="bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {curso.tiempo_estimado_min} min
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Contenido de la tarjeta -->
+                  <div class="flex-1 p-6 flex flex-col">
+                    <!-- Título y categoría -->
+                    <div class="mb-4">
+                      <span class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium mb-3">
+                        {curso.categoria}
+                      </span>
+                      <h3 class="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        {curso.titulo}
+                      </h3>
+                    </div>
+
+                    <!-- Descripción -->
+                    <p class="text-gray-600 mb-6 text-sm leading-relaxed flex-grow line-clamp-3">
+                      {curso.descripcion}
+                    </p>
+
+                    <!-- Información del instructor -->
+                    <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-teal-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        {curso.instructor.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <span>Instructor: {curso.instructor}</span>
+                    </div>
+
+                    <!-- Barra de progreso mejorada -->
+                    <div class="mb-6">
+                      <div class="flex justify-between items-center text-sm text-gray-600 mb-3">
+                        <span class="font-semibold">Progreso: {curso.progreso}%</span>
+                        <span class="font-medium">{curso.lecciones_completadas}/{curso.total_lecciones} lecciones</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div 
+                          class="h-2.5 rounded-full transition-all duration-1000 ease-out ${
+                            curso.progreso === 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+                            'bg-gradient-to-r from-blue-500 to-teal-400'
+                          }" 
+                          style={`width: ${curso.progreso}%`}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <!-- Última lección -->
+                    <div class="mb-6">
+                      <div class="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span class="font-medium">Última lección: {curso.ultima_leccion}</span>
+                      </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex gap-3 pt-4 border-t border-gray-200">
+                      <a 
+                        href={`/curso/${curso.id_curso}/continuar`}
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white text-center py-3 px-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                        </svg>
+                        Continuar Curso
+                      </a>
+                      <button 
+                        class="relative bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center curso-options-trigger"
+                        data-curso-id={curso.id_curso}
+                        data-curso-titulo={curso.titulo}
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <!-- Estado vacío mejorado -->
+          <div class="text-center py-16 bg-white rounded-2xl shadow-lg border-2 border-blue-100/50 max-w-2xl mx-auto">
+            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-teal-100 rounded-full flex items-center justify-center">
+              <svg class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-3">No tienes cursos en progreso</h3>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+              Comienza un nuevo curso y expande tu conocimiento sobre el cuidado del agua
+            </p>
+            <a href="/cursos" class="inline-block bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+              Explorar Cursos Disponibles
+            </a>
+          </div>
+        )}
+      </div>
+
+      <!-- Cursos Completados -->
+      {cursosCompletados.length > 0 && (
+        <div class="mb-16">
+          <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-3 bg-green-50 border border-green-200 rounded-full px-6 py-3 mb-6">
+              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-green-700 font-medium">Logros completados</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Logros Completados</h2>
+            <p class="text-xl text-gray-600">Celebra tus éxitos y conocimientos adquiridos</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {cursosCompletados.map((curso) => (
+              <div class="group bg-white rounded-xl shadow-lg hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                <div class="relative">
+                  <img 
+                    src={curso.portada_url} 
+                    alt={curso.titulo}
+                    class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div class="absolute top-3 right-3 bg-green-500 text-white p-2 rounded-full shadow-lg">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
+                  <div class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
+                    {curso.categoria}
+                  </div>
+                </div>
+
+                <div class="p-5">
+                  <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">{curso.titulo}</h3>
+                  
+                  <div class="flex justify-between items-center text-xs text-gray-500 mb-3">
+                    <div class="flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      {curso.tiempo_estimado_min} min
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                      {curso.instructor}
+                    </div>
+                  </div>
+
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center mb-4">
+                    <div class="text-green-700 font-semibold text-sm mb-1">¡Curso Completado!</div>
+                    <div class="text-green-600 text-xs">Finalizado el {new Date(curso.fecha_inscripcion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                  </div>
+                  
+                  <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Ver Certificado
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- Recomendaciones -->
+      <div class="bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 rounded-2xl p-12 text-white text-center relative overflow-hidden shadow-2xl">
+        <div class="absolute inset-0 bg-black/10"></div>
+        
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold mb-4">¿Listo para tu próximo desafío?</h3>
+          <p class="text-blue-100 text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
+            Descubre nuevos cursos que se alinean con tus intereses y lleva tus habilidades al siguiente nivel
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/cursos" class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Explorar Nuevos Cursos
+            </a>
+            <a href="/perfil" class="border-2 border-white text-white hover:bg-white/15 font-bold py-4 px-8 rounded-xl transition-all backdrop-blur-md hover:border-white/80 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Ver Mi Perfil
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-
-  <script>
-    // --- Interfaces (solo como referencia) ---
-    /* ... */
-
-    // --- Plantillas HTML (sin cambios) ---
-    const plantillaError = `... (tu plantilla de error) ...`;
-    const plantillaVacio = `... (tu plantilla de vacío) ...`;
-
-    /**
-     * Función para crear la tarjeta de un curso (VERSIÓN ROBUSTA)
-     * @param {CursoInscrito} inscripcion
-     */
-    function crearTarjetaCurso(inscripcion) {
-      // *** NUEVA VALIDACIÓN ***
-      // Proteger contra inscripciones nulas o cursos nulos
-      if (!inscripcion || !inscripcion.curso) {
-        console.warn('Se omitió una inscripción por datos inválidos:', inscripcion);
-        return ''; // Retorna un string vacío para no renderizar esta tarjeta
-      }
-
-      const { curso, fecha_inscripcion } = inscripcion;
-      
-      // Usamos el operador "Nullish Coalescing" (??) para valores por defecto
-      const titulo = curso.titulo ?? 'Curso sin Título';
-      const descripcion = curso.descripcion ?? 'Sin descripción disponible';
-      const categoriaNombre = curso.categoria?.nombre ?? 'Sin Categoría'; // 'Optional Chaining' (?.
-      const portadaAlt = titulo;
-
-      const portadaHtml = curso.portada_url 
-        ? `<img src="${curso.portada_url}" alt="${portadaAlt}" class="w-full h-48 object-cover">`
-        : `
-          <div class="w-full h-48 bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
-            <svg class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.714-4.24a5.714 5.714 0 1111.428 0 5.714 5.714 0 01-11.428 0z"></path>
+  <!-- Modal para Abandonar Curso -->
+  <div id="abandonarCursoModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <div class="p-6">
+          <!-- Icono de advertencia -->
+          <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
             </svg>
           </div>
-        `;
-      
-      // *** VALIDACIÓN DE TIEMPO Y FECHA ***
-      const tiempoMin = curso.tiempo_estimado_min ?? 0;
-      const tiempoEstimado = `${Math.floor(tiempoMin / 60)}h ${tiempoMin % 60}m`;
-      
-      let fechaInscripcionFormateada = 'Fecha desconocida';
-      if (fecha_inscripcion) {
-        try {
-          const fecha = new Date(fecha_inscripcion);
-          // Validamos que la fecha sea un objeto Date válido
-          if (!isNaN(fecha.getTime())) {
-            fechaInscripcionFormateada = fecha.toLocaleDateString();
-          }
-        } catch (e) {
-          console.warn('Error al formatear la fecha:', fecha_inscripcion, e);
-        }
-      }
-
-      return `
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          ${portadaHtml}
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-2">
-              <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                ${categoriaNombre}
-              </span>
-              <span class="text-sm text-gray-500 dark:text-gray-400">
-                ${fechaInscripcionFormateada}
-              </span>
-            </div>
-            
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              ${titulo}
-            </h3>
-            
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-              ${descripcion}
-            </p>
-            
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                ${tiempoEstimado}
-              </span>
-              
-              <a 
-                href="/detalle-curso/${curso.id_curso}"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
-              >
-                Continuar
-              </a>
+          
+          <!-- Título y mensaje -->
+          <h3 class="text-xl font-bold text-gray-900 text-center mb-2" id="modalTitulo">
+            ¿Abandonar curso?
+          </h3>
+          <p class="text-gray-600 text-center mb-6" id="modalMensaje">
+            Estás a punto de abandonar el curso "<span id="cursoNombre" class="font-semibold"></span>". Tu progreso se perderá y no podrás acceder al contenido del curso.
+          </p>
+          
+          <!-- Información adicional -->
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <p class="text-red-700 text-sm font-medium">Esta acción no se puede deshacer</p>
+                <p class="text-red-600 text-xs mt-1">Perderás todo tu progreso en este curso</p>
+              </div>
             </div>
           </div>
+          
+          <!-- Botones de acción -->
+          <div class="flex gap-3">
+            <button 
+              id="cancelarAbandonar"
+              class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105"
+            >
+              Cancelar
+            </button>
+            <button 
+              id="confirmarAbandonar"
+              class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Abandonar
+            </button>
+          </div>
         </div>
-      `;
-    }
+      </div>
+    </div>
+  </div>
 
-    // 2. Función principal para cargar y renderizar
-    async function cargarMisCursos() {
-      const container = document.getElementById('cursos-container');
-      
-      // *** VALIDACIÓN DE CONTENEDOR (LA MÁS IMPORTANTE) ***
-      if (!container) {
-        console.error('Error Crítico: No se pudo encontrar el elemento #cursos-container en el DOM.');
-        // No podemos mostrar un error al usuario porque no sabemos dónde ponerlo.
-        return; 
-      }
-      
-      try {
-        const userId = localStorage.getItem('userId');
-
-        if (!userId) {
-          console.error('No se encontró el ID del usuario en localStorage');
-          // Ahora es seguro usar 'container' porque ya lo validamos
-          container.innerHTML = plantillaError;
-          return;
-        }
-
-        const response = await fetch(`http://localhost:8000/api/cursos-por-usuario/${userId}`);
-        
-        if (!response.ok) {
-          throw new Error(`La respuesta de la red no fue exitosa (Estado: ${response.status})`);
-        }
-
-        const cursosInscritos = await response.json();
-
-        // Validamos que la respuesta sea un array
-        if (!Array.isArray(cursosInscritos)) {
-          console.error('La respuesta de la API no fue un array:', cursosInscritos);
-          throw new Error('Respuesta inesperada de la API');
-        }
-
-        if (cursosInscritos.length === 0) {
-          container.innerHTML = plantillaVacio;
-        } else {
-          // map() filtrará automáticamente los strings vacíos que devuelva crearTarjetaCurso
-          const gridHtml = `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              ${cursosInscritos.map(crearTarjetaCurso).join('')} 
-            </div>
-          `;
-          container.innerHTML = gridHtml;
-        }
-
-      } catch (err) {
-        console.error('Error al cargar los cursos:', err);
-        // Es seguro usar 'container' aquí
-        if (container) {
-          container.innerHTML = plantillaError;
-        }
-      }
-    }
-
-    // 3. Ejecutar la función cuando el documento esté listo
-    // Aseguramos que el script se ejecute solo después de que el DOM esté cargado
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', cargarMisCursos);
-    } else {
-        // El DOM ya está listo
-        cargarMisCursos();
-    }
-
-  </script>
+  <Footer />
 </Layout>
+
+<style is:global>
+  /* Animaciones de burbujas mejoradas */
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    animation: float 20s infinite ease-in-out;
+    backdrop-filter: blur(10px);
+  }
+
+  .bubble-1 {
+    width: 60px;
+    height: 60px;
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+  }
+
+  .bubble-2 {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    right: 10%;
+    animation-delay: 4s;
+  }
+
+  .bubble-3 {
+    width: 45px;
+    height: 45px;
+    bottom: 30%;
+    left: 15%;
+    animation-delay: 8s;
+  }
+
+  .bubble-4 {
+    width: 70px;
+    height: 70px;
+    bottom: 20%;
+    right: 20%;
+    animation-delay: 12s;
+  }
+
+  .bubble-5 {
+    width: 50px;
+    height: 50px;
+    top: 40%;
+    left: 10%;
+    animation-delay: 2s;
+  }
+
+  .bubble-6 {
+    width: 65px;
+    height: 65px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 6s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-30px) translateX(15px) rotate(5deg);
+    }
+    50% {
+      transform: translateY(-50px) translateX(-15px) rotate(-5deg);
+    }
+    75% {
+      transform: translateY(-30px) translateX(15px) rotate(5deg);
+    }
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Mejoras de animación */
+  .transition-all {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Efectos hover suaves */
+  .group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .bubble {
+      display: none;
+    }
+  }
+
+  /* Utilidades CSS */
+  .shadow-3xl {
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Mejoras específicas para imágenes */
+  img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Fondo de respaldo para imágenes que no cargan */
+  .bg-gray-200 {
+    background-color: #f3f4f6;
+  }
+
+  /* Mejoras de rendimiento para imágenes */
+  .group:hover img {
+    transform: scale(1.1);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Optimizaciones para dispositivos móviles */
+  @media (max-width: 1024px) {
+    .lg\:flex-row {
+      flex-direction: column;
+    }
+    
+    .lg\:w-2\/5 {
+      width: 100%;
+    }
+    
+    .lg\:w-3\/5 {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // Funcionalidad del modal para abandonar curso
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('abandonarCursoModal');
+    const modalContent = document.getElementById('modalContent');
+    const cursoNombre = document.getElementById('cursoNombre');
+    const cancelarBtn = document.getElementById('cancelarAbandonar');
+    const confirmarBtn = document.getElementById('confirmarAbandonar');
+    
+    let cursoActualId = null;
+    let cursoActualTitulo = null;
+
+    // Abrir modal cuando se hace clic en los tres puntos
+    document.querySelectorAll('.curso-options-trigger').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        cursoActualId = this.getAttribute('data-curso-id');
+        cursoActualTitulo = this.getAttribute('data-curso-titulo');
+        
+        cursoNombre.textContent = cursoActualTitulo;
+        
+        // Mostrar modal con animación
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }, 50);
+      });
+    });
+
+    // Cerrar modal al hacer clic en cancelar
+    cancelarBtn.addEventListener('click', cerrarModal);
+
+    // Cerrar modal al hacer clic fuera del contenido
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        cerrarModal();
+      }
+    });
+
+    // Confirmar abandono del curso
+    confirmarBtn.addEventListener('click', function() {
+      if (cursoActualId) {
+        // Aquí iría la lógica para abandonar el curso
+        console.log(`Abandonando curso ID: ${cursoActualId} - ${cursoActualTitulo}`);
+        
+        // Simular abandono del curso (en una aplicación real, aquí harías una petición al servidor)
+        alert(`Has abandonado el curso: ${cursoActualTitulo}`);
+        
+        // Recargar la página para reflejar los cambios
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
+        cerrarModal();
+      }
+    });
+
+    // Cerrar modal con tecla Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        cerrarModal();
+      }
+    });
+
+    function cerrarModal() {
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        cursoActualId = null;
+        cursoActualTitulo = null;
+      }, 300);
+    }
+  });
+</script>

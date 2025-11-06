@@ -1,0 +1,465 @@
+---
+// src/pages/cursos.astro
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
+
+// 1. DEFINICIÓN DE TIPOS
+export interface Autor {
+  id_usuario: number;
+  nombre: string;
+}
+
+export interface Categoria {
+  id: number;
+  nombre: string;
+  slug: string;
+}
+
+export interface Curso {
+  id_curso: number;
+  titulo: string;
+  descripcion: string;
+  portada_url: string | null;
+  tiempo_estimado_min: number;
+  autor: Autor;
+  categoria: Categoria;
+  publicado: boolean;
+  fecha_creacion?: string;
+  nivel?: string;
+  estudiantes_inscritos?: number;
+  precio?: number;
+}
+
+// 2. OBTENCIÓN DE DATOS
+let cursos: Curso[] = [];
+let categorias: Categoria[] = [];
+let fetchError = false;
+
+try {
+  const response = await fetch("http://localhost:8000/api/cursos");
+  
+  if (response.ok) {
+    const data = await response.json();
+    cursos = data.filter((curso: Curso) => curso.publicado);
+    
+    // Extraer categorías únicas
+    const categoriasUnicas = new Map();
+    cursos.forEach((curso: Curso) => {
+      if (!categoriasUnicas.has(curso.categoria.id)) {
+        categoriasUnicas.set(curso.categoria.id, curso.categoria);
+      }
+    });
+    categorias = Array.from(categoriasUnicas.values());
+  } else {
+    fetchError = true;
+  }
+} catch (error: any) {
+  fetchError = true;
+}
+---
+
+<Layout title="Catálogo de Cursos - AquaGuard">
+  <!-- Header -->
+  <Header />
+
+  <!-- Hero Section para Cursos -->
+  <section class="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 overflow-hidden">
+    <!-- Elementos de fondo -->
+    <div class="absolute inset-0 bg-black/20"></div>
+    
+    <!-- Ondas -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg class="w-full h-20 md:h-28 text-blue-800/30" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor"></path>
+        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="currentColor"></path>
+        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="currentColor"></path>
+      </svg>
+    </div>
+
+    <!-- Burbujas -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="container mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-5 py-2 mb-6 animate-pulse">
+        <svg class="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-blue-100 text-sm font-medium tracking-wide">Catálogo Completo</span>
+      </div>
+
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+        Nuestro <span class="block bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent mt-3">Catálogo de Cursos</span>
+      </h1>
+
+      <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed mb-8">
+        Descubre todos nuestros cursos especializados en <span class="font-semibold text-white">cuidado ambiental</span> y <span class="font-semibold text-white">gestión del agua</span>
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-8 md:gap-12 mb-8">
+        <div class="text-center">
+          <div class="text-2xl md:text-3xl font-bold text-white mb-2">{cursos.length}+</div>
+          <div class="text-blue-200 text-sm font-medium">Cursos Disponibles</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl md:text-3xl font-bold text-white mb-2">{categorias.length}</div>
+          <div class="text-blue-200 text-sm font-medium">Categorías</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl md:text-3xl font-bold text-white mb-2">24/7</div>
+          <div class="text-blue-200 text-sm font-medium">Acceso Ilimitado</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div class="container mx-auto px-6 py-16">
+      <!-- Barra de Filtros y Búsqueda -->
+      <div class="flex flex-col lg:flex-row gap-8 mb-12">
+        <!-- Sidebar de Filtros -->
+        <div class="lg:w-80 flex-shrink-0">
+          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-blue-200/50 dark:border-gray-600/50 p-6 sticky top-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"/>
+              </svg>
+              Filtros
+            </h3>
+
+            <!-- Búsqueda -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Buscar</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar cursos..."
+                  class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                />
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Categorías -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Categorías</label>
+              <div class="space-y-2">
+                <button class="w-full text-left px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium transition-all hover:bg-blue-600">
+                  Todas las categorías
+                </button>
+                {categorias.map((categoria) => (
+                  <button class="w-full text-left px-3 py-2 bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-blue-200 dark:hover:border-blue-600">
+                    {categoria.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <!-- Nivel -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Nivel</label>
+              <div class="space-y-2">
+                <button class="w-full text-left px-3 py-2 bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-blue-200 dark:hover:border-blue-600">
+                  Todos los niveles
+                </button>
+                <button class="w-full text-left px-3 py-2 bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-blue-200 dark:hover:border-blue-600">
+                  Principiante
+                </button>
+                <button class="w-full text-left px-3 py-2 bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-blue-200 dark:hover:border-blue-600">
+                  Intermedio
+                </button>
+                <button class="w-full text-left px-3 py-2 bg-white/50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-blue-200 dark:hover:border-blue-600">
+                  Avanzado
+                </button>
+              </div>
+            </div>
+
+            <!-- Botón Limpiar Filtros -->
+            <button class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium transition-all hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300/50 dark:border-gray-600/50">
+              Limpiar Filtros
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="flex-1">
+          <!-- Header y Ordenamiento -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                {cursos.length} Cursos Disponibles
+              </h2>
+              <p class="text-gray-600 dark:text-gray-400 mt-2">
+                Encuentra el curso perfecto para tu formación ambiental
+              </p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <select class="px-4 py-3 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 backdrop-blur-sm">
+                <option>Ordenar por: Más recientes</option>
+                <option>Ordenar por: Más populares</option>
+                <option>Ordenar por: Mejor valorados</option>
+                <option>Ordenar por: Duración</option>
+              </select>
+              
+              <button class="p-3 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Estados de carga y error -->
+          {fetchError && (
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-6 rounded-2xl mb-8 flex items-start shadow-2xl backdrop-blur-sm" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <p class="font-bold mb-1 text-lg">Error de Conexión</p>
+                <p class="text-sm">
+                  No se pudieron cargar los cursos. Asegúrate de que tu servidor API esté funcionando correctamente.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!fetchError && cursos.length === 0 && (
+            <div class="text-center py-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-blue-100/50 dark:border-gray-700/50">
+              <div class="w-24 h-24 mx-auto mb-6 bg-blue-100/50 dark:bg-blue-900/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <svg class="w-12 h-12 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.714-4.24a5.714 5.714 0 1111.428 0 5.714 5.714 0 01-11.428 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">No hay cursos disponibles</h3>
+              <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+                Estamos preparando nuevos contenidos especializados. Vuelve pronto para descubrir nuestras novedades.
+              </p>
+            </div>
+          )}
+
+          <!-- Grid de Cursos -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+            {cursos.map((curso) => (
+              <a
+                href={`/detalle-curso/${curso.id_curso}`}
+                class="group block bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl shadow-xl hover:shadow-2xl overflow-hidden transition-all duration-500 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/80 dark:hover:border-blue-600/80 hover:-translate-y-2"
+              >
+                <article class="flex flex-col h-full">
+                  <div class="relative overflow-hidden">
+                    {curso.portada_url ? (
+                      <div class="relative">
+                        <img
+                          src={curso.portada_url}
+                          alt={`Portada del curso ${curso.titulo}`}
+                          class="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      </div>
+                    ) : (
+                      <div class="w-full h-48 bg-gradient-to-br from-blue-900 to-teal-700 flex items-center justify-center relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 text-white/80">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+                        </svg>
+                        <div class="absolute inset-0 bg-black/20" />
+                      </div>
+                    )}
+
+                    <div class="absolute top-4 left-4">
+                      <span class="bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                        {curso.categoria.nombre}
+                      </span>
+                    </div>
+
+                    <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      {curso.tiempo_estimado_min} min
+                    </div>
+                  </div>
+
+                  <div class="p-6 flex flex-col flex-grow">
+                    <div class="mb-4">
+                      <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-3 line-clamp-2 leading-tight">
+                        {curso.titulo}
+                      </h3>
+                      <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-2" set:html={curso.descripcion} />
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4 text-sm">
+                      <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span>4.8</span>
+                        <span class="text-gray-400">•</span>
+                        <span>{curso.estudiantes_inscritos || 125} estudiantes</span>
+                      </div>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-medium text-xs shadow-lg">
+                          {curso.autor.nombre.charAt(0)}
+                        </div>
+                        <div>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">Instructor</p>
+                          <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{curso.autor.nombre}</p>
+                        </div>
+                      </div>
+                      
+                      <div class="text-right">
+                        <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                          {curso.precio ? `$${curso.precio}` : 'Gratis'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </a>
+            ))}
+          </div>
+
+          <!-- Paginación -->
+          {cursos.length > 0 && (
+            <div class="flex justify-center items-center gap-2 mt-12">
+              <button class="px-4 py-2 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              
+              <button class="px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold transition-all hover:bg-blue-600">1</button>
+              <button class="px-4 py-2 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 backdrop-blur-sm">2</button>
+              <button class="px-4 py-2 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 backdrop-blur-sm">3</button>
+              
+              <button class="px-4 py-2 bg-white/80 dark:bg-gray-700/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- CTA Section -->
+      <div class="text-center mt-20 bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 rounded-3xl p-12 text-white shadow-3xl backdrop-blur-lg relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative z-10">
+          <h3 class="text-3xl md:text-4xl font-bold mb-6">¿No encuentras lo que buscas?</h3>
+          <p class="text-blue-100 text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
+            Contáctanos y te ayudaremos a encontrar el curso perfecto para tus necesidades de formación ambiental.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-5 justify-center">
+            <button class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-12 rounded-xl transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl text-lg">
+              Solicitar Asesoría
+            </button>
+            <button class="border-2 border-white text-white hover:bg-white/15 font-bold py-4 px-12 rounded-xl transition-all backdrop-blur-md hover:border-white/80 text-lg">
+              Contactar Soporte
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* Animaciones de burbujas */
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    animation: float 20s infinite ease-in-out;
+    backdrop-filter: blur(10px);
+  }
+
+  .bubble-1 {
+    width: 40px;
+    height: 40px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .bubble-2 {
+    width: 60px;
+    height: 60px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 5s;
+  }
+
+  .bubble-3 {
+    width: 30px;
+    height: 30px;
+    bottom: 40%;
+    left: 20%;
+    animation-delay: 10s;
+  }
+
+  .bubble-4 {
+    width: 50px;
+    height: 50px;
+    top: 30%;
+    right: 25%;
+    animation-delay: 15s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px) rotate(5deg);
+    }
+    50% {
+      transform: translateY(-30px) translateX(-10px) rotate(-5deg);
+    }
+    75% {
+      transform: translateY(-20px) translateX(10px) rotate(5deg);
+    }
+  }
+
+  /* Utilidades CSS */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Mejoras de accesibilidad */
+  @media (prefers-reduced-motion: reduce) {
+    .bubble {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .bubble {
+      display: none;
+    }
+  }
+</style>
