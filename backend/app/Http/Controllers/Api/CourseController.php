@@ -29,7 +29,7 @@ class CourseController extends Controller
 
     public function show($id)
     {
-        $curso = Curso::find($id);
+        $curso = Curso::with('autor', 'categoria')->find($id);
 
         if (!$curso) {
             return response()->json(['message' => 'Curso no encontrado'], 404);

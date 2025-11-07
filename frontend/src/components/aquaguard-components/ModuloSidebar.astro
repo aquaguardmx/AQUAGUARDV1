@@ -1,0 +1,113 @@
+---
+// src/components/curso/ModulosSidebar.astro
+
+const { modulos, cursoId } = Astro.props;
+---
+
+<aside class="p-6">
+  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+    </svg>
+    Contenido del Curso
+  </h3>
+  
+  <div class="space-y-4">
+    {modulos.sort((a, b) => a.orden - b.orden).map((modulo, index) => (
+      <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all hover:shadow-lg">
+        <!-- Header del Módulo -->
+        <div class={`
+          p-4 flex items-center justify-between cursor-pointer transition-colors
+          ${modulo.completado ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700'}
+        `}>
+          <div class="flex items-center gap-3">
+            <div class={`
+              w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors
+              ${modulo.completado 
+                ? 'bg-green-500 text-white' 
+                : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
+              }
+            `}>
+              {index + 1}
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-900 dark:text-white">{modulo.titulo}</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {modulo.lecciones.length} lección{modulo.lecciones.length !== 1 ? 'es' : ''}
+              </p>
+            </div>
+          </div>
+          
+          {modulo.completado && (
+            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          )}
+        </div>
+        
+        <!-- Lecciones del Módulo -->
+        <div class="bg-white dark:bg-gray-800">
+          {modulo.lecciones.map((leccion, leccionIndex) => (
+            <a
+              href={!leccion.bloqueado ? `/curso/${cursoId}/leccion/${leccion.id_leccion}` : '#'}
+              class={`
+                flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 transition-all
+                ${leccion.bloqueado 
+                  ? 'cursor-not-allowed opacity-60' 
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+                }
+                ${leccion.completado ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+              `}
+            >
+              <div class={`
+                w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
+                ${leccion.completado 
+                  ? 'bg-green-500 text-white' 
+                  : leccion.bloqueado
+                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                    : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
+                }
+              `}>
+                {leccionIndex + 1}
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-medium text-gray-900 dark:text-white truncate">{leccion.titulo}</span>
+                  {leccion.tipo === 'quiz' && (
+                    <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0">
+                      Quiz
+                    </span>
+                  )}
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {leccion.duracion_min} min
+                  </span>
+                  <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
+                    {leccion.tipo}
+                  </span>
+                </div>
+              </div>
+              
+              {leccion.bloqueado && (
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                </svg>
+              )}
+              
+              {leccion.completado && !leccion.bloqueado && (
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              )}
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</aside>
