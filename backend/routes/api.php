@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\ModuleController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\CursoInscritoUsuarioController;
 
-use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Api\EstacionesController;
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -149,30 +149,32 @@ Route::get('/lecciones/{id}', [LessonController::class, 'show']);
 Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorModulo']);
 
 //API PARA  MAPA 
-Route::get('/mapa', [MapController::class, 'mapData']);
+Route::get('/mapa', [EstacionesController::class, 'mapData']);
 
-//Route::post('/mapa', [MapController::class, 'store']);
-Route::get('/estados', [MapController::class, 'getEstados']);
-Route::get('/municipios/estado/{estadoId}', [MapController::class, 'getMunicipiosPorEstado']);
-Route::get('/cuencas', [MapController::class, 'getCuencas']);
-Route::get('/tipos', [MapController::class, 'getTipos']);
-Route::get('/subtipos', [MapController::class, 'getSubtipos']);
-Route::get('/parametros', [MapController::class, 'getParametros']);
+//API para obtener datos geográficos 
+Route::get('/estados', [EstacionesController::class, 'getEstados']);
+Route::get('/municipios/estado/{estadoId}', [EstacionesController::class, 'getMunicipiosPorEstado']);
+Route::get('/cuencas', [EstacionesController::class, 'getCuencas']);
+Route::get('/tipos', [EstacionesController::class, 'getTipos']);
+Route::get('/subtipos', [EstacionesController::class, 'getSubtipos']);
+Route::get('/parametros', [EstacionesController::class, 'getParametros']);
 
-//API para admin sobre estaciones
+//API para agregar estaciones/cuerpos de agua por usuario normal
+Route::post('/estaciones', [EstacionesController::class, 'store']);
 
-    // Obtener todas las estaciones (para admin) con paginación y limite 
-    //http://localhost:8000/api/admin/estaciones?page=1&limit=5
-    Route::get('/admin/estaciones', [MapController::class, 'index']);
+//API para admin sobre estaciones/cuerpos de agua
+
+// Obtener todas las estaciones (para admin) con paginación y limite 
+Route::get('/admin/estaciones', [EstacionesController::class, 'index']);
+
+// Obtener una estación específica
+Route::get('/admin/estacion/{id}', [EstacionesController::class, 'show']);
     
-    // Obtener una estación específica
-    Route::get('/admin/estacion/{id}', [MapController::class, 'show']);
+// Actualizar estación (aprobación y edicion)
+Route::put('/admin/estacion/{id}', [EstacionesController::class, 'update']);
     
-    // Actualizar estación (aprobación y edición)
-    Route::put('/admin/estacion/{id}', [MapController::class, 'update']);
+// Eliminar estación
+Route::delete('/admin/estacion/{id}', [EstacionesController::class, 'destroy']);
     
-    // Eliminar estación
-    Route::delete('/admin/estacion/{id}', [MapController::class, 'destroy']);
-    
-    // Crear estación (admin)
-    Route::post('/admin/estaciones', [MapController::class, 'storeAdmin']);
+// Crear estación (admin)
+Route::post('/admin/estaciones', [EstacionesController::class, 'storeAdmin']);

@@ -148,9 +148,6 @@ import "tailwindcss/tailwind.css";
           sessionStorage.getItem("authToken");
 
         // Si hay un token, redirigir al usuario según su rol
-        console.log("authToken:", authToken);
-
-        // Si hay un token, redirigir al usuario según su rol
         if (authToken) {
           try {
             // Recuperar los datos del usuario almacenados
@@ -159,7 +156,7 @@ import "tailwindcss/tailwind.css";
               sessionStorage.getItem("userData");
             const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
 
-            // Obtener rol del usuario (puede variar según la API)
+            // Obtener rol del usuario 
             const userRole = userData?.id_rol;
 
             // Obtener la URL de redirección (si fue pasada por query param)
@@ -171,7 +168,7 @@ import "tailwindcss/tailwind.css";
               return;
             }
 
-            // Redirigir según el rol
+            // Redirigir segun el rol
             if (userRole === 1) {
               window.location.href = "/admin/dashboardAdmin";
             } else {

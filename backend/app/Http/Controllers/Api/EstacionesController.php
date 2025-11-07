@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Mapa;
+use App\Models\Estaciones;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
@@ -16,13 +16,13 @@ use App\Models\Tipos;
 
 use Illuminate\Support\Facades\Log;
 
-class MapController extends Controller
+class EstacionesController extends Controller
 {
 
-    // GET /api/mapa: Todas las estaciones con relaciones optimizadas para mapa público
+    // GET /api/estaciones: Todas las estaciones con relaciones optimizadas para mapa público
     public function mapData(): JsonResponse
     {
-        $estaciones = Mapa::with([
+        $estaciones = Estaciones::with([
             'municipio.estado',  // Municipio + estado
             'cuenca',
             'tipo',
@@ -189,7 +189,7 @@ class MapController extends Controller
         ];
     }
 
-    // POST /api/mapa – Crear nueva estación con mediciones y semáforo automáticos para el público
+    // POST /api/estaciones – Crear nueva estación con mediciones y semáforo automáticos para el público
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -237,7 +237,7 @@ class MapController extends Controller
             $idUsuario = (int) $request->id_usuario;
 
             // Crear la estación principal
-            $estacion = Mapa::create([
+            $estacion = Estaciones::create([
                 'clave_sitio' => $claveSitio,
                 'nombre' => $request->nombre,
                 'latitud' => (float) $request->latitud,
@@ -366,44 +366,13 @@ class MapController extends Controller
 
 
     // Resto de metodos para administración (index, show, update, destroy, storeAdmin)
-    /*public function index(): JsonResponse
-    {
-        try {
-            $estaciones = Mapa::with([
-                'municipio.estado',
-                'cuenca',
-                'tipo',
-                'subtipo',
-                'usuario',
-                'mediciones.parametro',
-                'semaforo' => function($query) {
-                    $query->orderBy('fecha_medicion', 'desc')->limit(1);
-                }
-            ])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-            return response()->json([
-                'estaciones' => $estaciones,
-                'total' => $estaciones->count(),
-                'status' => 200
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener estaciones para admin: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error al cargar las estaciones',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }*/
 
     //todas las estaciones con paginación y limite
     public function index(): JsonResponse
     {
         try {
             $perPage = request()->get('limit', 10); // Por defecto 10, se puede sobrescribir con ?limit=N en la URL
-            $estaciones = Mapa::with([
+            $estaciones = Estaciones::with([
                 'municipio.estado',
                 'cuenca',
                 'tipo',
@@ -441,7 +410,7 @@ class MapController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $estacion = Mapa::with([
+            $estacion = Estaciones::with([
                 'municipio.estado',
                 'cuenca',
                 'tipo',
@@ -479,7 +448,7 @@ class MapController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $estacion = Mapa::find($id);
+        $estacion = Estaciones::find($id);
         
         if (!$estacion) {
             return response()->json([
@@ -488,7 +457,7 @@ class MapController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'clave_sitio' => 'sometimes|string|max:50|unique:mapa,clave_sitio,' . $id . ',id_estacion',
+            'clave_sitio' => 'sometimes|string|max:50|unique:estaciones,clave_sitio,' . $id . ',id_estacion',
             'nombre' => 'sometimes|string|max:255',
             'latitud' => 'sometimes|numeric|between:-90,90',
             'longitud' => 'sometimes|numeric|between:-180,180',
@@ -667,7 +636,7 @@ class MapController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        $estacion = Mapa::find($id);
+        $estacion = Estaciones::find($id);
         
         if (!$estacion) {
             return response()->json([
@@ -709,7 +678,7 @@ class MapController extends Controller
     public function storeAdmin(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'clave_sitio' => 'nullable|string|max:50|unique:mapa,clave_sitio',
+            'clave_sitio' => 'nullable|string|max:50|unique:estaciones,clave_sitio',
             'nombre' => 'required|string|max:255',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
@@ -754,7 +723,7 @@ class MapController extends Controller
             $idUsuario = (int) $request->id_usuario;
 
             // Crear la estación principal
-            $estacion = Mapa::create([
+            $estacion = estaciones::create([
                 'clave_sitio' => $claveSitio,
                 'nombre' => $request->nombre,
                 'latitud' => (float) $request->latitud,
@@ -873,11 +842,6 @@ class MapController extends Controller
             'fecha_medicion' => now(),
         ]);
     }
-
-
-
-
-
 }
 
 
