@@ -1,107 +1,350 @@
 ---
 // src/components/aquaguard-components/NavegacionEntreLecciones.astro
 
-const { curso, leccionActualId, cursoId } = Astro.props;
+// 1. DEFINICIÓN DE TIPOS
+export interface Leccion {
+    id_leccion: number | string;
+    titulo: string;
+    tipo: string;
+    completado: boolean;
+}
+
+export interface Modulo {
+    id_modulo: number | string;
+    titulo: string;
+    completado: boolean;
+    lecciones: Leccion[];
+}
+
+export interface Curso {
+    modulos: Modulo[];
+}
+
+// 2. ASIGNACIÓN DE TIPOS A PROPS
+const { curso, leccionActualId, cursoId } = Astro.props as {
+    curso: Curso;
+    leccionActualId: string | number;
+    cursoId: string | number;
+};
+
+// 3. LÓGICA DE UX (Servidor)
+const moduloAbierto = new Map<string | number, boolean>();
+let moduloActualEncontrado = false;
+
+for (const modulo of curso.modulos) {
+    const estaActivo = modulo.lecciones.some(
+        (l) => l.id_leccion === leccionActualId,
+    );
+    moduloAbierto.set(modulo.id_modulo, estaActivo);
+    if (estaActivo) moduloActualEncontrado = true;
+}
+
+// Si ninguna lección está activa, abre el primer módulo por defecto
+if (!moduloActualEncontrado && curso.modulos.length > 0) {
+    moduloAbierto.set(curso.modulos[0].id_modulo, true);
+}
 ---
 
-<aside class="p-6">
-  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-      <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
-      </svg>
+<aside class="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md">
+    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+            </svg>
+        </div>
+        <span class="whitespace-nowrap">Contenido del Curso</span>
+    </h3>
+
+    <div class="space-y-4">
+        {curso.modulos.map((modulo, moduloIndex) => {
+            const estaAbierto = moduloAbierto.get(modulo.id_modulo) || false;
+
+            return (
+                <div 
+                    class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 transition-all hover:shadow-lg"
+                    data-modulo-id={modulo.id_modulo}
+                >
+                    {/* Header del Módulo - MEJORADO */}
+                    <div class={`
+                        p-4 flex items-start justify-between cursor-pointer transition-colors modulo-header group
+                        ${modulo.completado ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500' : 'bg-gray-50 dark:bg-gray-700 border-l-4 border-l-blue-500'}
+                    `}>
+                        <div class="flex items-start gap-3 flex-1 min-w-0">
+                            <div class={`
+                                w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 mt-0.5
+                                ${modulo.completado 
+                                    ? 'bg-green-500 text-white' 
+                                    : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-200 dark:group-hover:bg-blue-800'
+                                }
+                            `}>
+                                {moduloIndex + 1}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                {/* TÍTULO DEL MÓDULO COMPLETO - SIN TRUNCATE */}
+                                <h4 class="font-semibold text-gray-900 dark:text-white text-base leading-snug break-words">
+                                    {modulo.titulo}
+                                </h4>
+                                <div class="flex items-center flex-wrap gap-2 mt-2">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                                        {modulo.lecciones.length} lección{modulo.lecciones.length !== 1 ? 'es' : ''}
+                                    </span>
+                                    {modulo.completado && (
+                                        <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400 text-sm bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Completado
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Contenedor para iconos (check y flecha) */}
+                        <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                            {modulo.completado && (
+                                <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            )}
+                            {/* Icono de flecha */}
+                            <svg class={`
+                                w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform modulo-toggle-icon flex-shrink-0
+                                ${estaAbierto ? 'rotate-180' : ''}
+                            `} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    {/* Contenedor de Lecciones - MEJORADO */}
+                    <div class={`
+                        lecciones-container transition-all duration-300 bg-white dark:bg-gray-800
+                        ${!estaAbierto ? 'hidden' : ''}
+                    `}>
+                        {modulo.lecciones.map((leccion, leccionIndex) => (
+                            <a
+                                href={`/curso/${cursoId}/leccion/${leccion.id_leccion}`}
+                                class={`
+                                    flex items-start gap-4 p-4 transition-all group border-b border-gray-100 dark:border-gray-700 last:border-b-0
+                                    hover:bg-gray-50 dark:hover:bg-gray-750
+                                    ${leccion.id_leccion === leccionActualId
+                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500'
+                                        : ''
+                                    }
+                                    ${leccion.completado && leccion.id_leccion !== leccionActualId ? 'bg-green-50 dark:bg-green-900/20' : ''}
+                                `}
+                            >
+                                <div class={`
+                                    w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors mt-0.5
+                                    ${leccion.id_leccion === leccionActualId
+                                        ? 'bg-blue-500 text-white'
+                                        : leccion.completado
+                                          ? 'bg-green-500 text-white'
+                                          : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 group-hover:bg-gray-300 dark:group-hover:bg-gray-500'
+                                    }
+                                `}>
+                                    {leccionIndex + 1}
+                                </div>
+                                
+                                {/* CONTENIDO DE LA LECCIÓN - MEJORADO */}
+                                <div class="flex-1 min-w-0">
+                                    {/* TÍTULO DE LECCIÓN COMPLETO - SIN TRUNCATE */}
+                                    <div class="flex items-start gap-2 mb-2">
+                                        <span class="font-medium text-gray-900 dark:text-white text-sm leading-snug break-words flex-1">
+                                            {leccion.titulo}
+                                        </span>
+                                        {leccion.tipo === 'quiz' && (
+                                            <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 mt-0.5">
+                                                Quiz
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
+                                            {leccion.tipo}
+                                        </span>
+                                        {leccion.completado && (
+                                            <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Completada
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {/* Indicadores del lado derecho */}
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    {leccion.completado && leccion.id_leccion !== leccionActualId && (
+                                        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    )}
+                                    
+                                    {/* Indicador de lección actual */}
+                                    {leccion.id_leccion === leccionActualId && (
+                                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                                            Actual
+                                        </span>
+                                    )}
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            );
+        })}
     </div>
-    Contenido del Curso
-  </h3>
-  
-  <div class="space-y-3">
-    {curso.modulos.map((modulo, moduloIndex) => (
-      <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
-        <!-- Header del Módulo más compacto -->
-        <div class={`
-          p-4 flex items-center justify-between cursor-pointer transition-colors
-          ${modulo.completado ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700'}
-        `}>
-          <div class="flex items-center gap-3">
-            <div class={`
-              w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-              ${modulo.completado 
-                ? 'bg-green-500 text-white' 
-                : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
-              }
-            `}>
-              {moduloIndex + 1}
-            </div>
-            <div class="min-w-0 flex-1">
-              <h4 class="font-semibold text-gray-900 dark:text-white text-sm leading-tight truncate">
-                {modulo.titulo}
-              </h4>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Lecciones del Módulo más compactas -->
-        <div class="divide-y divide-gray-100 dark:divide-gray-700">
-          {modulo.lecciones.map((leccion, leccionIndex) => (
-            <a
-              href={`/curso/${cursoId}/leccion/${leccion.id_leccion}`}
-              class={`
-                flex items-center gap-3 p-3 transition-all group
-                ${leccion.id_leccion === leccionActualId
-                  ? 'bg-blue-50 dark:bg-blue-900/30 border-r-2 border-blue-500'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                }
-                ${leccion.completado && leccion.id_leccion !== leccionActualId ? 'bg-green-50 dark:bg-green-900/20' : ''}
-              `}
-            >
-              <div class={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 transition-colors
-                ${leccion.id_leccion === leccionActualId
-                  ? 'bg-blue-500 text-white'
-                  : leccion.completado
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
-                }
-              `}>
-                {leccionIndex + 1}
-              </div>
-              
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class={`
-                    font-medium text-sm truncate
-                    ${leccion.id_leccion === leccionActualId 
-                      ? 'text-blue-700 dark:text-blue-300' 
-                      : 'text-gray-700 dark:text-gray-300'
-                    }
-                  `}>
-                    {leccion.titulo}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class={`
-                    text-xs px-2 py-1 rounded-full capitalize
-                    ${leccion.tipo === 'video' 
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                      : leccion.tipo === 'lectura'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                    }
-                  `}>
-                    {leccion.tipo}
-                  </span>
-                </div>
-              </div>
-              
-              {leccion.completado && leccion.id_leccion !== leccionActualId && (
-                <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-              )}
-            </a>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
 </aside>
+
+<script>
+    function setupAccordion() {
+        const sidebar = document.querySelector("aside");
+        if (!sidebar) return;
+
+        const moduloHeaders = sidebar.querySelectorAll(".modulo-header");
+
+        function closeOtherModulos(currentModuloId: string | undefined) {
+            moduloHeaders.forEach(header => {
+                const moduloElement = header.closest("[data-modulo-id]");
+                if (!(moduloElement instanceof HTMLElement)) return;
+
+                const moduloId = moduloElement.dataset.moduloId;
+                
+                if (moduloId !== currentModuloId) {
+                    const otherLeccionesContainer = moduloElement.querySelector(".lecciones-container");
+                    const otherToggleIcon = header.querySelector(".modulo-toggle-icon");
+                    
+                    if (otherLeccionesContainer instanceof HTMLElement) {
+                        otherLeccionesContainer.classList.add("hidden");
+                        otherLeccionesContainer.style.opacity = "";
+                        otherLeccionesContainer.style.transform = "";
+                        otherLeccionesContainer.style.transition = "";
+                    }
+                    if (otherToggleIcon) {
+                        otherToggleIcon.classList.remove("rotate-180");
+                    }
+                }
+            });
+        }
+        
+        moduloHeaders.forEach((header) => {
+            header.addEventListener("click", () => {
+                const moduloElement = header.closest("[data-modulo-id]");
+                if (!(moduloElement instanceof HTMLElement)) {
+                    console.error("No se pudo encontrar el elemento [data-modulo-id] padre.");
+                    return;
+                }
+
+                const moduloId = moduloElement.dataset.moduloId;
+                const leccionesContainer = moduloElement.querySelector(".lecciones-container");
+                const toggleIcon = header.querySelector(".modulo-toggle-icon");
+
+                if (leccionesContainer instanceof HTMLElement) {
+                    const isOpening = leccionesContainer.classList.contains("hidden");
+
+                    // Lógica de acordeón: Si estamos abriendo, cerramos los demás
+                    if (isOpening && moduloId) {
+                        closeOtherModulos(moduloId);
+                    }
+                    
+                    // Toggle del módulo actual
+                    leccionesContainer.classList.toggle("hidden");
+
+                    // Animación suave al abrir
+                    if (!leccionesContainer.classList.contains("hidden")) {
+                        leccionesContainer.style.opacity = "0";
+                        leccionesContainer.style.transform = "translateY(-10px)";
+                        
+                        requestAnimationFrame(() => {
+                            leccionesContainer.style.transition = "all 0.3s ease";
+                            leccionesContainer.style.opacity = "1";
+                            leccionesContainer.style.transform = "translateY(0)";
+                        });
+                    } else {
+                        // Limpiar estilos al cerrar
+                        leccionesContainer.style.opacity = "";
+                        leccionesContainer.style.transform = "";
+                        leccionesContainer.style.transition = "";
+                    }
+                }
+
+                if (toggleIcon) {
+                    toggleIcon.classList.toggle("rotate-180");
+                }
+            });
+        });
+    }
+
+    // Manejar diferentes estados de carga del DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupAccordion);
+    } else {
+        // DOM ya está listo
+        setupAccordion();
+    }
+</script>
+
+<style>
+    /* Estilos mejorados para visualización completa de textos */
+    .lecciones-container {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    
+    .lecciones-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .lecciones-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    
+    .lecciones-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    
+    .lecciones-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    /* Mejoras de transición */
+    .lecciones-container {
+        transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    /* Efectos hover mejorados */
+    .modulo-header:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-1px);
+    }
+    
+    .dark .modulo-header:hover {
+        background-color: #374151 !important;
+    }
+    
+    /* Mejoras de tipografía */
+    .break-words {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Espaciado mejorado para textos largos */
+    .leading-snug {
+        line-height: 1.375;
+    }
+    
+    /* Sombra suave al hover */
+    .hover\\:shadow-lg:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Color personalizado para hover en modo oscuro */
+    .dark .hover\\:bg-gray-750:hover {
+        background-color: #374151;
+    }
+</style>
