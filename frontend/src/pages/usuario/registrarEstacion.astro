@@ -775,7 +775,7 @@ import '../../styles/estilos.css';
         try {
             const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
             
-            const response = await fetch('http://localhost:8000/api/mapa', {
+            const response = await fetch('http://localhost:8000/api/estaciones', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

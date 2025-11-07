@@ -25,6 +25,6 @@ class Semaforo extends Model
     // Relación con Estación
     public function estacion()
     {
-        return $this->belongsTo(Mapa::class, 'id_estacion');
+        return $this->belongsTo(Estaciones::class, 'id_estacion');
     }
 }

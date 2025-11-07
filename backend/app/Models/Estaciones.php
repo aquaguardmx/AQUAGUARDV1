@@ -1,44 +1,10 @@
 <?php
-/*
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Mapa extends Model
-{
-protected $table = 'estaciones';
-
-    protected $primaryKey = 'id_estacion';  // Fix: Tu tabla usa id_estacion
-
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // Timestamps automáticos
-    public $timestamps = true;
-
-    // Fillable para todos los campos de estaciones (agrega más si hay)
-    protected $fillable = [
-        'clave_sitio',
-        'nombre',
-        'latitud',
-        'longitud',
-        'activo',
-        'id_tipo',
-        'id_subtipo',
-        'id_cuenca',
-        'id_municipio',
-        'id_usuario',
-        'created_at',
-        'updated_at',
-    ];
-}*/
-
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Mapa extends Model
+class Estaciones extends Model
 {
     protected $table = 'estaciones';
 
@@ -49,7 +15,7 @@ class Mapa extends Model
 
     public $timestamps = true;
 
-    // Fillable para todos los campos (agrega más si hay)
+    // Fillable para todos los campos 
     protected $fillable = [
         'clave_sitio',
         'nombre',
