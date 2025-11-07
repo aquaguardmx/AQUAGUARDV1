@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\ModuleController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\CursoInscritoUsuarioController;
+use App\Http\Controllers\Api\SchoolController;
 
 use App\Http\Controllers\Api\EstacionesController;
 /*
@@ -89,10 +90,6 @@ Route::get('/usuarios', [UserController::class, 'index']);;
 
 Route::get('/usuarios/{id}', [UserController::class, 'show']);;
 
-Route::post('/usuarios', function() {
-    return 'Crear Usuario';
-});
-
 Route::put('/usuarios/{id}', [UserController::class, 'update']);
 
 Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
@@ -147,6 +144,11 @@ Route::post('/lecciones', [LessonController::class, 'store']);
 Route::get('/lecciones/{id}', [LessonController::class, 'show']);
 
 Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorModulo']);
+
+// API PARA ESCUELAS
+Route::get('/escuelas', [SchoolController::class, 'index']);
+
+Route::post('/escuelas', [SchoolController::class, 'store']);
 
 //API PARA  MAPA 
 Route::get('/mapa', [EstacionesController::class, 'mapData']);

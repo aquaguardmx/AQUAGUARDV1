@@ -1,0 +1,304 @@
+---
+// src/pages/curso/[id]/leccion/[leccionId].astro
+import Layout from "../../../../layouts/Layout.astro";
+import Header from "../../../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../../../components/aquaguard-components/FooterE-Learning.astro";
+import NavegacionLecciones from "../../../../components/aquaguard-components/NavegacionEntreLecciones.astro";
+import ContenidoLeccion from "../../../../components/aquaguard-components/ContenidoLeccion.astro";
+
+// Datos estáticos de la lección actual
+const leccionActual = {
+  id_leccion: 5,
+  titulo: "Sistemas de captación de agua de lluvia",
+  descripcion: "Aprende a implementar métodos eficientes para aprovechar el agua pluvial en entornos urbanos y rurales, reduciendo el consumo de agua potable y contribuyendo a la sostenibilidad ambiental.",
+  duracion_min: 25,
+  tipo: "video",
+  url_contenido: "/videos/captacion-lluvia.mp4",
+  contenido_texto: `
+    <h3>Introducción a la Captación de Agua de Lluvia</h3>
+    <p>La captación de agua de lluvia es una técnica ancestral que ha ganado relevancia en la actualidad debido a la creciente escasez hídrica. Este sistema permite recolectar, almacenar y utilizar el agua pluvial para diversos fines no potables.</p>
+    
+    <h4>Componentes Principales del Sistema</h4>
+    <ul>
+      <li><strong>Superficie de captación:</strong> Generalmente el techo de la vivienda</li>
+      <li><strong>Sistema de conducción:</strong> Canaletas y bajantes</li>
+      <li><strong>Filtros:</strong> Para eliminar hojas y sedimentos</li>
+      <li><strong>Almacenamiento:</strong> Cisternas o tanques</li>
+      <li><strong>Sistema de distribución:</strong> Bombas y tuberías</li>
+    </ul>
+
+    <h4>Beneficios de la Captación Pluvial</h4>
+    <p>La implementación de estos sistemas ofrece múltiples ventajas:</p>
+    <ul>
+      <li>Reducción del consumo de agua potable hasta en un 50%</li>
+      <li>Disminución de la factura de agua</li>
+      <li>Mitigación de inundaciones en zonas urbanas</li>
+      <li>Independencia hídrica durante sequías</li>
+      <li>Contribución a la sostenibilidad ambiental</li>
+    </ul>
+  `,
+  completado: false,
+  bloqueado: false
+};
+
+// Datos del curso para la navegación
+const curso = {
+  id_curso: 1,
+  titulo: "Fundamentos de la Conservación del Agua",
+  modulos: [
+    {
+      id_modulo: 1,
+      titulo: "Introducción al Ciclo del Agua",
+      completado: true,
+      lecciones: [
+        { id_leccion: 1, titulo: "El ciclo hidrológico", completado: true, tipo: "video" },
+        { id_leccion: 2, titulo: "Importancia del agua dulce", completado: true, tipo: "lectura" }
+      ]
+    },
+    {
+      id_modulo: 2,
+      titulo: "Problemática Actual del Agua",
+      completado: true,
+      lecciones: [
+        { id_leccion: 3, titulo: "Escasez hídrica mundial", completado: true, tipo: "video" },
+        { id_leccion: 4, titulo: "Contaminación de fuentes naturales", completado: true, tipo: "lectura" }
+      ]
+    },
+    {
+      id_modulo: 3,
+      titulo: "Técnicas de Conservación Doméstica",
+      completado: false,
+      lecciones: [
+        { id_leccion: 5, titulo: "Sistemas de captación de agua de lluvia", completado: false, tipo: "video" },
+        { id_leccion: 6, titulo: "Dispositivos ahorradores", completado: false, tipo: "lectura" },
+        { id_leccion: 7, titulo: "Prácticas de jardinería eficiente", completado: false, tipo: "video" }
+      ]
+    }
+  ]
+};
+
+// Encontrar lección anterior y siguiente
+const todasLasLecciones = curso.modulos.flatMap(modulo => modulo.lecciones);
+const indiceActual = todasLasLecciones.findIndex(l => l.id_leccion === leccionActual.id_leccion);
+const leccionAnterior = indiceActual > 0 ? todasLasLecciones[indiceActual - 1] : null;
+const leccionSiguiente = indiceActual < todasLasLecciones.length - 1 ? todasLasLecciones[indiceActual + 1] : null;
+---
+
+<Layout title={`${leccionActual.titulo} - ${curso.titulo}`}>
+  <Header />
+  
+  <div class="min-h-screen bg-white dark:bg-gray-900">
+    <!-- Header de la Lección Mejorado -->
+    <section class="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <div class="container mx-auto px-6 py-8">
+        <div class="max-w-6xl mx-auto">
+          <!-- Migas de pan más compactas -->
+          <nav class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-6">
+            <a href="/" class="hover:text-blue-600 transition-colors">Inicio</a>
+            <span>›</span>
+            <a href="/cursos" class="hover:text-blue-600 transition-colors">Cursos</a>
+            <span>›</span>
+            <a href={`/curso/${curso.id_curso}`} class="hover:text-blue-600 transition-colors truncate max-w-[120px]">{curso.titulo}</a>
+            <span>›</span>
+            <span class="text-blue-600 font-medium truncate max-w-[200px]">{leccionActual.titulo}</span>
+          </nav>
+          
+          <div class="flex flex-col lg:flex-row items-start justify-between gap-6">
+            <div class="flex-1">
+              <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                {leccionActual.titulo}
+              </h1>
+              <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl">
+                {leccionActual.descripcion}
+              </p>
+            </div>
+            
+            <!-- Badge de información más limpio -->
+            <div class="flex items-center gap-6 bg-white dark:bg-gray-800 px-6 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                  <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Duración</div>
+                  <div class="font-semibold">{leccionActual.duracion_min} min</div>
+                </div>
+              </div>
+              
+              <div class="w-px h-12 bg-gray-200 dark:bg-gray-600"></div>
+              
+              <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                  <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Tipo</div>
+                  <div class="font-semibold capitalize">{leccionActual.tipo}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contenido Principal Mejorado -->
+    <main class="container mx-auto px-6 py-8">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col lg:flex-row gap-8">
+          <!-- Sidebar de Navegación más compacta -->
+          <div class="lg:w-80">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm sticky top-8">
+              <NavegacionLecciones 
+                curso={curso} 
+                leccionActualId={leccionActual.id_leccion}
+                cursoId={curso.id_curso} 
+              />
+            </div>
+          </div>
+          
+          <!-- Contenido de la Lección más amplio y limpio -->
+          <div class="flex-1 min-w-0">
+            <ContenidoLeccion 
+              leccion={leccionActual}
+              leccionAnterior={leccionAnterior}
+              leccionSiguiente={leccionSiguiente}
+              cursoId={curso.id_curso}
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  .sticky {
+    position: sticky;
+  }
+  
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  
+  .video-container iframe,
+  .video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+  }
+  
+  /* Estilos mejorados para el contenido de texto */
+  .contenido-texto {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  .contenido-texto h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 2rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .contenido-texto h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 1.5rem 0 0.75rem 0;
+  }
+  
+  .contenido-texto p {
+    margin-bottom: 1.25rem;
+    line-height: 1.7;
+    color: #4b5563;
+  }
+  
+  .contenido-texto ul {
+    margin: 1.25rem 0;
+    padding-left: 1.5rem;
+  }
+  
+  .contenido-texto li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+    color: #4b5563;
+    position: relative;
+  }
+  
+  .contenido-texto li::before {
+    content: "•";
+    color: #3b82f6;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+  }
+  
+  .contenido-texto strong {
+    color: #1e40af;
+    font-weight: 600;
+  }
+  
+  /* Mejoras de espaciado y tipografía */
+  .contenido-texto {
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+  }
+  
+  /* Modo oscuro mejorado */
+  .dark .contenido-texto h3 {
+    color: #f9fafb;
+    border-bottom-color: #374151;
+  }
+  
+  .dark .contenido-texto h4 {
+    color: #e5e7eb;
+  }
+  
+  .dark .contenido-texto p {
+    color: #d1d5db;
+  }
+  
+  .dark .contenido-texto li {
+    color: #d1d5db;
+  }
+  
+  .dark .contenido-texto li::before {
+    color: #60a5fa;
+  }
+  
+  .dark .contenido-texto strong {
+    color: #93c5fd;
+  }
+  
+  /* Mejoras de scroll suave */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Mejoras de responsive */
+  @media (max-width: 1024px) {
+    .contenido-texto h3 {
+      font-size: 1.375rem;
+    }
+    
+    .contenido-texto h4 {
+      font-size: 1.125rem;
+    }
+  }
+</style>

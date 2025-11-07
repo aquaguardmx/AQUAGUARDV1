@@ -1,0 +1,524 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
+---
+<Layout title="Curso">
+    <Header />
+    <!-- Barra de progreso de la lección -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="curso.html" class="text-blue-600 hover:text-blue-800 flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver al curso
+                    </a>
+                    <div class="h-6 border-l border-gray-300"></div>
+                    <div>
+                        <span class="text-sm text-gray-500">Módulo 1</span>
+                        <h1 class="font-semibold text-gray-800">Introducción a la Acuicultura Sostenible</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <span class="text-sm text-gray-500 block">Progreso de la lección</span>
+                        <span class="text-sm font-medium text-gray-700">15:24 / 20:00</span>
+                    </div>
+                    <div class="w-32">
+                        <div class="lesson-progress">
+                            <div class="lesson-progress-bar" style="width: 77%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido principal de la lección -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Contenido de la lección -->
+            <div class="lg:w-3/4">
+                <div class="bg-white rounded-2xl shadow-aqua overflow-hidden">
+                    <!-- Video de la lección -->
+                    <div class="lesson-video bg-gray-900 aspect-video flex items-center justify-center">
+                        <div class="text-center text-white">
+                            <i class="fas fa-play-circle text-6xl mb-4 opacity-80"></i>
+                            <p class="text-xl">Reproductor de video de la lección</p>
+                            <p class="text-gray-400 mt-2">"Beneficios ambientales de la acuicultura responsable"</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Controles del video -->
+                    <div class="bg-gray-800 text-white p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-backward"></i>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-forward"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de la lección -->
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800 mb-2">Beneficios ambientales de la acuicultura responsable</h1>
+                                <p class="text-gray-600">Esta lección explora los impactos positivos que una acuicultura bien gestionada puede tener en el medio ambiente, incluyendo la reducción de presión sobre poblaciones silvestres y la conservación de ecosistemas acuáticos.</p>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                                <i class="fas fa-clock"></i>
+                                <span>20 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido educativo -->
+                    <div class="p-8 educational-content">
+                        <div class="info-box">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-500 text-xl mt-1 mr-3"></i>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-2">Objetivos de aprendizaje</h3>
+                                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                                        <li>Comprender los beneficios ambientales de la acuicultura sostenible</li>
+                                        <li>Identificar prácticas que reducen el impacto ambiental</li>
+                                        <li>Analizar casos de éxito en acuicultura responsable</li>
+                                        <li>Evaluar el papel de la acuicultura en la conservación de especies</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h2>Introducción</h2>
+                        <p>La acuicultura, cuando se practica de manera responsable, puede ofrecer numerosos beneficios ambientales que contribuyen a la sostenibilidad de los ecosistemas acuáticos. A diferencia de la percepción común, una acuicultura bien gestionada no solo minimiza los impactos negativos, sino que puede generar impactos positivos en el medio ambiente.</p>
+                        
+                        <h2>Reducción de la presión sobre poblaciones silvestres</h2>
+                        <p>Una de las contribuciones más significativas de la acuicultura sostenible es la reducción de la presión sobre las poblaciones de peces silvestres. Al proporcionar una fuente alternativa de productos acuáticos, la acuicultura puede ayudar a:</p>
+                        
+                        <ul>
+                            <li><strong>Disminuir la sobrepesca:</strong> Al satisfacer la demanda creciente de productos del mar sin depender exclusivamente de las capturas silvestres.</li>
+                            <li><strong>Permitir la recuperación de stocks:</strong> Las poblaciones sobreexplotadas tienen oportunidad de recuperarse cuando la presión pesquera disminuye.</li>
+                            <li><strong>Conservar la biodiversidad:</strong> Al reducir la necesidad de capturar especies amenazadas o en peligro.</li>
+                        </ul>
+                        
+                        <div class="tip-box">
+                            <div class="flex items-start">
+                                <i class="fas fa-lightbulb text-yellow-500 text-xl mt-1 mr-3"></i>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-2">Dato importante</h3>
+                                    <p class="text-gray-700">Según la FAO, aproximadamente el 50% de todo el pescado consumido a nivel mundial proviene de la acuicultura, lo que demuestra su papel crucial en la seguridad alimentaria global.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h2>Mejora de la calidad del agua</h2>
+                        <p>Los sistemas de acuicultura modernos incorporan tecnologías y prácticas que pueden mejorar la calidad del agua:</p>
+                        
+                        <div class="key-point">
+                            <h3 class="font-semibold text-gray-800 mb-2">Sistemas de recirculación (RAS)</h3>
+                            <p>Estos sistemas filtran y reutilizan el agua, reduciendo significativamente el consumo y minimizando la liberación de efluentes al medio ambiente. Los RAS pueden eliminar hasta el 95% de los desechos sólidos y convertir los compuestos nitrogenados en formas menos tóxicas.</p>
+                        </div>
+                        
+                        <div class="key-point">
+                            <h3 class="font-semibold text-gray-800 mb-2">Acuaponía</h3>
+                            <p>La integración de la acuicultura con la hidroponía crea un sistema simbiótico donde los desechos de los peces proporcionan nutrientes para las plantas, que a su vez filtran el agua para los peces. Este sistema cerrado prácticamente elimina la contaminación por efluentes.</p>
+                        </div>
+                        
+                        <h2>Restauración de hábitats y especies</h2>
+                        <p>La acuicultura puede contribuir activamente a la restauración de ecosistemas:</p>
+                        
+                        <ul>
+                            <li><strong>Repoblación de especies amenazadas:</strong> Muchos programas de conservación utilizan la acuicultura para criar y posteriormente liberar especies en peligro de extinción.</li>
+                            <li><strong>Restauración de arrecifes:</strong> El cultivo de corales y otros organismos de arrecife ayuda a recuperar estos ecosistemas críticos.</li>
+                            <li><strong>Creación de hábitats artificiales:</strong> Las instalaciones acuícolas bien diseñadas pueden servir como refugio y zona de cría para especies silvestres.</li>
+                        </ul>
+                        
+                        <h2>Eficiencia en el uso de recursos</h2>
+                        <p>La acuicultura sostenible se caracteriza por una alta eficiencia en el uso de recursos:</p>
+                        
+                        <div class="flex flex-col md:flex-row gap-4 my-6">
+                            <div class="bg-blue-50 p-4 rounded-lg flex-1 text-center">
+                                <i class="fas fa-tint text-blue-500 text-2xl mb-2"></i>
+                                <h3 class="font-semibold text-gray-800">Agua</h3>
+                                <p class="text-gray-600 text-sm">Los sistemas modernos reducen el consumo de agua hasta en un 90% comparado con métodos tradicionales</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg flex-1 text-center">
+                                <i class="fas fa-utensils text-green-500 text-2xl mb-2"></i>
+                                <h3 class="font-semibold text-gray-800">Alimento</h3>
+                                <p class="text-gray-600 text-sm">Mejores conversiones alimenticias reducen la cantidad de alimento necesario por kilogramo de producción</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg flex-1 text-center">
+                                <i class="fas fa-bolt text-purple-500 text-2xl mb-2"></i>
+                                <h3 class="font-semibold text-gray-800">Energía</h3>
+                                <p class="text-gray-600 text-sm">Innovaciones en eficiencia energética disminuyen la huella de carbono de la producción</p>
+                            </div>
+                        </div>
+                        
+                        <h2>Conclusiones</h2>
+                        <p>La acuicultura responsable no es simplemente una alternativa a la pesca extractiva, sino una práctica que, cuando se implementa correctamente, puede generar beneficios ambientales netos. A través de la adopción de tecnologías avanzadas, prácticas de gestión mejoradas y un enfoque en la sostenibilidad, la acuicultura puede contribuir significativamente a la conservación de los ecosistemas acuáticos mientras satisface la demanda global de proteína acuática.</p>
+                        
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6 mt-8">
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 text-xl mt-1 mr-3"></i>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 mb-2">Resumen de beneficios clave</h3>
+                                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                                        <li>Reducción de la presión sobre poblaciones silvestres</li>
+                                        <li>Mejora de la calidad del agua mediante tecnologías avanzadas</li>
+                                        <li>Contribución a la restauración de hábitats y especies</li>
+                                        <li>Alta eficiencia en el uso de recursos naturales</li>
+                                        <li>Generación de impactos ambientales positivos netos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones de la lección -->
+                    <div class="p-6 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <div class="flex items-center space-x-2 text-gray-600">
+                            <i class="far fa-check-circle"></i>
+                            <span>Marcar como completada</span>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center">
+                                <i class="far fa-bookmark mr-2"></i>
+                                Guardar
+                            </button>
+                            <button class="btn-aqua text-white px-6 py-2 rounded-lg font-medium transition-all flex items-center">
+                                Siguiente lección
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recursos adicionales de la lección -->
+                <div class="mt-8 bg-white rounded-2xl shadow-aqua p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-paperclip text-blue-500 mr-3"></i>
+                        Recursos de la lección
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-file-pdf text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-800">Guía de buenas prácticas</h3>
+                                    <p class="text-sm text-gray-600">PDF • 1.2 MB</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-chart-bar text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-800">Datos y estadísticas</h3>
+                                    <p class="text-sm text-gray-600">Hoja de cálculo • 450 KB</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-images text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-800">Galería de imágenes</h3>
+                                    <p class="text-sm text-gray-600">10 elementos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-link text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-800">Enlaces de interés</h3>
+                                    <p class="text-sm text-gray-600">5 recursos externos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barra lateral de navegación -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-2xl shadow-aqua p-6 sticky top-28">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Contenido del módulo</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="lesson-nav bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800 text-sm">¿Qué es la acuicultura sostenible?</h4>
+                                    <p class="text-xs text-gray-500">15 min</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-nav bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800 text-sm">Historia y evolución</h4>
+                                    <p class="text-xs text-gray-500">10 min</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-nav bg-blue-50 rounded-lg p-4 border-2 border-blue-300">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                                    <span class="text-white text-sm font-medium">3</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800 text-sm">Beneficios ambientales</h4>
+                                    <p class="text-xs text-gray-500">20 min</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lesson-nav bg-white rounded-lg p-4 border border-gray-200 opacity-70">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-3">
+                                    <span class="text-gray-600 text-sm font-medium">4</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-600 text-sm">Casos de estudio</h4>
+                                    <p class="text-xs text-gray-400">15 min</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">Tu progreso</h4>
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="relative w-20 h-20">
+                                <svg class="w-20 h-20 progress-ring" viewBox="0 0 100 100">
+                                    <circle class="text-gray-200 stroke-current" stroke-width="8" cx="50" cy="50" r="42" fill="transparent"></circle>
+                                    <circle class="progress-ring-circle text-blue-500 stroke-current" stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="42" fill="transparent" stroke-dasharray="264" stroke-dashoffset="132"></circle>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-lg font-bold text-blue-600">50%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-center text-sm text-gray-600">2 de 4 lecciones completadas</p>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button class="w-full bg-gray-100 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
+                            <i class="far fa-question-circle mr-2"></i>
+                            Ayuda y soporte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <Footer />
+</Layout>
+<script>
+        // Simulación de progreso de la lección
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular el progreso del video
+            const progressBar = document.querySelector('.lesson-progress-bar');
+            let progress = 77;
+            
+            // Simular avance del tiempo (solo para demostración)
+            const progressInterval = setInterval(() => {
+                if (progress < 100) {
+                    progress += 0.1;
+                    progressBar.style.width = progress + '%';
+                    
+                    // Actualizar tiempo transcurrido
+                    const totalSeconds = 20 * 60; // 20 minutos en segundos
+                    const currentSeconds = Math.floor((progress / 100) * totalSeconds);
+                    const minutes = Math.floor(currentSeconds / 60);
+                    const seconds = currentSeconds % 60;
+                    
+                    const timeDisplay = document.querySelector('.text-sm.font-medium.text-gray-700');
+                    if (timeDisplay) {
+                        timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} / 20:00`;
+                    }
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 1000);
+            
+            // Marcar lección como completada
+            const completeButton = document.querySelector('.fa-check-circle').closest('div');
+            if (completeButton) {
+                completeButton.addEventListener('click', function() {
+                    this.classList.toggle('text-green-600');
+                    this.classList.toggle('text-gray-600');
+                    
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-green-500');
+                    } else {
+                        icon.classList.remove('fas', 'text-green-500');
+                        icon.classList.add('far');
+                    }
+                });
+            }
+        });
+    </script>
+<style>
+        :root {
+            --primary-blue: #3b82f6;
+            --secondary-teal: #2dd4bf;
+        }
+        
+        .lesson-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .lesson-video {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .content-section {
+            background: linear-gradient(to bottom, #f8fafc, #ffffff);
+        }
+        
+        .btn-aqua {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-teal) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-aqua::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-aqua:hover::before {
+            left: 100%;
+        }
+        
+        .shadow-aqua {
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+        }
+        
+        /* Estilos para el contenido educativo */
+        .educational-content h2 {
+            color: #1e40af;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #dbeafe;
+        }
+        
+        .educational-content h3 {
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .educational-content p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .educational-content ul, .educational-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .educational-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .tip-box {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        
+        .key-point {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        /* Navegación entre lecciones */
+        .lesson-nav {
+            transition: all 0.3s ease;
+        }
+        
+        .lesson-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Progreso de la lección */
+        .lesson-progress {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .lesson-progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #3b82f6, #2dd4bf);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+</style>
