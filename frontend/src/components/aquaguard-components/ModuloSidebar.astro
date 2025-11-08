@@ -1,11 +1,13 @@
 ---
-// src/components/curso/ModulosSidebar.astro
-
 // 1. Define los tipos de tus datos
 export interface Leccion {
   id_leccion: number | string;
+  modulo_id: number;
   titulo: string;
   tipo_contenido: string;
+  contenido_texto?: string;
+  video_url?: string | null;
+  orden: number;
   duracion_min?: number;
   completado?: boolean;
   bloqueado?: boolean;
@@ -13,14 +15,84 @@ export interface Leccion {
 
 export interface Modulo {
   id_modulo: number | string;
+  curso_id: number;
   titulo: string;
   orden: number;
   lecciones: Leccion[];
   completado?: boolean;
 }
 
-// 2. Asígnale los tipos a tus props
-const { modulos, cursoId } = Astro.props as { modulos: Modulo[]; cursoId: string | number };
+// 2. Obtener el ID del curso de la URL
+const url = Astro.url;
+const pathParts = url.pathname.split('/').filter(part => part !== '');
+
+// Buscar el índice del cursoId de forma más robusta
+let cursoId: string | null = null;
+
+// Diferentes patrones de URL posibles
+if (url.pathname.includes('/admin/cursos/')) {
+  // Para URLs como /admin/cursos/9/lecciones
+  const cursosIndex = pathParts.indexOf('cursos');
+  if (cursosIndex !== -1 && pathParts[cursosIndex + 1]) {
+    cursoId = pathParts[cursosIndex + 1];
+  }
+} else if (url.pathname.includes('/curso/')) {
+  // Para URLs como /curso/9/leccion
+  const cursoIndex = pathParts.indexOf('curso');
+  if (cursoIndex !== -1 && pathParts[cursoIndex + 1]) {
+    cursoId = pathParts[cursoIndex + 1];
+  }
+}
+
+// Si no encontramos con los patrones anteriores, usar índice por defecto
+if (!cursoId && pathParts.length > 1) {
+  cursoId = pathParts[1]; // Fallback
+}
+
+// 3. Función para cargar los módulos desde la API
+async function cargarModulos(cursoId: string | number): Promise<Modulo[]> {
+  const apiUrl = `http://localhost:8000/api/cursos/${cursoId}/modulos-y-lecciones`;
+
+  try {
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Error al cargar módulos: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Verificar la estructura de los datos
+    if (Array.isArray(data)) {
+      return data;
+    } else {
+      return [];
+    }
+
+  } catch (error) {
+    console.error('❌ Error cargando módulos:', error);
+    // Mostrar más detalles del error
+    if (error instanceof Error) {
+      console.error('🔍 Detalles del error:', error.message);
+    }
+    return [];
+  }
+}
+
+// 4. Cargar los módulos
+let modulos: Modulo[] = [];
+let errorCarga: string | null = null;
+
+if (cursoId) {
+  try {
+    modulos = await cargarModulos(cursoId);
+  } catch (error) {
+    errorCarga = error instanceof Error ? error.message : 'Error desconocido';
+    modulos = [];
+  }
+} else {
+  errorCarga = 'No se pudo detectar el ID del curso';
+}
 ---
 
 <aside 
@@ -28,282 +100,303 @@ const { modulos, cursoId } = Astro.props as { modulos: Modulo[]; cursoId: string
   class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800"
   data-curso-id={cursoId}
 >
-  <!-- Header Mejorado -->
-  <div class="mb-6">
-    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
-      <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+  <!-- Estados: Error, Loading, o Contenido -->
+  {errorCarga ? (
+    <!-- Estado de Error -->
+    <div class="text-center py-8">
+      <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
         </svg>
       </div>
-      Contenido del Curso
-    </h3>
-    <p class="text-gray-600 dark:text-gray-400 text-sm">
-      {modulos.length} módulos • {modulos.reduce((acc, mod) => acc + mod.lecciones.length, 0)} lecciones
-    </p>
-  </div>
-  
-  <!-- Barra de Progreso Global -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-sm font-semibold text-blue-700 dark:text-blue-300">Tu Progreso</span>
-      <span class="text-sm font-bold text-blue-600 dark:text-blue-400" id="progreso-global">0%</span>
-    </div>
-    <div class="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-2">
-      <div id="barra-progreso" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-    </div>
-  </div>
-
-  <!-- Lista de Módulos -->
-  <div class="space-y-3">
-    {modulos.sort((a, b) => a.orden - b.orden).map((modulo, index) => (
-      <div 
-        class="group border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800"
-        data-modulo-id={modulo.id_modulo}
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Error al cargar</h3>
+      <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">{errorCarga}</p>
+      <button 
+        onclick="location.reload()" 
+        class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
       >
-        <!-- Header del Módulo Mejorado -->
-        <div class={`
-          p-4 flex items-center justify-between cursor-pointer transition-all duration-300
-          modulo-header
-          ${modulo.completado 
-            ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500' 
-            : 'bg-gray-50 dark:bg-gray-700 border-l-4 border-l-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-          }
-        `}>
-          <div class="flex items-center gap-4 flex-1 min-w-0">
-            <div class={`
-              w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-md
-              ${modulo.completado 
-                ? 'bg-green-500 text-white shadow-green-200 dark:shadow-green-900' 
-                : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-blue-200 dark:shadow-blue-900 group-hover:scale-110'
-              }
-              modulo-numero
-            `}>
-              {index + 1}
-            </div>
-            
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-gray-900 dark:text-white text-base leading-tight mb-1">
-                {modulo.titulo}
-              </h4>
-              <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                <span class="flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                  </svg>
-                  {modulo.lecciones.length} lecc.
-                </span>
-                {modulo.completado && (
-                  <span class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Completado
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <!-- Iconos del lado derecho -->
-          <div class="flex items-center gap-3 flex-shrink-0 ml-4">
-            {modulo.completado && (
-              <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-              </div>
-            )}
-            
-            <svg class={`
-              w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-300 modulo-toggle-icon
-              group-hover:text-blue-600 dark:group-hover:text-blue-400
-            `} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        Reintentar
+      </button>
+    </div>
+  ) : modulos.length === 0 ? (
+    <div class="text-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+      <p class="text-gray-600 dark:text-gray-400">Cargando módulos...</p>
+      <p class="text-gray-500 dark:text-gray-500 text-xs mt-2">Curso ID: {cursoId}</p>
+    </div>
+  ) : (
+    <>
+      <div class="mb-6">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
             </svg>
           </div>
+          Contenido del Curso
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm">
+          {modulos.length} módulos • {modulos.reduce((acc, mod) => acc + mod.lecciones.length, 0)} lecciones
+        </p>
+      </div>
+      
+      <!-- Barra de Progreso Global -->
+      <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm font-semibold text-blue-700 dark:text-blue-300">Tu Progreso</span>
+          <span class="text-sm font-bold text-blue-600 dark:text-blue-400" id="progreso-global">0%</span>
         </div>
-        
-        <!-- Contenedor de Lecciones Mejorado -->
-        <div class="bg-white dark:bg-gray-800 lecciones-container hidden transition-all duration-300">
-          {modulo.lecciones.map((leccion, leccionIndex) => (
-            <a
-              href={!leccion.bloqueado ? `/curso/${cursoId}/leccion/${leccion.id_leccion}` : '#'}
-              class={`
-                flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-all duration-200 group
-                ${leccion.bloqueado 
-                  ? 'cursor-not-allowed opacity-60' 
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
-                }
-                ${leccion.completado ? 'bg-green-50/50 dark:bg-green-900/10' : ''}
-              `}
-              data-leccion-id={leccion.id_leccion}
-              onclick={leccion.bloqueado ? "event.preventDefault()" : ""}
-            >
-              <!-- Número de lección -->
-              <div class={`
-                w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300 flex-shrink-0
-                ${leccion.completado 
-                  ? 'bg-green-500 text-white shadow-green-200' 
-                  : leccion.bloqueado
-                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
-                    : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-500 group-hover:text-white'
-                }
-                leccion-numero
-              `}>
-                {leccionIndex + 1}
-              </div>
-              
-              <!-- Contenido de la lección -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="font-medium text-gray-900 dark:text-white text-sm leading-tight">
-                    {leccion.titulo}
-                  </span>
-                  {leccion.tipo_contenido === 'quiz' && (
-                    <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0">
-                      Quiz
-                    </span>
-                  )}
+        <div class="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-2">
+          <div id="barra-progreso" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        {modulos.sort((a, b) => a.orden - b.orden).map((modulo, index) => (
+          <div 
+            class="group border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800"
+            data-modulo-id={modulo.id_modulo}
+          >
+            <!-- Header del Módulo -->
+            <div class={`
+              p-4 flex items-center justify-between cursor-pointer transition-all duration-300
+              modulo-header
+              ${modulo.completado 
+                ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500' 
+                : 'bg-gray-50 dark:bg-gray-700 border-l-4 border-l-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              }
+            `}>
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class={`
+                  w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-md
+                  ${modulo.completado 
+                    ? 'bg-green-500 text-white shadow-green-200 dark:shadow-green-900' 
+                    : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-blue-200 dark:shadow-blue-900 group-hover:scale-110'
+                  }
+                  modulo-numero
+                `}>
+                  {index + 1}
                 </div>
-                <div class="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-                  <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                    {leccion.tipo_contenido}
-                  </span>
-                  {leccion.duracion_min && (
-                    <span class="flex items-center gap-1">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                      </svg>
-                      {leccion.duracion_min} min
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              <!-- Iconos de estado -->
-              <div class="flex items-center gap-2 flex-shrink-0">
-                {leccion.bloqueado && (
-                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                  </svg>
-                )}
                 
-                {leccion.completado && !leccion.bloqueado && (
-                  <div class="p-1 bg-green-100 dark:bg-green-900/30 rounded">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-gray-900 dark:text-white text-base leading-tight mb-1">
+                    {modulo.titulo}
+                  </h4>
+                  <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                      </svg>
+                      {modulo.lecciones.length} lecc.
+                    </span>
+                    {modulo.completado && (
+                      <span class="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Completado
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                {modulo.completado && (
+                  <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                     <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
                   </div>
                 )}
+                
+                <svg class={`
+                  w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-300 modulo-toggle-icon
+                  group-hover:text-blue-600 dark:group-hover:text-blue-400
+                `} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
               </div>
-            </a>
-          ))}
-        </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 lecciones-container hidden transition-all duration-300">
+              {modulo.lecciones.map((leccion, leccionIndex) => (
+                <a
+                  href={!leccion.bloqueado ? `/curso/${cursoId}/leccion/${leccion.id_leccion}` : '#'}
+                  class={`
+                    flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-all duration-200 group
+                    ${leccion.bloqueado 
+                      ? 'cursor-not-allowed opacity-60' 
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
+                    }
+                    ${leccion.completado ? 'bg-green-50/50 dark:bg-green-900/10' : ''}
+                  `}
+                  data-leccion-id={leccion.id_leccion}
+                >
+                  <div class={`
+                    w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300 flex-shrink-0
+                    ${leccion.completado 
+                      ? 'bg-green-500 text-white shadow-green-200' 
+                      : leccion.bloqueado
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                        : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-500 group-hover:text-white'
+                    }
+                    leccion-numero
+                  `}>
+                    {leccionIndex + 1}
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-medium text-gray-900 dark:text-white text-sm leading-tight">
+                        {leccion.titulo}
+                      </span>
+                      {leccion.tipo_contenido === 'quiz' && (
+                        <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0">
+                          Quiz
+                        </span>
+                      )}
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                      <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                        {leccion.tipo_contenido}
+                      </span>
+                      {leccion.duracion_min && (
+                        <span class="flex items-center gap-1">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          {leccion.duracion_min} min
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    {leccion.bloqueado && (
+                      <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                      </svg>
+                    )}
+                    
+                    {leccion.completado && !leccion.bloqueado && (
+                      <div class="p-1 bg-green-100 dark:bg-green-900/30 rounded">
+                        <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
+    </>
+  )}
 </aside>
 
-<script>
- // Sistema de Progreso y Acordeón
- function inicializarSidebar() {
-  const sidebar = document.getElementById('modulos-sidebar');
-  if (!sidebar) return; // 1. Comprobación principal
+<script is:inline>
+  // Sistema de Progreso y Acordeón
+      function inicializarSidebar() {
+    const sidebar = document.getElementById('modulos-sidebar');
+    if (!sidebar) return;
 
-  // 1. Configurar Acordeón
-  const moduloHeaders = sidebar.querySelectorAll<HTMLElement>('.modulo-header');
-  
-  moduloHeaders.forEach(header => {
-   header.addEventListener('click', () => {
-    const moduloElement = header.closest<HTMLElement>('[data-modulo-id]');
-    if (!moduloElement) {
-     console.error('No se pudo encontrar el [data-modulo-id] padre.');
-     return;
-    }
-
-    const leccionesContainer = moduloElement.querySelector<HTMLElement>('.lecciones-container');
-    const toggleIcon = header.querySelector<HTMLElement>('.modulo-toggle-icon');
-
-    if (leccionesContainer) {
-     leccionesContainer.classList.toggle('hidden');
-     
-     if (!leccionesContainer.classList.contains('hidden')) {
-      leccionesContainer.style.opacity = '0';
-      leccionesContainer.style.transform = 'translateY(-10px)';
-      requestAnimationFrame(() => {
-       leccionesContainer.style.transition = 'all 0.3s ease';
-       leccionesContainer.style.opacity = '1';
-       leccionesContainer.style.transform = 'translateY(0)';
-      });
-     }
-    }
+    // 1. Configurar Acordeón
+    const moduloHeaders = sidebar.querySelectorAll('.modulo-header');
     
-    if (toggleIcon) {
-     toggleIcon.classList.toggle('rotate-180');
+    moduloHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const moduloElement = header.closest('[data-modulo-id]');
+        if (!moduloElement) return;
+
+        const leccionesContainer = moduloElement.querySelector('.lecciones-container');
+        const toggleIcon = header.querySelector('.modulo-toggle-icon');
+
+        if (leccionesContainer) {
+          const isHidden = leccionesContainer.classList.contains('hidden');
+          leccionesContainer.classList.toggle('hidden');
+          
+          if (!isHidden) {
+            leccionesContainer.style.opacity = '0';
+            leccionesContainer.style.transform = 'translateY(-10px)';
+            requestAnimationFrame(() => {
+              leccionesContainer.style.transition = 'all 0.3s ease';
+              leccionesContainer.style.opacity = '1';
+              leccionesContainer.style.transform = 'translateY(0)';
+            });
+          }
+        }
+        
+        if (toggleIcon) {
+          toggleIcon.classList.toggle('rotate-180');
+        }
+      });
+    });
+
+    // 2. Calcular y Mostrar Progreso Global
+    function calcularProgresoGlobal() {
+      if (!sidebar) return;
+      
+      const todasLecciones = Array.from(sidebar.querySelectorAll('[data-leccion-id]'));
+      const leccionesCompletadas = todasLecciones.filter(leccion => {
+        const numeroElement = leccion.querySelector('.leccion-numero');
+        return numeroElement ? numeroElement.classList.contains('bg-green-500') : false;
+      }).length;
+
+      const totalLecciones = todasLecciones.length;
+      const porcentajeProgreso = totalLecciones > 0 ? Math.round((leccionesCompletadas / totalLecciones) * 100) : 0;
+
+      const barraProgreso = document.getElementById('barra-progreso');
+      const textoProgreso = document.getElementById('progreso-global');
+      
+      if (barraProgreso && textoProgreso) {
+        barraProgreso.style.width = `${porcentajeProgreso}%`;
+        textoProgreso.textContent = `${porcentajeProgreso}%`;
+      }
     }
-   });
-  });
 
-  // 2. Calcular y Mostrar Progreso Global
-  function calcularProgresoGlobal() {
-   // ⚡️ CORRECCIÓN: Volvemos a comprobar 'sidebar' para TypeScript
-   if (!sidebar) return;
-   
-   const todasLecciones = Array.from(sidebar.querySelectorAll<HTMLElement>('[data-leccion-id]'));
-   const leccionesCompletadas = todasLecciones.filter(leccion => {
-    const checkIcon = leccion.querySelector<HTMLElement>('.leccion-check-icon');
-    return checkIcon?.style.display !== 'none';
-   }).length;
+    // 3. Simular progreso (solo para demo)
+    function simularProgreso() {
+      if (!sidebar) return;
+      
+      const lecciones = sidebar.querySelectorAll('[data-leccion-id]');
+      lecciones.forEach((leccion, index) => {
+        if (index < 2) { 
+          const numero = leccion.querySelector('.leccion-numero');
+          if (numero) {
+            numero.classList.remove('bg-blue-100', 'text-blue-600', 'dark:bg-blue-900', 'dark:text-blue-300');
+            numero.classList.add('bg-green-500', 'text-white');
+          }
+        }
+      });
+      
+      calcularProgresoGlobal();
+    }
 
-   const totalLecciones = todasLecciones.length;
-   const porcentajeProgreso = totalLecciones > 0 ? Math.round((leccionesCompletadas / totalLecciones) * 100) : 0;
+    // Inicializar
+    if (moduloHeaders.length > 0) {
+      simularProgreso();
+    }
 
-   // Actualizar barra de progreso
-   const barraProgreso = document.getElementById('barra-progreso');
-   const textoProgreso = document.getElementById('progreso-global');
-   
-   if (barraProgreso && textoProgreso) {
-    barraProgreso.style.width = `${porcentajeProgreso}%`;
-    textoProgreso.textContent = `${porcentajeProgreso}%`;
-   }
+    // Prevenir clics en lecciones bloqueadas
+    sidebar.addEventListener('click', (e) => {
+      const target = e.target.closest('a[data-leccion-id]');
+      if (target && target.classList.contains('cursor-not-allowed')) {
+        e.preventDefault();
+      }
+    });
   }
 
-  // 3. Simular progreso
-  function simularProgreso() {
-   // ⚡️ CORRECCIÓN: Volvemos a comprobar 'sidebar' para TypeScript
-   if (!sidebar) return;
-   
-   const lecciones = sidebar.querySelectorAll<HTMLElement>('[data-leccion-id]');
-   lecciones.forEach((leccion, index) => {
-    if (index < 4) { 
-     const checkIcon = leccion.querySelector<HTMLElement>('.leccion-check-icon');
-     const numero = leccion.querySelector<HTMLElement>('.leccion-numero');
-     
-     if (checkIcon) checkIcon.style.display = 'block';
-     if (numero) {
-      numero.classList.remove('bg-blue-100', 'text-blue-600');
-      numero.classList.add('bg-green-500', 'text-white');
-     }
-    }
-   });
-   
-   calcularProgresoGlobal();
-  }
-
-  // Inicializar
-  simularProgreso();
- }
-
- document.addEventListener('DOMContentLoaded', inicializarSidebar);
+  document.addEventListener('DOMContentLoaded', inicializarSidebar);
 </script>
 
-<style>
+<style is:global>
   .rotate-180 {
     transform: rotate(180deg);
   }
 
-  /* Scroll personalizado para lecciones */
   .lecciones-container {
     max-height: 400px;
     overflow-y: auto;
@@ -327,12 +420,10 @@ const { modulos, cursoId } = Astro.props as { modulos: Modulo[]; cursoId: string
     background: #94a3b8;
   }
 
-  /* Animaciones suaves */
   .transition-all {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Efectos de hover mejorados */
   .group:hover .group-hover\\:scale-110 {
     transform: scale(1.1);
   }
