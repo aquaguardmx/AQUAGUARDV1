@@ -40,7 +40,6 @@ class ModuleController extends Controller
     public function store(Request $request)
     {
         // 1. VALIDACIÓN
-        //    Quitamos 'orden' de los campos requeridos.
         $validator = Validator::make($request->all(), [
             'curso_id' => 'required|integer|exists:cursos,id_curso',
             'titulo'   => 'required|string|max:255',
@@ -51,19 +50,17 @@ class ModuleController extends Controller
         }
 
         // 2. OBTENER DATOS
-        //    Obtenemos solo los datos validados del request.
         $curso_id = $request->input('curso_id');
         $titulo = $request->input('titulo');
 
         // 3. --- LÓGICA CLAVE (MÉTODO 1) ---
-        //  Contamos cuántos módulos existen para este curso_id
+        // Contamos cuántos módulos existen para este curso_id
         $conteoActual = Modulo::where('curso_id', $curso_id)->count();
 
-        //    Calculamos el nuevo orden (conteo + 1)
+        // Calculamos el nuevo orden (conteo + 1)
         $nuevoOrden = $conteoActual + 1;
 
         // 4. CREAR EL MÓDULO
-        //    Usamos las variables, incluyendo nuestro 'nuevoOrden' calculado
         $modulo = Modulo::create([
             'curso_id' => $curso_id,
             'titulo'   => $titulo,
@@ -71,7 +68,6 @@ class ModuleController extends Controller
         ]);
 
         // 5. RESPUESTA
-        //  Devolvemos el módulo recién creado
         return response()->json($modulo, 201);
     }
 
@@ -110,12 +106,40 @@ class ModuleController extends Controller
         return response()->json(['message' => 'Módulo eliminado correctamente']);
     }
 
+    /**
+     * NUEVO MÉTODO: Obtener todos los módulos y sus lecciones por ID de curso.
+     */
+    public function showByCurso($cursoId)
+    {
+        // 1. Buscamos todos los módulos para el curso_id dado.
+        // 2. Los ordenamos por la columna 'orden'.
+        // 3. Usamos 'with' para cargar la relación 'lecciones' (Eager Loading).
+        // 4. Dentro de 'with', también ordenamos las lecciones anidadas por su 'orden'.
+        $modulos = Modulo::where('curso_id', $cursoId)
+                         ->orderBy('orden', 'asc')
+                         ->with(['lecciones' => function($query) {
+                             $query->orderBy('orden', 'asc');
+                         }])
+                         ->get();
+
+        // Verificamos si encontramos módulos.
+        // Si la colección está vacía, puede ser que el curso no exista
+        // o simplemente no tenga módulos asignados.
+        if ($modulos->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron módulos para este curso'], 404);
+        }
+
+        // Devolvemos la colección completa de módulos con sus lecciones anidadas.
+        return response()->json($modulos);
+    }
+
     public function getPorModulo($moduloId)
     {
         try {
             // 1. Encuentra el módulo
             $modulo = Modulo::findOrFail($moduloId);
 
+            // 2. Obtiene las lecciones de ese módulo, ordenadas
             $lecciones = $modulo->lecciones()->orderBy('orden', 'asc')->get();
 
             // 3. Devuelve las lecciones como JSON

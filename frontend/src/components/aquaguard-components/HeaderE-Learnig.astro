@@ -51,7 +51,6 @@ function isActiveItem(itemHref: string, currentPath: string): boolean {
         {
           navItems.map((item) => {
             const isActive = isActiveItem(item.href, currentPath);
-            console.log(`Item: ${item.name}, Activo: ${isActive}`); // Para debug
             return (
               <a
                 href={item.href}
@@ -139,23 +138,6 @@ function isActiveItem(itemHref: string, currentPath: string): boolean {
     </div>
   </nav>
 </header>
-
-<script>
-  // Script para debug - mostrar en consola qué está pasando
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('Header cargado - Ruta actual:', window.location.pathname);
-    const activeLinks = document.querySelectorAll('[data-active="true"]');
-    console.log('Enlaces activos encontrados:', activeLinks.length);
-    activeLinks.forEach(link => {
-      console.log('Enlace activo:', {
-        texto: link.textContent,
-        href: link.getAttribute('data-href'),
-        current: link.getAttribute('data-current')
-      });
-    });
-  });
-</script>
-
 <script is:inline>
   document.addEventListener("DOMContentLoaded", () => {
     const userSection = document.getElementById("user-section");

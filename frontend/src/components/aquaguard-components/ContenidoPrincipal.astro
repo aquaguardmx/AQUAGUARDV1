@@ -1,10 +1,41 @@
 ---
 // src/components/curso/ContenidoPrincipal.astro
 
-const { curso } = Astro.props;
+const { id } = Astro.params;
 
-const todosLosModulosCompletados = curso.modulos.slice(0, -1).every(modulo => modulo.completado);
-const quiz = curso.modulos[3].lecciones[0];
+
+interface Leccion {
+  tipo: string;
+  completado?: boolean;
+}
+
+interface Modulo {
+  completado: boolean;
+  lecciones: Leccion[];
+}
+
+interface Curso {
+  id_curso: string;
+  descripcion: string;
+  modulos: Modulo[];
+}
+
+const { curso }: { curso?: Curso } = Astro.props;
+
+// Validaciones para evitar errores
+const modulosValidos = curso?.modulos || [];
+const todosLosModulosCompletados = modulosValidos.length > 0 
+  ? modulosValidos.slice(0, -1).every((modulo: Modulo) => modulo.completado)
+  : false;
+
+// Buscar el quiz de forma segura
+const quiz = modulosValidos.length >= 4 
+  ? modulosValidos[3]?.lecciones?.[0] 
+  : null;
+
+const totalLecciones = modulosValidos.flatMap((m: Modulo) => m.lecciones || []);
+const leccionesNormales = totalLecciones.filter((l: Leccion) => l.tipo !== 'quiz');
+const totalQuizzes = totalLecciones.filter((l: Leccion) => l.tipo === 'quiz');
 ---
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
@@ -21,27 +52,27 @@ const quiz = curso.modulos[3].lecciones[0];
     </h2>
     
     <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-      {curso.descripcion}
+      {curso?.descripcion}
     </p>
     
     <div class="grid md:grid-cols-3 gap-6 mb-8">
       <div class="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-          {curso.modulos.length}
+          {modulosValidos.length}
         </div>
         <div class="text-gray-600 dark:text-gray-300 font-medium">Módulos</div>
       </div>
       
       <div class="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
         <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
-          {curso.modulos.flatMap(m => m.lecciones).filter(l => l.tipo !== 'quiz').length}
+          {leccionesNormales.length}
         </div>
         <div class="text-gray-600 dark:text-gray-300 font-medium">Lecciones</div>
       </div>
       
       <div class="text-center p-6 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
         <div class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-          {curso.modulos.flatMap(m => m.lecciones).filter(l => l.tipo === 'quiz').length}
+          {totalQuizzes.length}
         </div>
         <div class="text-gray-600 dark:text-gray-300 font-medium">Evaluaciones</div>
       </div>
@@ -95,7 +126,7 @@ const quiz = curso.modulos[3].lecciones[0];
     <!-- Botón de inicio -->
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
       <a 
-        href={`/curso/${curso.id_curso}/leccion/1`}
+        href={`/curso/${id}/leccion/1`}
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

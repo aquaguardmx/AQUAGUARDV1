@@ -136,6 +136,8 @@ Route::put('/modulos/{id}', [ModuleController::class, 'update']);
 
 Route::delete('/modulos/{id}', [ModuleController::class, 'destroy']);
 
+Route::get('/cursos/{cursoId}/modulos-y-lecciones', [ModuleController::class, 'showByCurso']);
+
 Route::get('/cursos/{curso}/modulos', [CourseController::class, 'getModulosPorCurso']);
 
 Route::get('/lecciones', [LessonController::class, 'index']);
