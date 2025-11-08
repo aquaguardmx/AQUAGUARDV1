@@ -12,11 +12,10 @@ class Modulo extends Model
     /** @use HasFactory<\Database\Factories\CursoFactory> */
     use HasFactory;
 
-    protected $table = 'modulos'; // <-- AÑADE ESTA LÍNEA
+    protected $table = 'modulos';
 
     public $timestamps = false;
 
-    // La llave primaria no es `id` sino `id_curso` según la migración
     protected $primaryKey = 'id_modulo';
 
     // Es una clave autoincremental entera
@@ -29,14 +28,7 @@ class Modulo extends Model
         'orden',
     ];
 
-    public function contenidos()
-    {
-        return $this->hasMany(Contenido::class, 'id_modulo');
-    }
-
-    /**
-     * Define la relación inversa "un módulo pertenece a un curso".
-     */
+    //Relacion de un módulo pertenece a un curso.
     public function curso()
     {
         // 1er arg: El modelo relacionado (Curso)

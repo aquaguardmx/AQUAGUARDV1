@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User; // <-- AÑADE ESTA LÍNEA
-use App\Models\Curso; // <-- AÑADE ESTA LÍNEA
+use App\Models\User; 
+use App\Models\Curso;
 
 class CursoInscritoUsuario extends Model
 {

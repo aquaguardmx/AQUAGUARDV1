@@ -18,29 +18,25 @@ class CourseController extends Controller
         if($cursos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron cursos'], 404);
         }
-
         $data = [
             'cursos' => $cursos,
             'status' => 200
         ];
-
         return response()->json($cursos);
     } 
 
     public function show($id)
     {
         $curso = Curso::with('autor', 'categoria')->find($id);
-
         if (!$curso) {
             return response()->json(['message' => 'Curso no encontrado'], 404);
         }
-
         return response()->json($curso);
     }
 
 
     public function store(Request $request)
-{
+    {
     $validated = $request->validate([
         'titulo' => 'required|string|max:255',
         'descripcion' => 'required|string',
@@ -60,9 +56,8 @@ class CourseController extends Controller
     }
 
     $curso = Curso::create($validated);
-
     return response()->json($curso, 201);
-}
+    }
 
     public function update(Request $request, $id)
     {
@@ -71,8 +66,6 @@ class CourseController extends Controller
         if (!$curso) {
             return response()->json(['message' => 'Curso no encontrado'], 404);
         }
-    
-        // 🔹 Validaciones: todos los campos son opcionales ("sometimes")
         $validator = Validator::make($request->all(), [
             'titulo' => 'sometimes|string|max:255',
             'portada_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -86,8 +79,6 @@ class CourseController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
-        // 🔹 Solo actualiza los campos enviados en la request
         $curso->update($request->only([
             'titulo',
             'descripcion',
@@ -97,7 +88,6 @@ class CourseController extends Controller
             'categoria_id',
             'publicado',
         ]));
-
         return response()->json([
             'message' => 'Curso actualizado correctamente',
             'curso' => $curso
@@ -111,9 +101,7 @@ class CourseController extends Controller
         if (!$curso) {
             return response()->json(['message' => 'Curso no encontrado'], 404);
         }
-
         $curso->delete();
-
         return response()->json(['message' => 'Curso eliminado correctamente']);
     }
 
@@ -134,33 +122,16 @@ class CourseController extends Controller
     public function getCursosPorUsuario($usuarioId)
     {
         try {
-            // 1. Encontrar al usuario
+            //Encontrar al usuario
             $user = User::find($usuarioId);
 
             if (!$user) {
                 return response()->json(['message' => 'Usuario no encontrado'], 404);
             }
-
-            // 2. Obtener los cursos
-            // --- OPCIÓN A: Usando una relación (Recomendado) ---
-            // Esto asume que en tu modelo User tienes una relación 'cursos()'
+            // hace relacion usuarios con cursos
             $cursos = $user->cursos;
 
-            /*
-            // --- OPCIÓN B: Consultando la tabla pivote directamente ---
-            // Úsala si no tienes la relación definida en el modelo.
-            // (Basado en el modelo 'CursoInscritoUsuario' que has estado usando)
-
-            // Obtenemos los IDs de los cursos en los que el usuario está inscrito
-            $cursoIds = CursoInscritoUsuario::where('usuario_id', $usuarioId)
-                                            ->pluck('curso_id');
-
-            // Buscamos todos los cursos que coincidan con esos IDs
-            $cursos = Curso::whereIn('id', $cursoIds)->get();
-            */
-
-
-            // 3. Devolver la respuesta
+            // Devolver la respuesta
             return response()->json($cursos, 200);
 
         } catch (Exception $e) {

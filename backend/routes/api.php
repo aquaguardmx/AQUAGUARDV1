@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\EstacionesController;
 
 // Registro y Login
 Route::post('/register', [RegisterController::class, 'store']);
+
 Route::post('/login', [LoginController::class, 'login']);
 
 // Ruta para manejar el clic en el enlace de verificación de correo desde el frontend

@@ -27,25 +27,25 @@ class CursoInscritoUsuarioController extends Controller
     } 
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'usuario_id' => 'required|integer',
-        'curso_id' => 'required|integer',
-    ]);
+    {
+        $validated = $request->validate([
+            'usuario_id' => 'required|integer',
+            'curso_id' => 'required|integer',
+        ]);
 
-    // Verificar duplicados manualmente
-    $existe = CursoInscritoUsuario::where('usuario_id', $validated['usuario_id'])
-        ->where('curso_id', $validated['curso_id'])
-        ->exists();
+        // Verificar duplicados manualmente
+        $existe = CursoInscritoUsuario::where('usuario_id', $validated['usuario_id'])
+            ->where('curso_id', $validated['curso_id'])
+            ->exists();
 
-    if ($existe) {
-        return response()->json([
-            'message' => 'El usuario ya está inscrito en este curso'
-        ], 409);
+        if ($existe) {
+            return response()->json([
+                'message' => 'El usuario ya está inscrito en este curso'
+            ], 409);
+        }
+
+        $cursoInscrito = CursoInscritoUsuario::create($validated);
+
+        return response()->json($cursoInscrito, 201);
     }
-
-    $cursoInscrito = CursoInscritoUsuario::create($validated);
-
-    return response()->json($cursoInscrito, 201);
-}
 }

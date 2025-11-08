@@ -64,17 +64,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'contrasena' => 'hashed',
     ];
 
-    /**
-     * Relación con la escuela (si existe la tabla/modelo Escuela).
-     */
+    // Relación con la escuela.
     public function escuela()
     {
         return $this->belongsTo('App\\Models\\Escuela', 'id_escuela');
     }
 
-    /**
-     * Relación con el rol (si existe la tabla/modelo Role).
-     */
+    // Relación con el rol (si existe la tabla/modelo Role).
     public function role()
     {
         return $this->belongsTo('App\\Models\\Role', 'id_rol');
