@@ -16,6 +16,13 @@ use App\Http\Controllers\Api\ModuleController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\CursoInscritoUsuarioController;
 use App\Http\Controllers\Api\SchoolController;
+use App\Http\Controllers\Api\EstadosController;
+use App\Http\Controllers\Api\MunicipiosController;
+use App\Http\Controllers\Api\CuencasController;
+use App\Http\Controllers\Api\TiposController;
+use App\Http\Controllers\Api\SubtiposController;
+use App\Http\Controllers\Api\ParametrosController;
+
 
 use App\Http\Controllers\Api\EstacionesController;
 /*
@@ -119,11 +126,11 @@ Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
 
 Route::post('/subir-portada', [CourseController::class, 'subirPortada']);
 
+Route::get('/cursos-por-usuario/{usuarioId}', [CourseController::class, 'getCursosPorUsuario']);
+
 Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
 
 Route::post('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'store']);
-
-Route::get('/cursos-por-usuario/{usuarioId}', [CourseController::class, 'getCursosPorUsuario']);
 
 // API PARA MODULOS
 Route::get('/modulos', [ModuleController::class, 'index']);
@@ -153,21 +160,21 @@ Route::get('/escuelas', [SchoolController::class, 'index']);
 
 Route::post('/escuelas', [SchoolController::class, 'store']);
 
+//API para obtener datos geográficos 
+Route::get('/estados', [EstadosController::class, 'index']);
+Route::get('/municipios/estado/{estadoId}', [MunicipiosController::class, 'getMunicipiosPorEstado']);
+Route::get('/cuencas', [CuencasController::class, 'index']);
+Route::get('/tipos', [TiposController::class, 'index']);
+Route::get('/subtipos', [SubtiposController::class, 'index']);
+Route::get('/parametros', [ParametrosController::class, 'index']);
+
 //API PARA  MAPA 
 Route::get('/mapa', [EstacionesController::class, 'mapData']);
-
-//API para obtener datos geográficos 
-Route::get('/estados', [EstacionesController::class, 'getEstados']);
-Route::get('/municipios/estado/{estadoId}', [EstacionesController::class, 'getMunicipiosPorEstado']);
-Route::get('/cuencas', [EstacionesController::class, 'getCuencas']);
-Route::get('/tipos', [EstacionesController::class, 'getTipos']);
-Route::get('/subtipos', [EstacionesController::class, 'getSubtipos']);
-Route::get('/parametros', [EstacionesController::class, 'getParametros']);
 
 //API para agregar estaciones/cuerpos de agua por usuario normal
 Route::post('/estaciones', [EstacionesController::class, 'store']);
 
-//API para admin sobre estaciones/cuerpos de agua
+//APIs para admin sobre estaciones/cuerpos de agua
 
 // Obtener todas las estaciones (para admin) con paginación y limite 
 Route::get('/admin/estaciones', [EstacionesController::class, 'index']);

@@ -12,10 +12,8 @@ class Leccion extends Model
     /** @use HasFactory<\Database\Factories\CursoFactory> */
     use HasFactory;
 
-    protected $table = 'lecciones'; // <-- AÑADE ESTA LÍNEA
+    protected $table = 'lecciones'; 
 
-
-    // La llave primaria no es `id` sino `id_curso` según la migración
     protected $primaryKey = 'id_leccion';
 
     // Es una clave autoincremental entera

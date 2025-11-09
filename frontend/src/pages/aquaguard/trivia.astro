@@ -17,29 +17,31 @@ import "../../styles/estilos.css";
         <div id="start-screen" class="screen active">
             <div class="logo-container" style="text-align:center; margin-bottom:20px;">
                 <a href="/">
-                <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
+                    <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
+                </a>
             </div>
 
             <h1>🌊 Trivia del Agua 💧</h1>
             <p>¿Qué tanto sabes sobre el cuidado del agua? ¡Ponte a prueba!</p>
             <input type="text" id="name-input" class="name-input" placeholder="Escribe tu nombre aquí">
+            <div id="name-error" style="color:#dc3545; display:none; margin-top:8px; font-size:0.95rem;">Por favor escribe tu nombre antes de continuar.</div>
             
             <div class="difficulty-selection" style="margin: 20px 0;">
                 <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #005a9c;">Selecciona la modalidad:</label>
                 <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                    <button class="difficulty-btn" data-questions="5" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                    <button type="button" class="difficulty-btn" data-questions="5" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
                         Rápido (5 preguntas)
                     </button>
-                    <button class="difficulty-btn selected" data-questions="10" style="padding: 10px 15px; border: 2px solid #66a6ff; background: #66a6ff; color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                    <button type="button" class="difficulty-btn selected" data-questions="10" style="padding: 10px 15px; border: 2px solid #66a6ff; background: #66a6ff; color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
                         Normal (10 preguntas)
                     </button>
-                    <button class="difficulty-btn" data-questions="15" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
+                    <button type="button" class="difficulty-btn" data-questions="15" style="padding: 10px 15px; border: 2px solid #66a6ff; background: white; color: #66a6ff; border-radius: 25px; cursor: pointer; transition: all 0.3s;">
                         Experto (15 preguntas)
                     </button>
                 </div>
             </div>
             
-            <button id="start-button">Comenzar</button>
+            <button type="button" id="start-button">Comenzar</button>
         </div>
 
         <div id="question-screen" class="screen">
@@ -60,8 +62,8 @@ import "../../styles/estilos.css";
             <h2>Resultados Finales</h2>
             <p>Obtuviste <span id="score"></span> de <span id="total-questions"></span> preguntas correctas.</p>
             <p id="result-message"></p>
-            <button id="restart-button" class="no-print">Intentar de Nuevo</button>
-            <button id="home-button">Salir</button>
+            <button type="button" id="restart-button" class="no-print">Intentar de Nuevo</button>
+            <button type="button" id="home-button">Salir</button>
         </div>
         
         <div id="certificate-screen" class="screen">
@@ -89,8 +91,8 @@ import "../../styles/estilos.css";
                 
                 <p class="certificate-date" id="certificate-date-text"></p>
             </div>
-            <button id="print-button" class="no-print">Imprimir Certificado</button>
-            <button id="restart-button-cert" class="no-print">Volver a Jugar</button>
+            <button type="button" id="print-button" class="no-print">Imprimir Certificado</button>
+            <button type="button" id="restart-button-cert" class="no-print">Volver a Jugar</button>
         </div>
     </div>
     
@@ -104,6 +106,7 @@ import "../../styles/estilos.css";
             const printButton = document.getElementById('print-button');
 
             const nameInput = document.getElementById('name-input');
+            const nameError = document.getElementById('name-error');
             const startScreen = document.getElementById('start-screen');
             const questionScreen = document.getElementById('question-screen');
             const resultScreen = document.getElementById('result-screen');
@@ -632,23 +635,74 @@ import "../../styles/estilos.css";
             restartButtonCert.addEventListener('click', startGame);
             printButton.addEventListener('click', () => window.print());
 
+            // Validación y saneado en tiempo real: permitir solo letras (incluye acentos y ñ) y espacios
+            const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿÑñÁÉÍÓÚáéíóúüÜ\s]+$/;
+
+            nameInput.addEventListener('input', () => {
+                // Eliminar caracteres no permitidos inmediatamente
+                const sanitized = nameInput.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿÑñÁÉÍÓÚáéíóúüÜ\s]/g, '');
+                if (sanitized !== nameInput.value) {
+                    const caret = nameInput.selectionStart - 1;
+                    nameInput.value = sanitized;
+                    // intentar preservar posición del cursor
+                    try { nameInput.setSelectionRange(caret, caret); } catch (e) {}
+                }
+
+                if (nameInput.value.trim()) {
+                    nameError.style.display = 'none';
+                    nameInput.style.borderColor = '';
+                    nameInput.style.boxShadow = '';
+                }
+            });
+
+            // Manejar pegado: sanitizar el texto pegado
+            nameInput.addEventListener('paste', (ev) => {
+                ev.preventDefault();
+                const text = (ev.clipboardData || window.clipboardData).getData('text') || '';
+                const sanitized = text.replace(/[^A-Za-zÀ-ÖØ-öø-ÿÑñÁÉÍÓÚáéíóúüÜ\s]/g, '');
+                const before = nameInput.value.slice(0, nameInput.selectionStart);
+                const after = nameInput.value.slice(nameInput.selectionEnd);
+                nameInput.value = before + sanitized + after;
+            });
+
             function startGame() {
-                playerName = nameInput.value || "Héroe Anónimo"; // Guarda el nombre o usa uno por defecto
-                
+                const nameVal = nameInput.value.trim();
+                if (!nameVal) {
+                    // Mostrar mensaje de error y no continuar
+                    nameError.innerText = 'Por favor escribe tu nombre antes de continuar.';
+                    nameError.style.display = 'block';
+                    nameInput.style.borderColor = '#dc3545';
+                    nameInput.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.12)';
+                    nameInput.focus();
+                    return;
+                }
+
+                // Validar que solo contenga letras y espacios
+                if (!nameRegex.test(nameVal)) {
+                    nameError.innerText = 'El nombre solo puede contener letras y espacios.';
+                    nameError.style.display = 'block';
+                    nameInput.style.borderColor = '#dc3545';
+                    nameInput.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.12)';
+                    nameInput.focus();
+                    return;
+                }
+
+                playerName = nameVal; // Guarda el nombre validado
+
                 // Usar la dificultad seleccionada
                 const questionsToShow = selectedDifficulty;
-                
+
                 // Preparar preguntas dinámicas
                 selectedQuestions = prepareQuestionsForQuizWithCount(questions, questionsToShow);
                 maxQuestions = selectedQuestions.length;
-                
+
                 currentQuestionIndex = 0;
                 score = 0;
                 startScreen.classList.remove('active');
                 resultScreen.classList.remove('active');
                 certificateScreen.classList.remove('active');
                 questionScreen.classList.add('active');
-                
+
                 // Actualizar contador total de preguntas en la interfaz
                 updateQuestionCounter();
                 showNextQuestion();

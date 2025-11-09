@@ -8,14 +8,14 @@ class Estaciones extends Model
 {
     protected $table = 'estaciones';
 
-    protected $primaryKey = 'id_estacion';  // Clave primaria real de tu tabla
+    protected $primaryKey = 'id_estacion'; 
 
     public $incrementing = true;
+
     protected $keyType = 'int';
 
     public $timestamps = true;
 
-    // Fillable para todos los campos 
     protected $fillable = [
         'clave_sitio',
         'nombre',
@@ -32,47 +32,37 @@ class Estaciones extends Model
     // Relaciones con tablas relacionadas
     public function tipo()
     {
-        return $this->belongsTo(Tipos::class, 'id_tipo');  // Model Tipo para 'tipos'
+        return $this->belongsTo(Tipos::class, 'id_tipo');  
     }
-
     public function subtipo()
     {
-        return $this->belongsTo(Subtipos::class, 'id_subtipo');  // Model Subtipo para 'subtipos'
+        return $this->belongsTo(Subtipos::class, 'id_subtipo');  
     }
-
     public function cuenca()
     {
-        return $this->belongsTo(Cuencas::class, 'id_cuenca');  // Model Cuenca para 'cuencas'
+        return $this->belongsTo(Cuencas::class, 'id_cuenca');  
     }
-
     public function municipio()
     {
-        return $this->belongsTo(Municipios::class, 'id_municipio');  // Model Municipio para 'municipios'
+        return $this->belongsTo(Municipios::class, 'id_municipio');  
     }
-
     public function estado()
-    {
-        return $this->belongsToThrough(Estados::class, Municipio::class, 'id_municipio', 'id_estado');  // Indirecta via municipio
+    { 
+        // Indirecta via municipio
+        return $this->belongsToThrough(Estados::class, Municipio::class, 'id_municipio', 'id_estado');  
     }
-
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'id_usuario');  // Model User para 'usuarios'
+        return $this->belongsTo(User::class, 'id_usuario');  
     }
-
     public function mediciones()
     {
-        return $this->hasMany(Mediciones::class, 'id_estacion');  // Model Medicion para 'mediciones'
+        return $this->hasMany(Mediciones::class, 'id_estacion');  
     }
-
     public function semaforo()
     {
-        return $this->hasMany(Semaforo::class, 'id_estacion')->orderBy('fecha_medicion', 'desc');  // Más reciente primero
+        // Ordenamos por fecha_medicion descendente para obtener el más reciente primero
+        return $this->hasMany(Semaforo::class, 'id_estacion')->orderBy('fecha_medicion', 'desc');  
     }
 
-    // Accesor para semáforo más reciente (opcional, para usar en JSON)
-    public function getUltimoSemaforoAttribute()
-    {
-        return $this->semaforo->first();  // El primero (más reciente)
-    }
 }

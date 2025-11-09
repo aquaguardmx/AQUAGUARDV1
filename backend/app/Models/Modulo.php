@@ -28,7 +28,7 @@ class Modulo extends Model
         'orden',
     ];
 
-    //Relacion de un módulo pertenece a un curso.
+    //Relacion de un módulo pertenece a un curso
     public function curso()
     {
         // 1er arg: El modelo relacionado (Curso)
@@ -37,13 +37,9 @@ class Modulo extends Model
         return $this->belongsTo(Curso::class, 'curso_id', 'id_curso');
     }
 
-    /**
-     * Define la relación "un Módulo tiene muchas Lecciones".
-     */
+    //Define la relación "un Módulo tiene muchas Lecciones"
     public function lecciones()
     {
-        // Asume que tu modelo de lección se llama 'Leccion'
-        // y que la tabla 'lecciones' tiene una columna 'modulo_id'.
         return $this->hasMany(Leccion::class, 'modulo_id');
     }
 }

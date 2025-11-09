@@ -22,13 +22,6 @@
             background-color: #f0f8ff;
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>'), auto;
         }
-
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
         #game-container {
             position: relative;
             width: 100vw;
@@ -70,7 +63,6 @@
             border-bottom: 2px solid rgba(30,144,255,0.3);
             pointer-events: auto;
         }
-
         .game-title {
             color: #003366;
             text-shadow: var(--text-shadow);
@@ -267,13 +259,9 @@
         }
     </style>
 </head>
-<body>  
+<body>
     <div class="game-header">
-        <div class="logo-container">
-            <a href="/">
-                <img src="/img/logo.png" alt="Logo AquaGuard" class="game-logo" id="logo-home">
-            </a>
-        </div>
+        <img src="/img/logo.png" alt="Logo AquaGuard" class="game-logo" id="logo-home" style="cursor: pointer;">
     </div>
 
     <div id="game-container"></div>
@@ -333,22 +321,22 @@
                 creatures: [
                     { src: '/img/assets/pulpo.png', size: 90 },
                     { src: '/img/assets/camaron.png', size: 70 },
-                    { src: '/img/assets/tortuga marina.png', size: 120 },
+                    { src: '/img/assets/tortuga-marina.png', size: 120 },
                     { src: '/img/assets/medusa.png', size: 80 },
                     { src: '/img/assets/pezpayaso.png', size: 90 },
                     { src: '/img/assets/pez.png', size: 85 },
                     { src: '/img/assets/pecesgrupo.png', size: 110 },
                 ],
                 trash: [
-                    { src: 'assets/lata.png', size: 100 },
-                    { src: 'assets/bolsa.png', size: 120 },
-                    { src: 'assets/bota.png', size: 110 },
-                    { src: 'assets/botella.png', size: 95 },
-                    { src: 'assets/vaso.png', size: 85 },
-                    { src: 'assets/llanta.png', size: 130 },
-                    { src: 'assets/basura.png', size: 105 },
+                    { src: '/img/assets/lata.png', size: 100 },
+                    { src: '/img/assets/bolsa.png', size: 120 },
+                    { src: '/img/assets/bota.png', size: 110 },
+                    { src: '/img/assets/botella.png', size: 95 },
+                    { src: '/img/assets/vaso.png', size: 85 },
+                    { src: '/img/assets/llanta.png', size: 130 },
+                    { src: '/img/assets/basura.png', size: 105 },
                 ],
-                powerUp: { src: 'assets/burbuja.png', size: 90 }
+                powerUp: { src: '/img/assets/burbuja.png', size: 90 }
             };
 
             const DOM = {
@@ -866,6 +854,7 @@
             const logoHome = document.getElementById('logo-home');
             if (logoHome) {
                 logoHome.addEventListener('click', function() {
+                    // Redirigir a la página principal del sitio (ruta absoluta)
                     window.location.href = '/';
                 });
             }

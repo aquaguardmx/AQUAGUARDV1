@@ -24,4 +24,27 @@ class Parametros extends Model
         'definicion',
         'contaminantes_contribuyentes',
     ];
+
+    //Define la relación "un parametro tiene muchas clasificaciones"
+    public function clasificaciones()
+    {
+        return $this->hasMany(ParametroClasificacion::class, 'parametro_id')
+                    ->orderBy('orden');
+    }
+
+    //Metodo para clasificar un valor en este parámetro
+    public function clasificarValor($valor)
+    {
+        return $this->clasificaciones()
+            ->where(function($q) use ($valor) {
+                $q->whereNull('min_value')
+                  ->orWhere('min_value', '<', $valor);
+            })
+            ->where(function($q) use ($valor) {
+                $q->whereNull('max_value')
+                  ->orWhere('max_value', '>=', $valor);
+            })
+            ->orderBy('orden')
+            ->first();
+    }
 }
