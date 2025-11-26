@@ -13,13 +13,85 @@ use App\Models\Mediciones;
 use App\Models\Parametros;
 use App\Models\Semaforo;
 use App\Models\Tipos;
+use App\Models\parametroClasificacion;
 
 use Illuminate\Support\Facades\Log;
 
 class EstacionesController extends Controller
 {
+    // Función auxiliar para determinar clasificación de medición
+    private function determinarClasificacion($parametroId, $valor, $tipoCuerpoAgua)
+    {
+        try {
+            $valor = floatval($valor);
+            
+            // Buscar la clasificacion usando el modelo ParametroClasificacion
+            $clasificacion = ParametroClasificacion::clasificar($parametroId, $valor);
+            
+            if ($clasificacion) {
+                return $clasificacion->categoria;
+            }
+            
+            return 'Fuera de rango';
+            
+        } catch (\Exception $e) {
+            \Log::error("Error al determinar clasificación: " . $e->getMessage());
+            return 'Sin datos';
+        }
+    }
 
-    // GET /api/estaciones: Todas las estaciones con relaciones optimizadas para mapa público
+    // Función auxiliar para determinar el color del semáforo según CONAGUA
+    private function determinarSemaforo($mediciones)
+    {
+        // Si no hay mediciones es VERDE
+        if (empty($mediciones)) {
+            return [
+                'color' => 'VERDE',
+                'contaminantes' => null,
+                'razon' => 'Sin mediciones disponibles'
+            ];
+        }
+        $contaminantes = [];
+        $incumplimientos = [];
+        $clasificacionesContaminacion = ['CONTAMINADA', 'FUERTEMENTE CONTAMINADA'];
+        $clasificacionesIncumplimiento = ['ACEPTABLE', 'CONTAMINADA', 'FUERTEMENTE CONTAMINADA'];
+
+        foreach ($mediciones as $medicion) {
+            $clasificacion = strtoupper($medicion['clasificacion']);
+            // Verificar contaminación (ROJO)
+            if (in_array($clasificacion, $clasificacionesContaminacion)) {
+                $contaminantes[] = $medicion['parametro_nombre'];
+            }
+            // Verificar incumplimiento (AMARILLO)
+            if (in_array($clasificacion, $clasificacionesIncumplimiento)) {
+                $incumplimientos[] = $medicion['parametro_nombre'];
+            }
+        }
+        // Si hay CONTAMINADA y FUERTEMENTE CONTAMINADA es ROJO 
+        if (!empty($contaminantes)) {
+            return [
+                'color' => 'ROJO',
+                'contaminantes' => implode(', ', $contaminantes),
+                'razon' => 'Presencia de parámetros contaminados o fuertemente contaminados'
+            ];
+        }
+        // AMARILLO si hay incumplimientos ACEPTABLE, CONTAMINADA y FUERTEMENTE CONTAMINADA
+        if (!empty($incumplimientos)) {
+            return [
+                'color' => 'AMARILLO',
+                'contaminantes' => implode(', ', $incumplimientos),
+                'razon' => 'Incumplimiento en uno o más parámetros (nivel aceptable o inferior)'
+            ];
+        }
+        // VERDE si no hay 
+        return [
+            'color' => 'VERDE',
+            'contaminantes' => null,
+            'razon' => 'Todos los parámetros en niveles excelentes o de cumplimiento'
+        ];
+    }
+
+    // GET /api/estaciones: Todas las estaciones con relaciones para mapa público
     public function mapData(): JsonResponse
     {
         $estaciones = Estaciones::with([
@@ -30,12 +102,12 @@ class EstacionesController extends Controller
             'mediciones' => function ($query) {
                 $query->select('id_medicion', 'id_estacion', 'id_parametro', 'valor', 'clasificacion')
                     ->with(['parametro' => function ($q) {
-                        $q->select('id_parametro', 'nombre', 'unidad', 'descripcion', 'definicion', 'contaminantes_contribuyentes');
+                        $q->select('id_parametro', 'nombre', 'unidad', 'descripcion', 'definicion', 
+                        'contaminantes_contribuyentes');
                     }])
                     ->orderBy('fecha_medicion', 'desc')
                     ->limit(3); // Solo las 3 mediciones más recientes
-            },
-            'semaforo' => function ($query) {
+            },'semaforo' => function ($query) {
                 $query->select('id_semaforo', 'id_estacion', 'color', 'contaminantes')
                     ->orderBy('fecha_medicion', 'desc')
                     ->limit(1);
@@ -45,11 +117,9 @@ class EstacionesController extends Controller
                 'id_municipio', 'id_cuenca', 'id_tipo', 'id_subtipo', 'id_usuario')
         ->where('activo', 'true')
         ->get();
-
         if ($estaciones->isEmpty()) {
             return response()->json(['message' => 'No se encontraron estaciones'], 404);
         }
-
         return response()->json([
             'estaciones' => $estaciones,
             'total' => $estaciones->count(),
@@ -57,139 +127,7 @@ class EstacionesController extends Controller
         ]);
     }
 
-    // Función para determinar clasificación de medición
-    private function determinarClasificacion($parametroId, $valor, $tipoCuerpoAgua)
-    {
-        // Rangos según el tipo de cuerpo de agua y parámetro
-        $rangos = $this->obtenerRangosCalidad($tipoCuerpoAgua);
-        
-        if (!isset($rangos[$parametroId])) {
-            return 'Sin datos';
-        }
-
-        $rangoParametro = $rangos[$parametroId];
-        $valor = floatval($valor);
-
-        foreach ($rangoParametro as $clasificacion => $limites) {
-            if ($valor >= $limites['min'] && $valor <= $limites['max']) {
-                return $clasificacion;
-            }
-        }
-
-        return 'Fuera de rango';
-    }
-
-    // Función para obtener rangos de calidad (ejemplo - ajustar con tus datos reales)
-    private function obtenerRangosCalidad($tipoCuerpoAgua)
-    {
-        // Estructura: [id_parametro => [clasificacion => [min, max]]]
-        // Estos son ejemplos - debes reemplazar con tus rangos reales
-        $rangos = [
-            // DBO (Demanda Bioquímica de Oxígeno) - mg/L
-            1 => [
-                'Excelente' => ['min' => 0, 'max' => 3],
-                'Buena calidad' => ['min' => 3.1, 'max' => 5],
-                'Aceptable' => ['min' => 5.1, 'max' => 8],
-                'Contaminada' => ['min' => 8.1, 'max' => 15],
-                'Fuertemente contaminada' => ['min' => 15.1, 'max' => 100]
-            ],
-            // DQO (Demanda Química de Oxígeno) - mg/L
-            2 => [
-                'Excelente' => ['min' => 0, 'max' => 10],
-                'Buena calidad' => ['min' => 10.1, 'max' => 20],
-                'Aceptable' => ['min' => 20.1, 'max' => 30],
-                'Contaminada' => ['min' => 30.1, 'max' => 50],
-                'Fuertemente contaminada' => ['min' => 50.1, 'max' => 200]
-            ],
-            // SST (Sólidos Suspendidos Totales) - mg/L
-            3 => [
-                'Excelente' => ['min' => 0, 'max' => 20],
-                'Buena calidad' => ['min' => 20.1, 'max' => 40],
-                'Aceptable' => ['min' => 40.1, 'max' => 60],
-                'Contaminada' => ['min' => 60.1, 'max' => 100],
-                'Fuertemente contaminada' => ['min' => 100.1, 'max' => 500]
-            ],
-            // OD (Oxígeno Disuelto) - mg/L (invertido - mayor es mejor)
-            6 => [
-                'Excelente' => ['min' => 7, 'max' => 20],
-                'Buena calidad' => ['min' => 5, 'max' => 6.9],
-                'Aceptable' => ['min' => 4, 'max' => 4.9],
-                'Contaminada' => ['min' => 2, 'max' => 3.9],
-                'Fuertemente contaminada' => ['min' => 0, 'max' => 1.9]
-            ],
-            // Coliformes Fecales - NMP/100ml
-            4 => [
-                'Excelente' => ['min' => 0, 'max' => 100],
-                'Buena calidad' => ['min' => 101, 'max' => 500],
-                'Aceptable' => ['min' => 501, 'max' => 1000],
-                'Contaminada' => ['min' => 1001, 'max' => 5000],
-                'Fuertemente contaminada' => ['min' => 5001, 'max' => 100000]
-            ]
-        ];
-
-        // Ajustar rangos según tipo de cuerpo de agua si es necesario
-        if ($tipoCuerpoAgua === 'costero') {
-            // Rangos más estrictos para agua costera
-            $rangos[1]['Excelente']['max'] = 2; // DBO más bajo para costas
-        }
-
-        return $rangos;
-    }
-
-    // Función para determinar el color del semáforo
-    private function determinarSemaforo($mediciones)
-    {
-        if (empty($mediciones)) {
-            return [
-                'color' => 'VERDE',
-                'contaminantes' => null,
-                'razon' => 'Sin mediciones disponibles'
-            ];
-        }
-
-        $contaminantes = [];
-        $clasificacionesProblema = ['Contaminada', 'Fuertemente contaminada'];
-
-        foreach ($mediciones as $medicion) {
-            if (in_array($medicion['clasificacion'], $clasificacionesProblema)) {
-                $contaminantes[] = $medicion['parametro_nombre'];
-            }
-        }
-
-        if (!empty($contaminantes)) {
-            return [
-                'color' => 'ROJO',
-                'contaminantes' => implode(', ', $contaminantes),
-                'razon' => 'Presencia de parámetros contaminados'
-            ];
-        }
-
-        // Verificar si hay algún parámetro que no sea "Excelente" o "Buena calidad"
-        $clasificacionesAmarillo = ['Aceptable'];
-        $parametrosAmarillo = [];
-
-        foreach ($mediciones as $medicion) {
-            if (in_array($medicion['clasificacion'], $clasificacionesAmarillo)) {
-                $parametrosAmarillo[] = $medicion['parametro_nombre'];
-            }
-        }
-
-        if (!empty($parametrosAmarillo)) {
-            return [
-                'color' => 'AMARILLO',
-                'contaminantes' => implode(', ', $parametrosAmarillo),
-                'razon' => 'Parámetros en nivel aceptable que requieren atención'
-            ];
-        }
-
-        return [
-            'color' => 'VERDE',
-            'contaminantes' => null,
-            'razon' => 'Todos los parámetros en niveles excelentes o de buena calidad'
-        ];
-    }
-
-    // POST /api/estaciones – Crear nueva estación con mediciones y semáforo automáticos para el público
+    // Nueva estación con mediciones y semáforo automáticos para el público
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -197,45 +135,41 @@ class EstacionesController extends Controller
             'nombre' => 'required|string|max:255',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
-            'activo' => 'required|string|in:true,false',  // String para "true"/"false"
+            'activo' => 'required|string|in:true,false',  
             'id_tipo' => 'required|integer|exists:tipos,id_tipo',
             'id_subtipo' => 'nullable|integer|exists:subtipos,id_subtipo',
             'id_cuenca' => 'nullable|integer|exists:cuencas,id_cuenca',
             'id_municipio' => 'required|integer|exists:municipios,id_municipio',
             'id_usuario' => 'required|integer|exists:usuarios,id_usuario',
-            
-            // Mediciones con valores brutos (sin clasificación)
+            // Mediciones con valores brutos
             'mediciones' => 'nullable|array',
             'mediciones.*.id_parametro' => 'required_with:mediciones|integer|exists:parametros,id_parametro',
             'mediciones.*.valor' => 'required_with:mediciones|numeric',
             'mediciones.*.fecha_medicion' => 'required_with:mediciones|date',
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Error de validación',
                 'errors' => $validator->errors()
             ], 422);
         }
-
+        // Iniciar transacción
         DB::beginTransaction();
         try {
             // Obtener el tipo de cuerpo de agua para las clasificaciones
             $tipoCuerpoAgua = DB::table('tipos')->where('id_tipo', $request->id_tipo)->value('nombre');
-
             // Generar clave_sitio automáticamente si no se proporciona
             $claveSitio = $request->clave_sitio ?? 'EST-' . time() . '-' . rand(1000, 9999);
-
             // Convertir activo a boolean (fix para string "false")
             $activo = $request->boolean('activo');
-
+            //$activo en false por defecto para nuevas estaciones desde público
+            $activo = false;
             // Convertir IDs a integer (fix para strings)
             $idTipo = (int) $request->id_tipo;
             $idSubtipo = $request->id_subtipo ? (int) $request->id_subtipo : null;
             $idCuenca = $request->id_cuenca ? (int) $request->id_cuenca : null;
             $idMunicipio = (int) $request->id_municipio;
             $idUsuario = (int) $request->id_usuario;
-
             // Crear la estación principal
             $estacion = Estaciones::create([
                 'clave_sitio' => $claveSitio,
@@ -249,9 +183,7 @@ class EstacionesController extends Controller
                 'id_municipio' => $idMunicipio,
                 'id_usuario' => $idUsuario,
             ]);
-
             $medicionesConClasificacion = [];
-            
             // Crear mediciones si se proporcionan
             if ($request->has('mediciones') && is_array($request->mediciones)) {
                 foreach ($request->mediciones as $medicionData) {
@@ -261,9 +193,8 @@ class EstacionesController extends Controller
                         (float) $medicionData['valor'],
                         $tipoCuerpoAgua
                     );
-
-                    // Usar el modelo correcto para Mediciones
-                    $medicion = \App\Models\Mediciones::create([
+                    // crear la medición
+                    $medicion = Mediciones::create([
                         'id_estacion' => $estacion->id_estacion,
                         'id_parametro' => (int) $medicionData['id_parametro'],
                         'valor' => (float) $medicionData['valor'],
@@ -271,8 +202,7 @@ class EstacionesController extends Controller
                         'fecha_medicion' => $medicionData['fecha_medicion'],
                         'id_usuario' => $idUsuario,
                     ]);
-
-                    // Guardar para determinar semáforo
+                    // Preparar datos para semáforo
                     $parametro = DB::table('parametros')->where('id_parametro', $medicionData['id_parametro'])->first();
                     $medicionesConClasificacion[] = [
                         'clasificacion' => $clasificacion,
@@ -280,90 +210,30 @@ class EstacionesController extends Controller
                     ];
                 }
             }
-
-            // Determinar y crear semáforo automáticamente
+            // Determinar y crear semáforo automáticamente con ayuda de la función
             $semaforoData = $this->determinarSemaforo($medicionesConClasificacion);
-            
-            \App\Models\Semaforo::create([
+            // Crear registro de semáforo
+            Semaforo::create([
                 'id_estacion' => $estacion->id_estacion,
                 'color' => $semaforoData['color'],
                 'contaminantes' => $semaforoData['contaminantes'],
                 'fecha_medicion' => now(),
             ]);
-
+            // Finalizar transacción
             DB::commit();
-
-            // Cargar todas las relaciones para la respuesta
-            $estacion->load([
-                'municipio.estado', 
-                'cuenca', 
-                'tipo', 
-                'subtipo', 
-                'usuario',
-                'mediciones.parametro',
-                'semaforo' => function($query) {
-                    $query->orderBy('fecha_medicion', 'desc')->limit(1);
-                }
-            ]);
 
             return response()->json([
                 'message' => 'Estación creada exitosamente',
-                'estacion' => $estacion,
-                'semaforo_automatico' => $semaforoData
             ], 201);
-
         } catch (\Exception $e) {
+            // Revertir transacción en caso de error
             DB::rollBack();
-            \Log::error('Error al crear estación: ' . $e->getMessage());
-            \Log::error('Trace: ' . $e->getTraceAsString());
-            
             return response()->json([
                 'message' => 'Error al crear la estación',
-                'error' => $e->getMessage(),
-                'trace' => env('APP_DEBUG') ? $e->getTraceAsString() : null
+                'error' => $e->getMessage()
             ], 500);
         }
     }
-
-    // GET APIs para los selects
-    public function getEstados(): JsonResponse
-    {
-        $estados = \App\Models\Estados::select('id_estado', 'nombre')->get();
-        return response()->json($estados);
-    }
-
-    public function getMunicipiosPorEstado($estadoId): JsonResponse
-    {
-        $municipios = \App\Models\Municipios::where('id_estado', $estadoId)
-            ->select('id_municipio', 'nombre')
-            ->get();
-        return response()->json($municipios);
-    }
-
-    public function getCuencas(): JsonResponse
-    {
-        $cuencas = \App\Models\Cuencas::select('id_cuenca', 'nombre')->get();
-        return response()->json($cuencas);
-    }
-
-    public function getTipos(): JsonResponse
-    {
-        $tipos = \App\Models\Tipos::select('id_tipo', 'nombre')->get();
-        return response()->json($tipos);
-    }
-
-    public function getSubtipos(): JsonResponse
-    {
-        $subtipos = \App\Models\Subtipos::select('id_subtipo', 'nombre')->get();
-        return response()->json($subtipos);
-    }
-
-    public function getParametros(): JsonResponse
-    {
-        $parametros = \App\Models\Parametros::select('id_parametro', 'nombre', 'unidad', 'descripcion', 'definicion', 'contaminantes_contribuyentes')->get();
-        return response()->json($parametros);
-    }
-
 
     // Resto de metodos para administración (index, show, update, destroy, storeAdmin)
 
@@ -371,7 +241,8 @@ class EstacionesController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $perPage = request()->get('limit', 10); // Por defecto 10, se puede sobrescribir con ?limit=N en la URL
+            // Obtener el parámetro 'limit' de la solicitud para paginación
+            $perPage = request()->get('limit', 10); //10 por defecto si no se proporciona
             $estaciones = Estaciones::with([
                 'municipio.estado',
                 'cuenca',
@@ -385,16 +256,14 @@ class EstacionesController extends Controller
             ])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
-
+            // Devolver respuesta con datos de cada pagina
             return response()->json([
                 'estaciones' => $estaciones->items(), // Solo los items de la página actual
                 'total_count' => $estaciones->total(), // Total de registros
                 'total_pages' => $estaciones->lastPage(), // Total de páginas
                 'current_page' => $estaciones->currentPage(), // Página actual
                 'per_page' => $estaciones->perPage(), // Registros por página
-                'status' => 200
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error al obtener estaciones para admin: ' . $e->getMessage());
             return response()->json([
@@ -404,9 +273,7 @@ class EstacionesController extends Controller
         }
     }
 
-    /**
-     * Obtener una estación específica
-     */
+    // Obtener una estación específica
     public function show($id): JsonResponse
     {
         try {
@@ -443,9 +310,7 @@ class EstacionesController extends Controller
     }
 
 
-    /**
-     * Actualizar estacion (para aprobacion y edicion)
-     */
+    //Actualizar estacion (para aprobacion y edicion)
     public function update(Request $request, $id): JsonResponse
     {
         $estacion = Estaciones::find($id);
@@ -482,7 +347,7 @@ class EstacionesController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
+        //inicia transacción
         DB::beginTransaction();
         try {
             // Preparar datos para actualizar
@@ -491,7 +356,7 @@ class EstacionesController extends Controller
                 'id_tipo', 'id_subtipo', 'id_cuenca', 'id_municipio', 'observaciones'
             ]);
 
-            // Convertir activo a boolean si está presente (fix para string "false")
+            // Convertir activo a boolean si está presente 
             if ($request->has('activo')) {
                 $datosActualizacion['activo'] = $request->boolean('activo');
             }
@@ -523,7 +388,7 @@ class EstacionesController extends Controller
 
             // Si se cambió el tipo, recalcular clasificaciones
             if ($request->has('id_tipo')) {
-                $tipoCuerpoAgua = \App\Models\Tipos::find($request->id_tipo)->nombre;
+                $tipoCuerpoAgua = Tipos::find($request->id_tipo)->nombre;
                 
                 // Recalcular clasificaciones de mediciones existentes
                 if ($estacion->mediciones->count() > 0) {
@@ -599,25 +464,11 @@ class EstacionesController extends Controller
                     $this->recalcularSemaforo($estacion->id_estacion);
                 }
             }
-
+            // Finalizar transacción
             DB::commit();
-
-            // Recargar relaciones actualizadas
-            $estacion->load([
-                'municipio.estado', 
-                'cuenca', 
-                'tipo', 
-                'subtipo', 
-                'usuario',
-                'mediciones.parametro',
-                'semaforo' => function($query) {
-                    $query->orderBy('fecha_medicion', 'desc')->limit(1);
-                }
-            ]);
 
             return response()->json([
                 'message' => 'Estación actualizada exitosamente',
-                'estacion' => $estacion
             ]);
 
         } catch (\Exception $e) {
@@ -631,9 +482,7 @@ class EstacionesController extends Controller
         }
     }
 
-    /**
-     * Eliminar estación
-     */
+    //Eliminar estación
     public function destroy($id): JsonResponse
     {
         $estacion = Estaciones::find($id);
@@ -672,9 +521,7 @@ class EstacionesController extends Controller
         }
     }
 
-    /**
-     * Crear estación desde administrador
-     */
+    // Crear estación desde administrador
     public function storeAdmin(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -781,26 +628,11 @@ class EstacionesController extends Controller
                 'contaminantes' => $semaforoData['contaminantes'],
                 'fecha_medicion' => now(),
             ]);
-
+            // Finalizar transacción
             DB::commit();
-
-            // Cargar todas las relaciones para la respuesta
-            $estacion->load([
-                'municipio.estado', 
-                'cuenca', 
-                'tipo', 
-                'subtipo', 
-                'usuario',
-                'mediciones.parametro',
-                'semaforo' => function($query) {
-                    $query->orderBy('fecha_medicion', 'desc')->limit(1);
-                }
-            ]);
 
             return response()->json([
                 'message' => 'Estación creada exitosamente',
-                'estacion' => $estacion,
-                'semaforo_automatico' => $semaforoData
             ], 201);
 
         } catch (\Exception $e) {
@@ -814,9 +646,7 @@ class EstacionesController extends Controller
         }
     }
 
-    /**
-     * Función auxiliar para recalcular semáforo
-     */
+    // Función auxiliar para recalcular semáforo
     private function recalcularSemaforo($idEstacion)
     {
         $mediciones = Mediciones::where('id_estacion', $idEstacion)
@@ -833,7 +663,6 @@ class EstacionesController extends Controller
         }
 
         $semaforoData = $this->determinarSemaforo($medicionesConClasificacion);
-        
         // Crear nuevo registro de semáforo
         Semaforo::create([
             'id_estacion' => $idEstacion,

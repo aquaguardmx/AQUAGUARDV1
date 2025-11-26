@@ -49,6 +49,7 @@ class CursoInscritoUsuarioController extends Controller
 
         return response()->json($cursoInscrito, 201);
     }
+<<<<<<< HEAD
 
     public function getCursosPorUsuario($usuarioId)
     {
@@ -114,4 +115,6 @@ class CursoInscritoUsuarioController extends Controller
 
         return response()->json($inscripciones, 200);
     }
+=======
+>>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
 }

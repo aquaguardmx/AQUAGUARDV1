@@ -38,15 +38,13 @@ class RegisterController extends Controller
         ];
 
         $create['id_rol'] = 2;
-
         $create['id_escuela'] = null;
-
         $user = User::create($create);
 
         // Disparar evento Registered para que se envíe el email de verificación
         event(new Registered($user));
 
-        // 3. Responder con éxito
+        // Responder con éxito
         return response()->json([
             'message' => '¡Usuario registrado con éxito!',
             'user' => $user

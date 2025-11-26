@@ -39,7 +39,7 @@ class LessonController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validar la entrada (sin 'orden')
+        // 1. Validar la entrada sin orden
         $validator = Validator::make($request->all(), [
             'modulo_id' => 'required|integer|exists:modulos,id_modulo',
             'titulo' => 'required|string|max:255',

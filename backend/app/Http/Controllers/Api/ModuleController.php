@@ -106,30 +106,27 @@ class ModuleController extends Controller
         return response()->json(['message' => 'Módulo eliminado correctamente']);
     }
 
-    /**
-     * NUEVO MÉTODO: Obtener todos los módulos y sus lecciones por ID de curso.
-     */
+    // Obtener todos los módulos y sus lecciones por ID de curso
     public function showByCurso($cursoId)
     {
-        // 1. Buscamos todos los módulos para el curso_id dado.
-        // 2. Los ordenamos por la columna 'orden'.
-        // 3. Usamos 'with' para cargar la relación 'lecciones' (Eager Loading).
-        // 4. Dentro de 'with', también ordenamos las lecciones anidadas por su 'orden'.
+        // Buscamos todos los módulos para el curso_id dado
+        // Los ordenamos por la columna 'orden'
+        // Usamos 'with' para cargar la relación 'lecciones'
+        // Dentro de 'with', también ordenamos las lecciones anidadas por su 'orden'
         $modulos = Modulo::where('curso_id', $cursoId)
                          ->orderBy('orden', 'asc')
                          ->with(['lecciones' => function($query) {
                              $query->orderBy('orden', 'asc');
-                         }])
-                         ->get();
+                         }])->get();
 
-        // Verificamos si encontramos módulos.
+        // Verificamos si encontramos módulos
         // Si la colección está vacía, puede ser que el curso no exista
-        // o simplemente no tenga módulos asignados.
+        // o simplemente no tenga módulos asignados
         if ($modulos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron módulos para este curso'], 404);
         }
 
-        // Devolvemos la colección completa de módulos con sus lecciones anidadas.
+        // Devolvemos la colección completa de módulos con sus lecciones anidadas
         return response()->json($modulos);
     }
 

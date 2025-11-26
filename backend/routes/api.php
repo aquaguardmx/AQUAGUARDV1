@@ -22,8 +22,12 @@ use App\Http\Controllers\Api\CuencasController;
 use App\Http\Controllers\Api\TiposController;
 use App\Http\Controllers\Api\SubtiposController;
 use App\Http\Controllers\Api\ParametrosController;
+<<<<<<< HEAD
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\ProgresoLeccionController;
+=======
+
+>>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
 
 use App\Http\Controllers\Api\EstacionesController;
 /*
@@ -123,11 +127,27 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
+<<<<<<< HEAD
 // API PARA CURSOS INSCRITOS
+=======
+Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
+
+Route::post('/subir-portada', [CourseController::class, 'subirPortada']);
+
+Route::get('/cursos-por-usuario/{usuarioId}', [CourseController::class, 'getCursosPorUsuario']);
+
+>>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
 Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
 Route::get('/cursos-inscritos/usuario/{usuarioId}', [CursoInscritoUsuarioController::class, 'getCursosPorUsuario']);
 Route::post('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'store']);
 
+<<<<<<< HEAD
+=======
+// API PARA MODULOS
+Route::get('/modulos', [ModuleController::class, 'index']);
+
+Route::get('/modulos/{id}', [ModuleController::class, 'show']);
+>>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
 
 Route::post('/modulos', [ModuleController::class, 'store']);
 
