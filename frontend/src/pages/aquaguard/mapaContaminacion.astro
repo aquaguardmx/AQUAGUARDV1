@@ -4,41 +4,65 @@ import Header from "../../components/aquaguard-components/Header.astro";
 import Footer from "../../components/aquaguard-components/Footer.astro";
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>AquaGuard - Mapa de Calidad del Agua</title>
-    <!--Estilos de Bootstrap-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--Carga los estilos base de Leaflet.js-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!--Font Awesome 6-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-</head>
-<body>    
-    <div class="wrapper">
-        <Header />
+    <head>
+        <meta charset="UTF-8" />
+        <title>AquaGuard - Mapa de Calidad del Agua</title>
+        <!--Estilos de Bootstrap-->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!--Carga los estilos base de Leaflet.js-->
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <!--Font Awesome 6-->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="wrapper">
+            <Header />
             <div class="wrapper_inner">
                 <div class="hero_content">
                     <h1>.</h1>
-                    <div class="logo-container" style="text-align:center; margin-bottom:20px;">
+                    <div
+                        class="logo-container"
+                        style="text-align:center; margin-bottom:20px;"
+                    >
                         <a href="/">
-                        <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;"> 
+                            <img
+                                src="/img/logo.png"
+                                alt="AquaGuard Logo"
+                                style="height:64px; display:block; margin:0 auto;"
+                            />
                         </a>
-                    </div>   
-                    <div class="section_title">    
-                        <h2>
-                            Mapa Interactivo de Calidad del Agua
-                        </h2>
-                        <p style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;">
-                            Explora la calidad del agua en ríos, lagos y presas de México. 
+                    </div>
+                    <div class="section_title">
+                        <h2>Mapa Interactivo de Calidad del Agua</h2>
+                        <p
+                            style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;"
+                        >
+                            Explora la calidad del agua en ríos, lagos y presas
+                            de México.
                         </p>
-                        <p style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;">
-                            Usa el buscador para encontrar un sitio o cuerpo de agua, o utiliza tu ubicación para ver los cuerpos cercanos. Haz clic en los marcadores para ver información detallada y recomendaciones.
+                        <p
+                            style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;"
+                        >
+                            Usa el buscador para encontrar un sitio o cuerpo de
+                            agua, o utiliza tu ubicación para ver los cuerpos
+                            cercanos. Haz clic en los marcadores para ver
+                            información detallada y recomendaciones.
                         </p>
                     </div>
                 </div>
@@ -46,38 +70,78 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
 
             <div class="map-container">
                 <div class="search-container">
-                    <input type="text" id="searchInput" class="search-box" placeholder="Buscar por ubicación o nombre de río">
-                    <button type="button" id="searchButton" class="btn-primary-custom"><i class="fas fa-search"></i> Buscar</button>
-                    <button type="button" id="locationButton" class="btn-primary-custom"><i class="fas fa-location-arrow"></i> Mi Ubicación</button>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-box"
+                        placeholder="Buscar por ubicación o nombre de río"
+                    />
+                    <button
+                        type="button"
+                        id="searchButton"
+                        class="btn-primary-custom"
+                        ><i class="fas fa-search"></i> Buscar</button
+                    >
+                    <button
+                        type="button"
+                        id="locationButton"
+                        class="btn-primary-custom"
+                        ><i class="fas fa-location-arrow"></i> Mi Ubicación</button
+                    >
                 </div>
 
                 <div id="mapa"></div>
+                <!-- Overlay de carga -->
+                <div
+                    id="loadingOverlay"
+                    class="loading-overlay"
+                    style="display:none;"
+                >
+                    <div class="loading-box">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="loading-text">
+                            Cargando mapa y puntos...
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Panel de información detallada de cuerpo de agua-->
                 <div class="info-panel" id="infoPanel" style="display:none;">
                     <span class="close-panel" id="closePanel">&times;</span>
                     <h3 class="info-title" id="waterBodyTitle"></h3>
                     <div id="waterBodyInfo"></div>
-                    
+
                     <!-- NUEVA SECCIÓN: Información de Parámetros Medidos -->
-                    <div class="parameter-info-section" id="parameterInfoSection" style="display: none;">
-                        <h4><i class="fas fa-flask"></i> Información de Parámetros Medidos</h4>
+                    <div
+                        class="parameter-info-section"
+                        id="parameterInfoSection"
+                        style="display: none;"
+                    >
+                        <h4>
+                            <i class="fas fa-flask"></i> Información de Parámetros
+                            Medidos
+                        </h4>
                         <div id="parameterInfoContainer"></div>
                     </div>
-                    
+
                     <div class="treatment-steps" id="treatmentSteps">
-                        <h4><i class="fas fa-filter"></i> Recomendaciones de Tratamiento</h4>
+                        <h4>
+                            <i class="fas fa-filter"></i> Recomendaciones de Tratamiento
+                        </h4>
                         <div id="stepsContainer"></div>
                     </div>
-                    
+
                     <div class="mt-4">
-                        <h4><i class="fas fa-info-circle"></i> Información Adicional</h4>
+                        <h4>
+                            <i class="fas fa-info-circle"></i> Información Adicional
+                        </h4>
                         <div class="parameter-row">
                             <span class="parameter-name">Estado:</span>
-                            <span class="parameter-value" id="aptaStatus"></span>
+                            <span class="parameter-value" id="aptaStatus"
+                            ></span>
                         </div>
                         <div id="additionalInfo"></div>
-                        
+
                         <!-- NUEVA SECCIÓN: Usos del Agua y Información Educativa -->
                         <div id="usosEducacionInfo"></div>
                     </div>
@@ -92,8 +156,14 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                         <h4>¿Falta algún cuerpo de agua?</h4>
                     </div>
                     <div class="floating-body">
-                        <p>Ayúdanos a completar el mapa reportando ríos, lagos o presas</p>
-                        <button class="floating-btn" onclick="window.location.href='/usuario/registrarEstacion'">
+                        <p>
+                            Ayúdanos a completar el mapa reportando ríos, lagos
+                            o presas
+                        </p>
+                        <button
+                            class="floating-btn"
+                            onclick="window.location.href='/usuario/registrarEstacion'"
+                        >
                             <i class="fas fa-plus-circle"></i>
                             <span>Reportar Ahora</span>
                         </button>
@@ -102,200 +172,224 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                 </div>
             </div>
 
+            <Footer />
+        </div>
 
-        <Footer />
-    </div>
+        <!--API del mapa-->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        ></script>
+        <script is:inline>
+            // Variables globales
+            let cuerposAguaOriginal = [];
+            let capasAgua;
+            let map;
+            let ubicacionMarker = null;
+            let currentLocation = null;
 
-    <!--API del mapa-->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script client:load>
-        // Variables globales
-        let cuerposAguaOriginal = [];
-        let capasAgua;
-        let map;
-        let ubicacionMarker = null;
-        let currentLocation = null;
-
-        // NUEVAS FUNCIONES PARA USOS DEL AGUA
-        function usosSegunCalidad(propiedades) {
-            let usos = [];
-            // Consumo humano
-            if (
-                parseFloat(propiedades['DBO_mg/L'] || 0) <= 5 &&
-                parseFloat(propiedades['DQO_mg/L'] || 0) <= 10 &&
-                parseFloat(propiedades['SST_mg/L'] || 0) <= 10 &&
-                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 2 &&
-                parseFloat(propiedades['E_COLI_NMP_100mL'] || 0) <= 2
-            ) {
-                usos.push('Consumo humano (con tratamiento completo)');
-            }
-            // Riego agrícola
-            if (
-                parseFloat(propiedades['DBO_mg/L'] || 0) <= 30 &&
-                parseFloat(propiedades['SST_mg/L'] || 0) <= 50 &&
-                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 1000
-            ) {
-                usos.push('Riego agrícola');
-            }
-            // Recreación
-            if (
-                parseFloat(propiedades['COLI_FEC_NMP_100mL'] || 0) <= 200 &&
-                parseFloat(propiedades['SST_mg/L'] || 0) <= 30
-            ) {
-                usos.push('Recreación (nado, pesca)');
-            }
-            // Industrial
-            if (
-                parseFloat(propiedades['SST_mg/L'] || 0) <= 100
-            ) {
-                usos.push('Usos industriales');
-            }
-            // Vida acuática
-            if (
-                parseFloat(propiedades['OD_PORC'] || 0) >= 80 &&
-                parseFloat(propiedades['TOX_D_48_UT'] || 0) <= 1
-            ) {
-                usos.push('Protección de vida acuática');
-            }
-            if (usos.length === 0) {
-                return 'No apta para usos directos. Requiere tratamiento avanzado.';
-            }
-            return usos.join(', ');
-        }
-
-        function usosTrasTratamiento(propiedades) {
-            let usos = [];
-            // Si tras tratamiento cumple con todos los límites, se puede usar para consumo humano
-            if (
-                propiedades['CALIDAD_DBO'] === "Excelente" &&
-                propiedades['CALIDAD_DQO'] === "Excelente" &&
-                propiedades['CALIDAD_SST'] === "Excelente" &&
-                propiedades['CALIDAD_COLI_FEC'] === "Excelente" &&
-                propiedades['CALIDAD_E_COLI'] === "Excelente" &&
-                (propiedades['CALIDAD_TOX_D_48'] === "No Toxico" || propiedades['CALIDAD_TOX_V_15'] === "No Toxico")
-            ) {
-                usos.push('Consumo humano');
-            }
-            // Riego agrícola
-            if (
-                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_DBO']) &&
-                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_SST']) &&
-                ["Excelente", "Buena calidad", "Aceptable"].includes(propiedades['CALIDAD_COLI_FEC'])
-            ) {
-                usos.push('Riego agrícola');
-            }
-            // Recreación
-            if (
-                ["Excelente", "Buena"].includes(propiedades['CALIDAD_COLI_FEC']) &&
-                ["Excelente", "Buena"].includes(propiedades['CALIDAD_SST'])
-            ) {
-                usos.push('Recreación (nado, pesca)');
-            }
-            // Industrial
-            if (
-                ["Excelente", "Buena", "Moderada"].includes(propiedades['CALIDAD_SST'])
-            ) {
-                usos.push('Usos industriales');
-            }
-            // Vida acuática
-            if (
-                propiedades['CALIDAD_OD_PORC'] === "Excelente" &&
-                (propiedades['CALIDAD_TOX_D_48'] === "No Toxico" || propiedades['CALIDAD_TOX_V_15'] === "No Toxico")
-            ) {
-                usos.push('Protección de vida acuática');
-            }
-            // Si hay toxicidad alta, solo uso industrial tras tratamiento avanzado
-            if (propiedades['CALIDAD_TOX_D_48'] === "Toxicidad alta" || propiedades['CALIDAD_TOX_V_15'] === "Toxicidad alta") {
-                usos = ['Solo uso industrial tras tratamiento avanzado'];
-            }
-            if (usos.length === 0) {
-                return 'No apta para usos directos. Requiere tratamiento avanzado.';
-            }
-            return usos.join(', ');
-        }
-
-        //Funciones para generar la información educativa adicional
-        function riesgosCuerpoAgua(propiedades) {
-            const riesgos = [];
-            if (propiedades['COLI_FEC_NMP_100mL'] > 200 || propiedades['E_COLI_NMP_100mL'] > 100) {
-                riesgos.push('Riesgo de enfermedades gastrointestinales');
-            }
-            if (parseFloat(propiedades['DBO_mg/L'] || 0) > 30) {
-                riesgos.push('Posible agotamiento de oxígeno en el agua');
-            }
-            if (propiedades['TOX_D_48_UT'] > 1 || propiedades['TOX_V_15_UT'] > 1) {
-                riesgos.push('Posible toxicidad para organismos acuáticos');
-            }
-            return riesgos.length > 0 ? riesgos.join(', ') : 'Bajo riesgo según parámetros medidos';
-        }
-
-        function conservacionCuerposAgua(tipo) {
-            if (tipo.includes('Río')) {
-                return 'Los ríos son ecosistemas vitales que conectan diferentes hábitats. Su conservación es crucial para mantener la biodiversidad y proveer agua para comunidades.';
-            } else {
-                return 'Los cuerpos de agua lénticos (lagos, lagunas) son importantes reservorios de agua dulce y hábitats para especies acuáticas. Su protección ayuda a mantener el equilibrio ecológico.';
-            }
-        }
-
-        function prepararPropiedadesParaUsos(estacion) {
-            const propiedades = {};
-            const mediciones = estacion.mediciones || [];
-            
-            // Extraer valores de las mediciones
-            mediciones.forEach(medicion => {
-                const paramNombre = medicion.parametro.nombre;
-                const valor = parseFloat(medicion.valor) || 0;
-                const clasificacion = medicion.clasificacion || 'Sin datos';
-                
-                // Mapear nombres de parámetros a las propiedades esperadas
-                switch(paramNombre) {
-                    case 'DBO':
-                        propiedades['DBO_mg/L'] = valor;
-                        propiedades['CALIDAD_DBO'] = clasificacion;
-                        break;
-                    case 'DQO':
-                        propiedades['DQO_mg/L'] = valor;
-                        propiedades['CALIDAD_DQO'] = clasificacion;
-                        break;
-                    case 'SST':
-                        propiedades['SST_mg/L'] = valor;
-                        propiedades['CALIDAD_SST'] = clasificacion;
-                        break;
-                    case 'CF':
-                        propiedades['COLI_FEC_NMP_100mL'] = valor;
-                        propiedades['CALIDAD_COLI_FEC'] = clasificacion;
-                        break;
-                    case 'E_COLI':
-                        propiedades['E_COLI_NMP_100mL'] = valor;
-                        propiedades['CALIDAD_E_COLI'] = clasificacion;
-                        break;
-                    case 'OD_PORC':
-                        propiedades['OD_PORC'] = valor;
-                        propiedades['CALIDAD_OD_PORC'] = clasificacion;
-                        break;
-                    case 'TOX_D_48':
-                        propiedades['TOX_D_48_UT'] = valor;
-                        propiedades['CALIDAD_TOX_D_48'] = clasificacion;
-                        break;
-                    case 'TOX_V_15':
-                        propiedades['TOX_V_15_UT'] = valor;
-                        propiedades['CALIDAD_TOX_V_15'] = clasificacion;
-                        break;
+            // NUEVAS FUNCIONES PARA USOS DEL AGUA
+            function usosSegunCalidad(propiedades) {
+                let usos = [];
+                // Consumo humano
+                if (
+                    parseFloat(propiedades["DBO_mg/L"] || 0) <= 5 &&
+                    parseFloat(propiedades["DQO_mg/L"] || 0) <= 10 &&
+                    parseFloat(propiedades["SST_mg/L"] || 0) <= 10 &&
+                    parseFloat(propiedades["COLI_FEC_NMP_100mL"] || 0) <= 2 &&
+                    parseFloat(propiedades["E_COLI_NMP_100mL"] || 0) <= 2
+                ) {
+                    usos.push("Consumo humano (con tratamiento completo)");
                 }
-            });
-            
-            return propiedades;
-        }
+                // Riego agrícola
+                if (
+                    parseFloat(propiedades["DBO_mg/L"] || 0) <= 30 &&
+                    parseFloat(propiedades["SST_mg/L"] || 0) <= 50 &&
+                    parseFloat(propiedades["COLI_FEC_NMP_100mL"] || 0) <= 1000
+                ) {
+                    usos.push("Riego agrícola");
+                }
+                // Recreación
+                if (
+                    parseFloat(propiedades["COLI_FEC_NMP_100mL"] || 0) <= 200 &&
+                    parseFloat(propiedades["SST_mg/L"] || 0) <= 30
+                ) {
+                    usos.push("Recreación (nado, pesca)");
+                }
+                // Industrial
+                if (parseFloat(propiedades["SST_mg/L"] || 0) <= 100) {
+                    usos.push("Usos industriales");
+                }
+                // Vida acuática
+                if (
+                    parseFloat(propiedades["OD_PORC"] || 0) >= 80 &&
+                    parseFloat(propiedades["TOX_D_48_UT"] || 0) <= 1
+                ) {
+                    usos.push("Protección de vida acuática");
+                }
+                if (usos.length === 0) {
+                    return "No apta para usos directos. Requiere tratamiento avanzado.";
+                }
+                return usos.join(", ");
+            }
 
-        function generarUsosYEducacion(estacion) {
-            const propiedades = prepararPropiedadesParaUsos(estacion);
-            const usosActuales = usosSegunCalidad(propiedades);
-            const usosTratamiento = usosTrasTratamiento(propiedades);
-            const riesgos = riesgosCuerpoAgua(propiedades);
-            const conservacion = conservacionCuerposAgua(estacion.tipo?.nombre || 'Cuerpo de agua');
-            
-            return `
+            function usosTrasTratamiento(propiedades) {
+                let usos = [];
+                // Si tras tratamiento cumple con todos los límites, se puede usar para consumo humano
+                if (
+                    propiedades["CALIDAD_DBO"] === "Excelente" &&
+                    propiedades["CALIDAD_DQO"] === "Excelente" &&
+                    propiedades["CALIDAD_SST"] === "Excelente" &&
+                    propiedades["CALIDAD_COLI_FEC"] === "Excelente" &&
+                    propiedades["CALIDAD_E_COLI"] === "Excelente" &&
+                    (propiedades["CALIDAD_TOX_D_48"] === "No Toxico" ||
+                        propiedades["CALIDAD_TOX_V_15"] === "No Toxico")
+                ) {
+                    usos.push("Consumo humano");
+                }
+                // Riego agrícola
+                if (
+                    ["Excelente", "Buena calidad", "Aceptable"].includes(
+                        propiedades["CALIDAD_DBO"],
+                    ) &&
+                    ["Excelente", "Buena calidad", "Aceptable"].includes(
+                        propiedades["CALIDAD_SST"],
+                    ) &&
+                    ["Excelente", "Buena calidad", "Aceptable"].includes(
+                        propiedades["CALIDAD_COLI_FEC"],
+                    )
+                ) {
+                    usos.push("Riego agrícola");
+                }
+                // Recreación
+                if (
+                    ["Excelente", "Buena"].includes(
+                        propiedades["CALIDAD_COLI_FEC"],
+                    ) &&
+                    ["Excelente", "Buena"].includes(propiedades["CALIDAD_SST"])
+                ) {
+                    usos.push("Recreación (nado, pesca)");
+                }
+                // Industrial
+                if (
+                    ["Excelente", "Buena", "Moderada"].includes(
+                        propiedades["CALIDAD_SST"],
+                    )
+                ) {
+                    usos.push("Usos industriales");
+                }
+                // Vida acuática
+                if (
+                    propiedades["CALIDAD_OD_PORC"] === "Excelente" &&
+                    (propiedades["CALIDAD_TOX_D_48"] === "No Toxico" ||
+                        propiedades["CALIDAD_TOX_V_15"] === "No Toxico")
+                ) {
+                    usos.push("Protección de vida acuática");
+                }
+                // Si hay toxicidad alta, solo uso industrial tras tratamiento avanzado
+                if (
+                    propiedades["CALIDAD_TOX_D_48"] === "Toxicidad alta" ||
+                    propiedades["CALIDAD_TOX_V_15"] === "Toxicidad alta"
+                ) {
+                    usos = ["Solo uso industrial tras tratamiento avanzado"];
+                }
+                if (usos.length === 0) {
+                    return "No apta para usos directos. Requiere tratamiento avanzado.";
+                }
+                return usos.join(", ");
+            }
+
+            //Funciones para generar la información educativa adicional
+            function riesgosCuerpoAgua(propiedades) {
+                const riesgos = [];
+                if (
+                    propiedades["COLI_FEC_NMP_100mL"] > 200 ||
+                    propiedades["E_COLI_NMP_100mL"] > 100
+                ) {
+                    riesgos.push("Riesgo de enfermedades gastrointestinales");
+                }
+                if (parseFloat(propiedades["DBO_mg/L"] || 0) > 30) {
+                    riesgos.push("Posible agotamiento de oxígeno en el agua");
+                }
+                if (
+                    propiedades["TOX_D_48_UT"] > 1 ||
+                    propiedades["TOX_V_15_UT"] > 1
+                ) {
+                    riesgos.push("Posible toxicidad para organismos acuáticos");
+                }
+                return riesgos.length > 0
+                    ? riesgos.join(", ")
+                    : "Bajo riesgo según parámetros medidos";
+            }
+
+            function conservacionCuerposAgua(tipo) {
+                if (tipo.includes("Río")) {
+                    return "Los ríos son ecosistemas vitales que conectan diferentes hábitats. Su conservación es crucial para mantener la biodiversidad y proveer agua para comunidades.";
+                } else {
+                    return "Los cuerpos de agua lénticos (lagos, lagunas) son importantes reservorios de agua dulce y hábitats para especies acuáticas. Su protección ayuda a mantener el equilibrio ecológico.";
+                }
+            }
+
+            function prepararPropiedadesParaUsos(estacion) {
+                const propiedades = {};
+                const mediciones = estacion.mediciones || [];
+
+                // Extraer valores de las mediciones
+                mediciones.forEach((medicion) => {
+                    const paramNombre = medicion.parametro.nombre;
+                    const valor = parseFloat(medicion.valor) || 0;
+                    const clasificacion = medicion.clasificacion || "Sin datos";
+
+                    // Mapear nombres de parámetros a las propiedades esperadas
+                    switch (paramNombre) {
+                        case "DBO":
+                            propiedades["DBO_mg/L"] = valor;
+                            propiedades["CALIDAD_DBO"] = clasificacion;
+                            break;
+                        case "DQO":
+                            propiedades["DQO_mg/L"] = valor;
+                            propiedades["CALIDAD_DQO"] = clasificacion;
+                            break;
+                        case "SST":
+                            propiedades["SST_mg/L"] = valor;
+                            propiedades["CALIDAD_SST"] = clasificacion;
+                            break;
+                        case "CF":
+                            propiedades["COLI_FEC_NMP_100mL"] = valor;
+                            propiedades["CALIDAD_COLI_FEC"] = clasificacion;
+                            break;
+                        case "E_COLI":
+                            propiedades["E_COLI_NMP_100mL"] = valor;
+                            propiedades["CALIDAD_E_COLI"] = clasificacion;
+                            break;
+                        case "OD_PORC":
+                            propiedades["OD_PORC"] = valor;
+                            propiedades["CALIDAD_OD_PORC"] = clasificacion;
+                            break;
+                        case "TOX_D_48":
+                            propiedades["TOX_D_48_UT"] = valor;
+                            propiedades["CALIDAD_TOX_D_48"] = clasificacion;
+                            break;
+                        case "TOX_V_15":
+                            propiedades["TOX_V_15_UT"] = valor;
+                            propiedades["CALIDAD_TOX_V_15"] = clasificacion;
+                            break;
+                    }
+                });
+
+                return propiedades;
+            }
+
+            function generarUsosYEducacion(estacion) {
+                const propiedades = prepararPropiedadesParaUsos(estacion);
+                const usosActuales = usosSegunCalidad(propiedades);
+                const usosTratamiento = usosTrasTratamiento(propiedades);
+                const riesgos = riesgosCuerpoAgua(propiedades);
+                const conservacion = conservacionCuerposAgua(
+                    estacion.tipo?.nombre || "Cuerpo de agua",
+                );
+
+                return `
                 <div class="info-cards-group mt-3">
                     <div class="info-card">
                         <div class="info-card-header">
@@ -303,8 +397,8 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                             <span>Usos Recomendados (Sin Tratamiento)</span>
                         </div>
                         <div class="info-card-body">
-                            <div class="uso-content ${usosActuales.includes('No apta') ? 'text-danger' : 'text-success'}">
-                                <i class="fas ${usosActuales.includes('No apta') ? 'fa-times-circle' : 'fa-check-circle'} me-2"></i>
+                            <div class="uso-content ${usosActuales.includes("No apta") ? "text-danger" : "text-success"}">
+                                <i class="fas ${usosActuales.includes("No apta") ? "fa-times-circle" : "fa-check-circle"} me-2"></i>
                                 ${usosActuales}
                             </div>
                         </div>
@@ -316,8 +410,8 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                             <span>Usos Recomendados (Tras Tratamiento)</span>
                         </div>
                         <div class="info-card-body">
-                            <div class="uso-content ${usosTratamiento.includes('No apta') ? 'text-danger' : 'text-success'}">
-                                <i class="fas ${usosTratamiento.includes('No apta') ? 'fa-times-circle' : 'fa-check-circle'} me-2"></i>
+                            <div class="uso-content ${usosTratamiento.includes("No apta") ? "text-danger" : "text-success"}">
+                                <i class="fas ${usosTratamiento.includes("No apta") ? "fa-times-circle" : "fa-check-circle"} me-2"></i>
                                 ${usosTratamiento}
                             </div>
                         </div>
@@ -344,106 +438,124 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                     </div>
                 </div>
             `;
-        }
+            }
 
-        function initMap() {
-            if (map) return;
-            
-            map = L.map('mapa').setView([23.6345, -102.5528], 6);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Leyenda
-            const legend = L.control({position: 'bottomright'});
-            legend.onAdd = function() {
-                const div = L.DomUtil.create('div', 'legend');
-                div.innerHTML = `
+            function initMap() {
+                if (map) return;
+
+                map = L.map("mapa").setView([23.6345, -102.5528], 6);
+
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    {
+                        attribution:
+                            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    },
+                ).addTo(map);
+
+                // Leyenda
+                const legend = L.control({ position: "bottomright" });
+                legend.onAdd = function () {
+                    const div = L.DomUtil.create("div", "legend");
+                    div.innerHTML = `
                     <h4>Calidad del Agua</h4>
                     <div><i style="background:#28a745"></i> Buena (Verde)</div>
                     <div><i style="background:#ffc107"></i> Moderada (Amarillo)</div>
                     <div><i style="background:#dc3545"></i> Mala (Rojo)</div>
                     <div><i style="background:#007bff"></i> Sin datos</div>
                 `;
-                return div;
-            };
-            legend.addTo(map);
-        }
+                    return div;
+                };
+                legend.addTo(map);
+            }
 
-        function cargarCuerposAgua() {
-            initMap();
-            
-            fetch('http://localhost:8000/api/mapa')
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Datos recibidos:', data);
-                    
-                    const estaciones = data.estaciones || [];
-                    cuerposAguaOriginal = estaciones;
-                    
-                    // Limpia capas anteriores
-                    if (capasAgua) {
-                        map.removeLayer(capasAgua);
-                    }
-                    
-                    // Crea marcadores para cada estación
-                    capasAgua = L.layerGroup();
-                    
-                    estaciones.forEach(estacion => {
-                        if (estacion.latitud && estacion.longitud) {
-                            let lat = parseFloat(estacion.latitud);
-                            let lng = parseFloat(estacion.longitud);
-                            
-                            if (isNaN(lat) || isNaN(lng)) {
-                                console.warn('Coordenadas inválidas:', estacion.latitud, estacion.longitud);
-                                return;
-                            }
-                            
-                            // Determina color según semáforo
-                            const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                                ? estacion.semaforo[0]
-                                : null;
-                            
-                            let color = '#007bff'; // Azul por defecto (sin datos)
-                            let calidad = 'Sin datos';
-                            
-                            if (semaforoActual) {
-                                switch(semaforoActual.color.toUpperCase()) {
-                                    case 'VERDE':
-                                        color = '#28a745';
-                                        calidad = 'Buena';
-                                        break;
-                                    case 'AMARILLO':
-                                        color = '#ffc107';
-                                        calidad = 'Moderada';
-                                        break;
-                                    case 'ROJO':
-                                        color = '#dc3545';
-                                        calidad = 'Mala';
-                                        break;
-                                    default:
-                                        color = '#007bff';
-                                        calidad = 'Sin datos';
+            function cargarCuerposAgua() {
+                initMap();
+                // Mostrar overlay de carga
+                const loadingEl = document.getElementById("loadingOverlay");
+
+                if (loadingEl) loadingEl.style.display = "flex";
+
+                fetch("http://192.168.1.176:8000/api/mapa")
+                    .then((res) => {
+                        if (!res.ok) {
+                            throw new Error(
+                                `HTTP error! status: ${res.status}`,
+                            );
+                        }
+                        return res.json();
+                    })
+                    .then((data) => {
+                        console.log("Datos recibidos:", data);
+
+                        const estaciones = data.estaciones || [];
+                        cuerposAguaOriginal = estaciones;
+
+                        // Limpia capas anteriores
+                        if (capasAgua) {
+                            map.removeLayer(capasAgua);
+                        }
+
+                        // Crea marcadores para cada estación
+                        capasAgua = L.layerGroup();
+
+                        estaciones.forEach((estacion) => {
+                            if (estacion.latitud && estacion.longitud) {
+                                let lat = parseFloat(estacion.latitud);
+                                let lng = parseFloat(estacion.longitud);
+
+                                if (isNaN(lat) || isNaN(lng)) {
+                                    console.warn(
+                                        "Coordenadas inválidas:",
+                                        estacion.latitud,
+                                        estacion.longitud,
+                                    );
+                                    return;
                                 }
-                            }
-                            
-                            // Popup con información básica
-                            const ubicacion = estacion.municipio 
-                                ? `${estacion.municipio.nombre}, ${estacion.municipio.estado.nombre}`
-                                : 'Ubicación no especificada';
-                            
-                            let popup = `
+
+                                // Determina color según semáforo
+                                const semaforoActual =
+                                    estacion.semaforo &&
+                                    estacion.semaforo.length > 0
+                                        ? estacion.semaforo[0]
+                                        : null;
+
+                                let color = "#007bff"; // Azul por defecto (sin datos)
+                                let calidad = "Sin datos";
+
+                                if (semaforoActual) {
+                                    switch (
+                                        semaforoActual.color.toUpperCase()
+                                    ) {
+                                        case "VERDE":
+                                            color = "#28a745";
+                                            calidad = "Buena";
+                                            break;
+                                        case "AMARILLO":
+                                            color = "#ffc107";
+                                            calidad = "Moderada";
+                                            break;
+                                        case "ROJO":
+                                            color = "#dc3545";
+                                            calidad = "Mala";
+                                            break;
+                                        default:
+                                            color = "#007bff";
+                                            calidad = "Sin datos";
+                                    }
+                                }
+
+                                // Popup con información básica
+                                const ubicacion = estacion.municipio
+                                    ? `${estacion.municipio.nombre}, ${estacion.municipio.estado.nombre}`
+                                    : "Ubicación no especificada";
+
+                                let popup = `
                                 <div style="min-width: 250px">
-                                    <b>${estacion.nombre || 'Sin nombre'}</b><br>
+                                    <b>${estacion.nombre || "Sin nombre"}</b><br>
                                     <b></b>
                                     <small><strong>Ubicación:</strong> ${ubicacion}</small><br>
-                                    <small><strong>Tipo:</strong> ${estacion.tipo?.nombre || 'N/A'} - ${estacion.subtipo?.nombre || 'N/A'}</small><br>
+                                    <small><strong>Tipo:</strong> ${estacion.tipo?.nombre || "N/A"} - ${estacion.subtipo?.nombre || "N/A"}</small><br>
                                     <small><strong>Calidad:</strong> <span style="color:${color}; font-weight:bold">${calidad}</span></small><br>
                                     <button class='btn btn-sm btn-primary ver-detalles-btn mt-2 w-100'
                                             data-estacion-id='${estacion.id_estacion}'>
@@ -451,51 +563,72 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                                     </button>
                                 </div>
                             `;
-                            
-                            const marker = L.circleMarker([lat, lng], {
-                                radius: 8,
-                                fillColor: color,
-                                color: '#ffffff',
-                                weight: 2,
-                                fillOpacity: 0.8
-                            }).bindPopup(popup);
-                            
-                            // SOLO MOSTRAR POPUP AL HACER CLIC, NO EL MODAL
-                            marker.on('click', function(e) {
-                                // Solo abre el popup, no el modal
-                                marker.openPopup();
-                            });
-                            
-                            capasAgua.addLayer(marker);
-                        } else {
-                            console.warn('Estación sin coordenadas:', estacion.nombre);
-                        }
-                    });
-                    
-                    capasAgua.addTo(map);
-                    console.log(`Cargadas ${estaciones.length} estaciones en el mapa`);
-                })
-                .catch(error => {
-                    console.error("Error al cargar los datos:", error);
-                    alert("Error al cargar los datos. Por favor intente más tarde.");
-                });
-        }
 
-        function mostrarDetalles(estacion) {
-            console.log('Mostrando detalles para:', estacion);
-            
-            const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                ? estacion.semaforo[0]
-                : null;
-            
-            const ubicacion = estacion.municipio 
-                ? `${estacion.municipio.nombre}, ${estacion.municipio.estado.nombre}`
-                : 'Ubicación no especificada';
-            
-            document.getElementById('waterBodyTitle').textContent = estacion.nombre || 'Estación sin nombre';
-            
-            // Información básica
-            let infoHTML = `
+                                const marker = L.circleMarker([lat, lng], {
+                                    radius: 8,
+                                    fillColor: color,
+                                    color: "#ffffff",
+                                    weight: 2,
+                                    fillOpacity: 0.8,
+                                }).bindPopup(popup);
+
+                                // SOLO MOSTRAR POPUP AL HACER CLIC, NO EL MODAL
+                                marker.on("click", function (e) {
+                                    // Solo abre el popup, no el modal
+                                    marker.openPopup();
+                                });
+
+                                capasAgua.addLayer(marker);
+                            } else {
+                                console.warn(
+                                    "Estación sin coordenadas:",
+                                    estacion.nombre,
+                                );
+                            }
+                        });
+
+                        capasAgua.addTo(map);
+                        console.log(
+                            `Cargadas ${estaciones.length} estaciones en el mapa`,
+                        );
+                        // Ocultar overlay cuando terminen de cargarse los puntos
+                        if (loadingEl) {
+                            // pequeña espera para suavizar la transición
+                            setTimeout(
+                                () => (loadingEl.style.display = "none"),
+                                200,
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error al cargar los datos:", error);
+                        alert(
+                            "Error al cargar los datos. Por favor intente más tarde.",
+                        );
+                        if (loadingEl) loadingEl.style.display = "none";
+                    })
+                    .finally(() => {
+                        if (loadingEl) loadingEl.style.display = "none";
+                    });
+            }
+
+            function mostrarDetalles(estacion) {
+                console.log("Mostrando detalles para:", estacion);
+
+                const semaforoActual =
+                    estacion.semaforo && estacion.semaforo.length > 0
+                        ? estacion.semaforo[0]
+                        : null;
+
+                const ubicacion = estacion.municipio
+                    ? `${estacion.municipio.nombre}, ${estacion.municipio.estado.nombre}`
+                    : "Ubicación no especificada";
+
+                document.getElementById("waterBodyTitle").textContent =
+                    estacion.nombre || "Estación sin nombre";
+
+                // Información básica
+                let infoHTML = `
                 <div class="parameter-row">
                     <span class="parameter-name">Clave Sitio:</span>
                     <span class="parameter-value">${estacion.clave_sitio}</span>
@@ -510,19 +643,19 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                 </div>
                 <div class="parameter-row">
                     <span class="parameter-name">Tipo de Cuerpo:</span>
-                    <span class="parameter-value">${estacion.tipo?.nombre || 'N/A'} - ${estacion.subtipo?.nombre || 'N/A'}</span>
+                    <span class="parameter-value">${estacion.tipo?.nombre || "N/A"} - ${estacion.subtipo?.nombre || "N/A"}</span>
                 </div>
                 <div class="parameter-row">
                     <span class="parameter-name">Estado:</span>
-                    <span class="parameter-value ${estacion.activo ? 'quality-good' : 'quality-bad'}">
-                        ${estacion.activo ? 'Activo' : 'Inactivo'}
+                    <span class="parameter-value ${estacion.activo ? "quality-good" : "quality-bad"}">
+                        ${estacion.activo ? "Activo" : "Inactivo"}
                     </span>
                 </div>
             `;
-            
-            // Información de calidad del agua
-            if (semaforoActual) {
-                infoHTML += `
+
+                // Información de calidad del agua
+                if (semaforoActual) {
+                    infoHTML += `
                     <div class="parameter-row">
                         <span class="parameter-name">Calidad del Agua:</span>
                         <span class="parameter-value ${getQualityClass(semaforoActual.color)}">
@@ -531,55 +664,70 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                     </div>
                     <div class="parameter-row">
                         <span class="parameter-name">Contaminantes Detectados:</span>
-                        <span class="parameter-value">${semaforoActual.contaminantes || 'No especificados'}</span>
+                        <span class="parameter-value">${semaforoActual.contaminantes || "No especificados"}</span>
                     </div>
                 `;
-            }
-            
-            document.getElementById('waterBodyInfo').innerHTML = infoHTML;
-            
-            // NUEVO: Mostrar información detallada de parámetros
-            mostrarInformacionParametros(estacion);
-            
-            // Recomendaciones de tratamiento
-            document.getElementById('stepsContainer').innerHTML = generarRecomendacionesTratamiento(estacion);
-            
-            // Estado de aptitud
-            const aptaStatus = determinarAptitud(estacion);
-            document.getElementById('aptaStatus').textContent = aptaStatus.text;
-            document.getElementById('aptaStatus').className = `parameter-value ${aptaStatus.class}`;
-            
-            // Información adicional
-            document.getElementById('additionalInfo').innerHTML = generarInformacionAdicional(estacion);
-            
-            // NUEVO: Mostrar usos y educación
-            document.getElementById('usosEducacionInfo').innerHTML = generarUsosYEducacion(estacion);
-            
-            // Mostrar el panel
-            document.getElementById('infoPanel').style.display = 'block';
-            document.getElementById('infoPanel').scrollIntoView({ behavior: 'smooth' });
-        }
+                }
 
-        // Mostrar información detallada de parámetros
-        function mostrarInformacionParametros(estacion) {
-            const mediciones = estacion.mediciones || [];
-            const parameterSection = document.getElementById('parameterInfoSection');
-            const parameterContainer = document.getElementById('parameterInfoContainer');
-            
-            if (mediciones.length === 0) {
-                parameterSection.style.display = 'none';
-                return;
+                document.getElementById("waterBodyInfo").innerHTML = infoHTML;
+
+                // NUEVO: Mostrar información detallada de parámetros
+                mostrarInformacionParametros(estacion);
+
+                // Recomendaciones de tratamiento
+                document.getElementById("stepsContainer").innerHTML =
+                    generarRecomendacionesTratamiento(estacion);
+
+                // Estado de aptitud
+                const aptaStatus = determinarAptitud(estacion);
+                document.getElementById("aptaStatus").textContent =
+                    aptaStatus.text;
+                document.getElementById("aptaStatus").className =
+                    `parameter-value ${aptaStatus.class}`;
+
+                // Información adicional
+                document.getElementById("additionalInfo").innerHTML =
+                    generarInformacionAdicional(estacion);
+
+                // NUEVO: Mostrar usos y educación
+                document.getElementById("usosEducacionInfo").innerHTML =
+                    generarUsosYEducacion(estacion);
+
+                // Mostrar el panel
+                document.getElementById("infoPanel").style.display = "block";
+                document
+                    .getElementById("infoPanel")
+                    .scrollIntoView({ behavior: "smooth" });
             }
-            
-            let parametrosHTML = '';
-            
-            mediciones.forEach((medicion, index) => {
-                const parametro = medicion.parametro;
-                const tieneDefinicion = parametro.definicion && parametro.definicion.trim() !== '';
-                const tieneContaminantes = parametro.contaminantes_contribuyentes && parametro.contaminantes_contribuyentes.trim() !== '';
-                
-                parametrosHTML += `
-                    <div class="parameter-detail-card ${index > 0 ? 'mt-3' : ''}">
+
+            // Mostrar información detallada de parámetros
+            function mostrarInformacionParametros(estacion) {
+                const mediciones = estacion.mediciones || [];
+                const parameterSection = document.getElementById(
+                    "parameterInfoSection",
+                );
+                const parameterContainer = document.getElementById(
+                    "parameterInfoContainer",
+                );
+
+                if (mediciones.length === 0) {
+                    parameterSection.style.display = "none";
+                    return;
+                }
+
+                let parametrosHTML = "";
+
+                mediciones.forEach((medicion, index) => {
+                    const parametro = medicion.parametro;
+                    const tieneDefinicion =
+                        parametro.definicion &&
+                        parametro.definicion.trim() !== "";
+                    const tieneContaminantes =
+                        parametro.contaminantes_contribuyentes &&
+                        parametro.contaminantes_contribuyentes.trim() !== "";
+
+                    parametrosHTML += `
+                    <div class="parameter-detail-card ${index > 0 ? "mt-3" : ""}">
                         <div class="parameter-header">
                             <h5 class="parameter-name">${parametro.nombre} (${parametro.unidad})</h5>
                             <span class="parameter-value-badge ${getClasificacionClass(medicion.clasificacion)}">
@@ -587,7 +735,9 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                             </span>
                         </div>
                         
-                        ${tieneDefinicion ? `
+                        ${
+                            tieneDefinicion
+                                ? `
                             <div class="parameter-definition">
                                 <div class="definition-title">
                                     <i class="fas fa-info-circle text-primary"></i>
@@ -595,9 +745,13 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                                 </div>
                                 <p class="definition-text">${parametro.definicion}</p>
                             </div>
-                        ` : ''}
+                        `
+                                : ""
+                        }
                         
-                        ${tieneContaminantes ? `
+                        ${
+                            tieneContaminantes
+                                ? `
                             <div class="parameter-contaminants">
                                 <div class="contaminants-title">
                                     <i class="fas fa-exclamation-triangle text-warning"></i>
@@ -605,97 +759,131 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                                 </div>
                                 <p class="contaminants-text">${parametro.contaminantes_contribuyentes}</p>
                             </div>
-                        ` : ''}
+                        `
+                                : ""
+                        }
                         
-                        ${!tieneDefinicion && !tieneContaminantes ? `
+                        ${
+                            !tieneDefinicion && !tieneContaminantes
+                                ? `
                             <div class="parameter-no-info">
                                 <i class="fas fa-info-circle text-muted"></i>
                                 <span class="text-muted">Información detallada no disponible para este parámetro</span>
                             </div>
-                        ` : ''}
+                        `
+                                : ""
+                        }
                     </div>
                 `;
-            });
-            
-            parameterContainer.innerHTML = parametrosHTML;
-            parameterSection.style.display = 'block';
-        }
+                });
 
-        // Función auxiliar para clases de clasificación
-        function getClasificacionClass(clasificacion) {
-            switch(clasificacion?.toUpperCase()) {
-                case 'EXCELENTE':
-                    return 'badge bg-success';
-                case 'BUENA CALIDAD':
-                    return 'badge bg-primary';
-                case 'ACEPTABLE':
-                    return 'badge bg-warning';
-                case 'CONTAMINADA':
-                case 'FUERTEMENTE CONTAMINADA':
-                    return 'badge bg-danger';
-                default:
-                    return 'badge bg-secondary';
+                parameterContainer.innerHTML = parametrosHTML;
+                parameterSection.style.display = "block";
             }
-        }
 
-        // Funciones auxiliares existentes
-        function getQualityClass(color) {
-            switch(color.toUpperCase()) {
-                case 'VERDE': return 'quality-good';
-                case 'AMARILLO': return 'quality-moderate';
-                case 'ROJO': return 'quality-bad';
-                default: return '';
+            // Función auxiliar para clases de clasificación
+            function getClasificacionClass(clasificacion) {
+                switch (clasificacion?.toUpperCase()) {
+                    case "EXCELENTE":
+                        return "badge bg-success";
+                    case "BUENA CALIDAD":
+                        return "badge bg-primary";
+                    case "ACEPTABLE":
+                        return "badge bg-warning";
+                    case "CONTAMINADA":
+                    case "FUERTEMENTE CONTAMINADA":
+                        return "badge bg-danger";
+                    default:
+                        return "badge bg-secondary";
+                }
             }
-        }
 
-        function getQualityText(color) {
-            switch(color.toUpperCase()) {
-                case 'VERDE': return 'Buena calidad';
-                case 'AMARILLO': return 'Calidad moderada';
-                case 'ROJO': return 'Mala calidad';
-                default: return 'Sin datos';
+            // Funciones auxiliares existentes
+            function getQualityClass(color) {
+                switch (color.toUpperCase()) {
+                    case "VERDE":
+                        return "quality-good";
+                    case "AMARILLO":
+                        return "quality-moderate";
+                    case "ROJO":
+                        return "quality-bad";
+                    default:
+                        return "";
+                }
             }
-        }
 
-        function determinarAptitud(estacion) {
-            const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                ? estacion.semaforo[0]
-                : null;
-            
-            if (!semaforoActual) {
-                return { text: 'Sin datos de calidad', class: 'quality-bad' };
+            function getQualityText(color) {
+                switch (color.toUpperCase()) {
+                    case "VERDE":
+                        return "Buena calidad";
+                    case "AMARILLO":
+                        return "Calidad moderada";
+                    case "ROJO":
+                        return "Mala calidad";
+                    default:
+                        return "Sin datos";
+                }
             }
-            
-            switch(semaforoActual.color.toUpperCase()) {
-                case 'VERDE':
-                    return { text: 'Apta con tratamiento básico', class: 'quality-good' };
-                case 'AMARILLO':
-                    return { text: 'Apta con tratamiento moderado', class: 'quality-moderate' };
-                case 'ROJO':
-                    return { text: 'No apta sin tratamiento avanzado', class: 'quality-bad' };
-                default:
-                    return { text: 'Sin datos suficientes', class: 'quality-bad' };
+
+            function determinarAptitud(estacion) {
+                const semaforoActual =
+                    estacion.semaforo && estacion.semaforo.length > 0
+                        ? estacion.semaforo[0]
+                        : null;
+
+                if (!semaforoActual) {
+                    return {
+                        text: "Sin datos de calidad",
+                        class: "quality-bad",
+                    };
+                }
+
+                switch (semaforoActual.color.toUpperCase()) {
+                    case "VERDE":
+                        return {
+                            text: "Apta con tratamiento básico",
+                            class: "quality-good",
+                        };
+                    case "AMARILLO":
+                        return {
+                            text: "Apta con tratamiento moderado",
+                            class: "quality-moderate",
+                        };
+                    case "ROJO":
+                        return {
+                            text: "No apta sin tratamiento avanzado",
+                            class: "quality-bad",
+                        };
+                    default:
+                        return {
+                            text: "Sin datos suficientes",
+                            class: "quality-bad",
+                        };
+                }
             }
-        }
 
-function generarRecomendacionesTratamiento(estacion) {
-    let stepsHTML = '';
-    const mediciones = estacion.mediciones || [];
-    
-    // Obtener las clasificaciones de cada parámetro
-    const clasificaciones = {};
-    mediciones.forEach(medicion => {
-        const parametroNombre = medicion.parametro.nombre;
-        clasificaciones[parametroNombre] = medicion.clasificacion;
-    });
+            function generarRecomendacionesTratamiento(estacion) {
+                let stepsHTML = "";
+                const mediciones = estacion.mediciones || [];
 
-    // Función auxiliar para obtener la clasificación
-    const getClasificacion = (parametro) => clasificaciones[parametro] || 'Sin datos';
+                // Obtener las clasificaciones de cada parámetro
+                const clasificaciones = {};
+                mediciones.forEach((medicion) => {
+                    const parametroNombre = medicion.parametro.nombre;
+                    clasificaciones[parametroNombre] = medicion.clasificacion;
+                });
 
-    // Sólidos Suspendidos Totales (SST)
-    const clasificacionSST = getClasificacion('SST');
-    if (clasificacionSST === "Fuertemente contaminada" || clasificacionSST === "Contaminada") {
-        stepsHTML += `
+                // Función auxiliar para obtener la clasificación
+                const getClasificacion = (parametro) =>
+                    clasificaciones[parametro] || "Sin datos";
+
+                // Sólidos Suspendidos Totales (SST)
+                const clasificacionSST = getClasificacion("SST");
+                if (
+                    clasificacionSST === "Fuertemente contaminada" ||
+                    clasificacionSST === "Contaminada"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
                 <div class="step-desc">
@@ -709,8 +897,11 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    } else if (clasificacionSST === "Aceptable" || clasificacionSST === "Buena calidad") {
-        stepsHTML += `
+                } else if (
+                    clasificacionSST === "Aceptable" ||
+                    clasificacionSST === "Buena calidad"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
                 <div class="step-desc">
@@ -724,8 +915,8 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    } else if (clasificacionSST === "Excelente") {
-        stepsHTML += `
+                } else if (clasificacionSST === "Excelente") {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Sólidos Suspendidos Totales (SST): ${clasificacionSST}</div>
                 <div class="step-desc">
@@ -738,15 +929,19 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    }
+                }
 
-    // DBO/DQO (Materia orgánica)
-    const clasificacionDBO = getClasificacion('DBO');
-    const clasificacionDQO = getClasificacion('DQO');
-    
-    if (clasificacionDBO === "Fuertemente contaminada" || clasificacionDQO === "Fuertemente contaminada" || 
-        clasificacionDBO === "Contaminada" || clasificacionDQO === "Contaminada") {
-        stepsHTML += `
+                // DBO/DQO (Materia orgánica)
+                const clasificacionDBO = getClasificacion("DBO");
+                const clasificacionDQO = getClasificacion("DQO");
+
+                if (
+                    clasificacionDBO === "Fuertemente contaminada" ||
+                    clasificacionDQO === "Fuertemente contaminada" ||
+                    clasificacionDBO === "Contaminada" ||
+                    clasificacionDQO === "Contaminada"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
                 <div class="step-desc">
@@ -760,9 +955,13 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>   
             </div>
         `;
-    } else if (clasificacionDBO === "Aceptable" || clasificacionDQO === "Aceptable" || 
-              clasificacionDBO === "Buena calidad" || clasificacionDQO === "Buena calidad") {
-        stepsHTML += `
+                } else if (
+                    clasificacionDBO === "Aceptable" ||
+                    clasificacionDQO === "Aceptable" ||
+                    clasificacionDBO === "Buena calidad" ||
+                    clasificacionDQO === "Buena calidad"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
                 <div class="step-desc">
@@ -776,8 +975,11 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    } else if (clasificacionDBO === "Excelente" || clasificacionDQO === "Excelente") {
-        stepsHTML += `
+                } else if (
+                    clasificacionDBO === "Excelente" ||
+                    clasificacionDQO === "Excelente"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Materia Orgánica (DBO/DQO): ${clasificacionDBO || clasificacionDQO}</div>
                 <div class="step-desc">
@@ -791,15 +993,19 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    }
+                }
 
-    // Patógenos (E. coli, coliformes fecales)
-    const clasificacionEColi = getClasificacion('E_COLI');
-    const clasificacionColiFec = getClasificacion('CF');
+                // Patógenos (E. coli, coliformes fecales)
+                const clasificacionEColi = getClasificacion("E_COLI");
+                const clasificacionColiFec = getClasificacion("CF");
 
-    if (clasificacionColiFec === "Fuertemente contaminada" || clasificacionEColi === "Fuertemente contaminada" ||
-        clasificacionColiFec === "Contaminada" || clasificacionEColi === "Contaminada") {
-        stepsHTML += `
+                if (
+                    clasificacionColiFec === "Fuertemente contaminada" ||
+                    clasificacionEColi === "Fuertemente contaminada" ||
+                    clasificacionColiFec === "Contaminada" ||
+                    clasificacionEColi === "Contaminada"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
                 <div class="step-desc">
@@ -813,9 +1019,13 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    } else if (clasificacionColiFec === "Aceptable" || clasificacionEColi === "Aceptable" ||
-              clasificacionColiFec === "Buena calidad" || clasificacionEColi === "Buena calidad") {
-        stepsHTML += `
+                } else if (
+                    clasificacionColiFec === "Aceptable" ||
+                    clasificacionEColi === "Aceptable" ||
+                    clasificacionColiFec === "Buena calidad" ||
+                    clasificacionEColi === "Buena calidad"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
                 <div class="step-desc">
@@ -829,8 +1039,11 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    } else if (clasificacionColiFec === "Excelente" || clasificacionEColi === "Excelente") {
-        stepsHTML += `
+                } else if (
+                    clasificacionColiFec === "Excelente" ||
+                    clasificacionEColi === "Excelente"
+                ) {
+                    stepsHTML += `
             <div class="step-card">
                 <div class="step-title">Patógenos (Indicadores Fecales): ${clasificacionEColi || clasificacionColiFec}</div>
                 <div class="step-desc">
@@ -844,11 +1057,11 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    }
+                }
 
-    // Si no hay recomendaciones específicas
-    if (stepsHTML === '') {
-        stepsHTML = `
+                // Si no hay recomendaciones específicas
+                if (stepsHTML === "") {
+                    stepsHTML = `
             <div class="step-card">
                 <div class="step-title">Información Insuficiente</div>
                 <div class="step-desc">
@@ -857,35 +1070,40 @@ function generarRecomendacionesTratamiento(estacion) {
                 </div>
             </div>
         `;
-    }
+                }
 
-    return stepsHTML;
-}
+                return stepsHTML;
+            }
 
-        function generarInformacionAdicional(estacion) {
-            const mediciones = estacion.mediciones || [];
-            
-            let medicionesHTML = '';
-            if (mediciones.length > 0) {
-                medicionesHTML = `
+            function generarInformacionAdicional(estacion) {
+                const mediciones = estacion.mediciones || [];
+
+                let medicionesHTML = "";
+                if (mediciones.length > 0) {
+                    medicionesHTML = `
                     <div class="info-card">
                         <div class="info-card-header">
                             <i class="fas fa-flask"></i> <span>Resumen de Mediciones</span>
                         </div>
                         <div class="info-card-body">
-                            ${mediciones.slice(0, 3).map(med => `
+                            ${mediciones
+                                .slice(0, 3)
+                                .map(
+                                    (med) => `
                                 <div class="medicion-item">
                                     <strong>${med.parametro.nombre}</strong>: ${med.valor} ${med.parametro.unidad}
                                     <span class="badge ${getClasificacionClass(med.clasificacion)}">${med.clasificacion}</span>
                                 </div>
-                            `).join('')}
-                            ${mediciones.length > 3 ? `<p><small>+ ${mediciones.length - 3} mediciones más</small></p>` : ''}
+                            `,
+                                )
+                                .join("")}
+                            ${mediciones.length > 3 ? `<p><small>+ ${mediciones.length - 3} mediciones más</small></p>` : ""}
                         </div>
                     </div>
                 `;
-            }
-            
-            return `
+                }
+
+                return `
                 <div class="mt-3">
                     <div class="info-cards-group">
                         <div class="info-card">
@@ -893,9 +1111,9 @@ function generarRecomendacionesTratamiento(estacion) {
                                 <i class="fas fa-info-circle"></i> <span>Información General</span>
                             </div>
                             <div class="info-card-body">
-                                <p><strong>Tipo:</strong> ${estacion.tipo?.nombre || 'N/A'}</p>
-                                <p><strong>Subtipo:</strong> ${estacion.subtipo?.nombre || 'N/A'}</p>
-                                <p><strong>Estado monitoreo:</strong> ${estacion.activo ? '🟢 Activo' : '🔴 Inactivo'}</p>
+                                <p><strong>Tipo:</strong> ${estacion.tipo?.nombre || "N/A"}</p>
+                                <p><strong>Subtipo:</strong> ${estacion.subtipo?.nombre || "N/A"}</p>
+                                <p><strong>Estado monitoreo:</strong> ${estacion.activo ? "🟢 Activo" : "🔴 Inactivo"}</p>
                             </div>
                         </div>
                         
@@ -906,115 +1124,144 @@ function generarRecomendacionesTratamiento(estacion) {
                                 <i class="fas fa-water"></i> <span>Ubicación</span>
                             </div>
                             <div class="info-card-body">
-                                <p><strong>Municipio:</strong> ${estacion.municipio?.nombre || 'No especificado'}</p>
-                                <p><strong>Estado:</strong> ${estacion.municipio?.estado?.nombre || 'No especificado'}</p>
-                                <p><strong>Cuenca:</strong> ${estacion.cuenca?.nombre || 'No especificada'}</p>
+                                <p><strong>Municipio:</strong> ${estacion.municipio?.nombre || "No especificado"}</p>
+                                <p><strong>Estado:</strong> ${estacion.municipio?.estado?.nombre || "No especificado"}</p>
+                                <p><strong>Cuenca:</strong> ${estacion.cuenca?.nombre || "No especificada"}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-        }
+            }
 
-        function cerrarPanel() {
-            document.getElementById('infoPanel').style.display = 'none';
-        }
+            function cerrarPanel() {
+                document.getElementById("infoPanel").style.display = "none";
+            }
 
-        function obtenerUbi() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        currentLocation = [position.coords.latitude, position.coords.longitude];
-                        map.setView(currentLocation, 13);
-                        
-                        if (ubicacionMarker) {
-                            map.removeLayer(ubicacionMarker);
-                        }
-                        
-                        ubicacionMarker = L.marker(currentLocation, {
-                            icon: L.divIcon({
-                                className: 'user-location-marker',
-                                html: '<i class="fas fa-user" style="color: #0077b6; font-size: 24px;"></i>',
-                                iconSize: [24, 24]
+            function obtenerUbi() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            currentLocation = [
+                                position.coords.latitude,
+                                position.coords.longitude,
+                            ];
+                            map.setView(currentLocation, 13);
+
+                            if (ubicacionMarker) {
+                                map.removeLayer(ubicacionMarker);
+                            }
+
+                            ubicacionMarker = L.marker(currentLocation, {
+                                icon: L.divIcon({
+                                    className: "user-location-marker",
+                                    html: '<i class="fas fa-user" style="color: #0077b6; font-size: 24px;"></i>',
+                                    iconSize: [24, 24],
+                                }),
                             })
-                        }).addTo(map)
-                        .bindPopup('Tu ubicación actual').openPopup();
-                    },
-                    function(error) {
-                        console.error("Error al obtener ubicación:", error);
-                        alert("No se pudo obtener tu ubicación.");
-                    }
-                );
-            } else {
-                alert("La geolocalización no está soportada en tu navegador.");
+                                .addTo(map)
+                                .bindPopup("Tu ubicación actual")
+                                .openPopup();
+                        },
+                        function (error) {
+                            console.error("Error al obtener ubicación:", error);
+                            alert("No se pudo obtener tu ubicación.");
+                        },
+                    );
+                } else {
+                    alert(
+                        "La geolocalización no está soportada en tu navegador.",
+                    );
+                }
             }
-        }
 
-        // Función de búsqueda
-        function buscarCuerposAgua(query) {
-            if (!cuerposAguaOriginal || !Array.isArray(cuerposAguaOriginal)) {
-                console.warn('No hay datos para buscar');
-                return;
-            }
-            
-            query = query.trim().toLowerCase();
-            if (!query) {
-                // Si no hay query, mostrar todos
+            // Función de búsqueda
+            function buscarCuerposAgua(query) {
+                if (
+                    !cuerposAguaOriginal ||
+                    !Array.isArray(cuerposAguaOriginal)
+                ) {
+                    console.warn("No hay datos para buscar");
+                    return;
+                }
+
+                query = query.trim().toLowerCase();
+                if (!query) {
+                    // Si no hay query, mostrar todos
+                    if (capasAgua) {
+                        map.removeLayer(capasAgua);
+                        capasAgua.addTo(map);
+                    }
+                    return;
+                }
+
+                const resultados = cuerposAguaOriginal.filter((estacion) => {
+                    const nombre = estacion.nombre
+                        ? estacion.nombre.toLowerCase()
+                        : "";
+                    const clave = estacion.clave_sitio
+                        ? estacion.clave_sitio.toLowerCase()
+                        : "";
+                    const municipio = estacion.municipio
+                        ? estacion.municipio.nombre.toLowerCase()
+                        : "";
+                    const estado = estacion.municipio?.estado
+                        ? estacion.municipio.estado.nombre.toLowerCase()
+                        : "";
+
+                    return (
+                        nombre.includes(query) ||
+                        clave.includes(query) ||
+                        municipio.includes(query) ||
+                        estado.includes(query)
+                    );
+                });
+
+                console.log(
+                    `Búsqueda: "${query}" - Encontrados: ${resultados.length} resultados`,
+                );
+
+                // Actualizar el mapa con los resultados
                 if (capasAgua) {
                     map.removeLayer(capasAgua);
-                    capasAgua.addTo(map);
                 }
-                return;
-            }
-            
-            const resultados = cuerposAguaOriginal.filter(estacion => {
-                const nombre = estacion.nombre ? estacion.nombre.toLowerCase() : '';
-                const clave = estacion.clave_sitio ? estacion.clave_sitio.toLowerCase() : '';
-                const municipio = estacion.municipio ? estacion.municipio.nombre.toLowerCase() : '';
-                const estado = estacion.municipio?.estado ? estacion.municipio.estado.nombre.toLowerCase() : '';
-                
-                return nombre.includes(query) || 
-                       clave.includes(query) || 
-                       municipio.includes(query) || 
-                       estado.includes(query);
-            });
-            
-            console.log(`Búsqueda: "${query}" - Encontrados: ${resultados.length} resultados`);
-            
-            // Actualizar el mapa con los resultados
-            if (capasAgua) {
-                map.removeLayer(capasAgua);
-            }
-            
-            capasAgua = L.layerGroup();
-            resultados.forEach(estacion => {
-                if (estacion.latitud && estacion.longitud) {
-                    let lat = parseFloat(estacion.latitud);
-                    let lng = parseFloat(estacion.longitud);
-                    
-                    if (isNaN(lat) || isNaN(lng)) return;
-                    
-                    // Determina color según semáforo
-                    const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                        ? estacion.semaforo[0]
-                        : null;
-                    
-                    let color = '#007bff';
-                    if (semaforoActual) {
-                        switch(semaforoActual.color.toUpperCase()) {
-                            case 'VERDE': color = '#28a745'; break;
-                            case 'AMARILLO': color = '#ffc107'; break;
-                            case 'ROJO': color = '#dc3545'; break;
+
+                capasAgua = L.layerGroup();
+                resultados.forEach((estacion) => {
+                    if (estacion.latitud && estacion.longitud) {
+                        let lat = parseFloat(estacion.latitud);
+                        let lng = parseFloat(estacion.longitud);
+
+                        if (isNaN(lat) || isNaN(lng)) return;
+
+                        // Determina color según semáforo
+                        const semaforoActual =
+                            estacion.semaforo && estacion.semaforo.length > 0
+                                ? estacion.semaforo[0]
+                                : null;
+
+                        let color = "#007bff";
+                        if (semaforoActual) {
+                            switch (semaforoActual.color.toUpperCase()) {
+                                case "VERDE":
+                                    color = "#28a745";
+                                    break;
+                                case "AMARILLO":
+                                    color = "#ffc107";
+                                    break;
+                                case "ROJO":
+                                    color = "#dc3545";
+                                    break;
+                            }
                         }
-                    }
-                    
-                    const marker = L.circleMarker([lat, lng], {
-                        radius: 10,
-                        fillColor: color,
-                        color: '#ffffff',
-                        weight: 2,
-                        fillOpacity: 0.8
-                    }).bindPopup(`
+
+                        const marker = L.circleMarker([lat, lng], {
+                            radius: 10,
+                            fillColor: color,
+                            color: "#ffffff",
+                            weight: 2,
+                            fillOpacity: 0.8,
+                        }).bindPopup(`
                         <div style="min-width: 250px">
                             <b>${estacion.nombre}</b><br>
                             <small>${estacion.clave_sitio}</small><br>
@@ -1024,247 +1271,328 @@ function generarRecomendacionesTratamiento(estacion) {
                             </button>
                         </div>
                     `);
-                    
-                    // SOLO MOSTRAR POPUP AL HACER CLIC, NO EL MODAL
-                    marker.on('click', function(e) {
-                        marker.openPopup();
-                    });
-                    
-                    capasAgua.addLayer(marker);
-                }
-            });
-            
-            capasAgua.addTo(map);
-            
-            // Centrar en los resultados si hay
-            if (resultados.length > 0 && resultados[0].latitud && resultados[0].longitud) {
-                const lat = parseFloat(resultados[0].latitud);
-                const lng = parseFloat(resultados[0].longitud);
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    map.setView([lat, lng], 10);
-                }
-            }
-        }
 
-        // Función para manejar clics en botones de detalles
-        function manejarClicDetalles(estacionId) {
-            const estacion = cuerposAguaOriginal.find(e => e.id_estacion == estacionId);
-            if (estacion) {
-                mostrarDetalles(estacion);
-                // Cerrar el popup cuando se abre el modal
-                map.closePopup();
-            }
-        }
+                        // SOLO MOSTRAR POPUP AL HACER CLIC, NO EL MODAL
+                        marker.on("click", function (e) {
+                            marker.openPopup();
+                        });
 
-        // Inicialización de event listeners
-        function inicializarEventListeners() {
-            // Botón de búsqueda
-            document.getElementById('searchButton').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const query = document.getElementById('searchInput').value.trim();
-                buscarCuerposAgua(query);
-            });
+                        capasAgua.addLayer(marker);
+                    }
+                });
 
-            // Botón de ubicación
-            document.getElementById('locationButton').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                obtenerUbi();
-            });
+                capasAgua.addTo(map);
 
-            // Botón cerrar panel
-            document.getElementById('closePanel').addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                cerrarPanel();
-            });
-
-            // Botones de detalles en los popups - DELEGACIÓN DE EVENTOS
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('ver-detalles-btn') || 
-                    e.target.closest('.ver-detalles-btn')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const btn = e.target.classList.contains('ver-detalles-btn') ? 
-                               e.target : e.target.closest('.ver-detalles-btn');
-                    
-                    const estacionId = btn.getAttribute('data-estacion-id');
-                    if (estacionId) {
-                        manejarClicDetalles(estacionId);
+                // Centrar en los resultados si hay
+                if (
+                    resultados.length > 0 &&
+                    resultados[0].latitud &&
+                    resultados[0].longitud
+                ) {
+                    const lat = parseFloat(resultados[0].latitud);
+                    const lng = parseFloat(resultados[0].longitud);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        map.setView([lat, lng], 10);
                     }
                 }
-            });
+            }
 
-            // Permitir búsqueda con Enter
-            document.getElementById('searchInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const query = this.value.trim();
-                    buscarCuerposAgua(query);
+            // Función para manejar clics en botones de detalles
+            function manejarClicDetalles(estacionId) {
+                const estacion = cuerposAguaOriginal.find(
+                    (e) => e.id_estacion == estacionId,
+                );
+                if (estacion) {
+                    mostrarDetalles(estacion);
+                    // Cerrar el popup cuando se abre el modal
+                    map.closePopup();
                 }
+            }
+
+            // Inicialización de event listeners
+            function inicializarEventListeners() {
+                // Botón de búsqueda
+                document
+                    .getElementById("searchButton")
+                    .addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const query = document
+                            .getElementById("searchInput")
+                            .value.trim();
+                        buscarCuerposAgua(query);
+                    });
+
+                // Botón de ubicación
+                document
+                    .getElementById("locationButton")
+                    .addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        obtenerUbi();
+                    });
+
+                // Botón cerrar panel
+                document
+                    .getElementById("closePanel")
+                    .addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        cerrarPanel();
+                    });
+
+                // Botones de detalles en los popups - DELEGACIÓN DE EVENTOS
+                document.addEventListener("click", function (e) {
+                    if (
+                        e.target.classList.contains("ver-detalles-btn") ||
+                        e.target.closest(".ver-detalles-btn")
+                    ) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const btn = e.target.classList.contains(
+                            "ver-detalles-btn",
+                        )
+                            ? e.target
+                            : e.target.closest(".ver-detalles-btn");
+
+                        const estacionId = btn.getAttribute("data-estacion-id");
+                        if (estacionId) {
+                            manejarClicDetalles(estacionId);
+                        }
+                    }
+                });
+
+                // Permitir búsqueda con Enter
+                document
+                    .getElementById("searchInput")
+                    .addEventListener("keypress", function (e) {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            const query = this.value.trim();
+                            buscarCuerposAgua(query);
+                        }
+                    });
+            }
+
+            // Inicializar cuando el DOM esté listo
+            document.addEventListener("DOMContentLoaded", function () {
+                console.log("DOM cargado, iniciando mapa...");
+                inicializarEventListeners();
+                cargarCuerposAgua();
             });
-        }
 
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM cargado, iniciando mapa...');
-            inicializarEventListeners();
-            cargarCuerposAgua();
-        });
+            // También intentar cargar si el DOM ya está listo
+            if (
+                document.readyState === "complete" ||
+                document.readyState === "interactive"
+            ) {
+                console.log("DOM ya listo, iniciando mapa...");
+                inicializarEventListeners();
+                cargarCuerposAgua();
+            }
+        </script>
 
-        // También intentar cargar si el DOM ya está listo
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            console.log('DOM ya listo, iniciando mapa...');
-            inicializarEventListeners();
-            cargarCuerposAgua();
-        }
-    </script>
+        <style>
+            /* NUEVOS ESTILOS PARA LA INFORMACIÓN DE PARÁMETROS */
+            /* Estilos del overlay de carga */
+            .loading-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.85);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
 
-    <style>
-        /* NUEVOS ESTILOS PARA LA INFORMACIÓN DE PARÁMETROS */
-        .parameter-info-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            border-left: 4px solid #0077b6;
-        }
-
-        .parameter-detail-card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .parameter-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .parameter-name {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0;
-            flex: 1;
-        }
-
-        .parameter-value-badge {
-            font-size: 0.9em;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-weight: 500;
-        }
-
-        .parameter-definition,
-        .parameter-contaminants {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 3px solid #0077b6;
-        }
-
-        .parameter-contaminants {
-            border-left-color: #ffc107;
-        }
-
-        .definition-title,
-        .contaminants-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .definition-text,
-        .contaminants-text {
-            margin: 0;
-            line-height: 1.5;
-            color: #495057;
-        }
-
-        .parameter-no-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            font-style: italic;
-        }
-
-        /* Estilos para las tarjetas de información */
-        .info-cards-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .info-card {
-            background: white;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .info-card-header {
-            background: #f8f9fa;
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .info-card-body {
-            padding: 15px;
-        }
-
-        .medicion-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            padding: 5px 0;
-        }
-
-        .uso-content {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .parameter-header {
+            .loading-box {
+                display: flex;
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
+                gap: 12px;
+                background: #fff;
+                padding: 18px 24px;
+                border-radius: 10px;
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
             }
-            
-            .parameter-value-badge {
-                align-self: flex-start;
-            }
-            
-            .info-cards-group {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 
-</body>
+            .spinner {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                border: 6px solid rgba(0, 0, 0, 0.08);
+                border-top-color: #0077b6;
+                animation: spin 1s linear infinite;
+            }
+
+            .loading-text {
+                font-weight: 600;
+                color: #333;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            .parameter-info-section {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin: 20px 0;
+                border-left: 4px solid #0077b6;
+            }
+
+            /* Contenedor del mapa */
+            .map-container {
+                position: relative;
+                min-height: 480px;
+            }
+            #mapa {
+                width: 100%;
+                height: 600px;
+                border-radius: 8px;
+            }
+
+            .parameter-detail-card {
+                background: white;
+                border-radius: 8px;
+                padding: 15px;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .parameter-header {
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .parameter-name {
+                font-size: 1.1em;
+                font-weight: 600;
+                color: #2c3e50;
+                margin: 0;
+                flex: 1;
+            }
+
+            .parameter-value-badge {
+                font-size: 0.9em;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-weight: 500;
+            }
+
+            .parameter-definition,
+            .parameter-contaminants {
+                margin-top: 10px;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 6px;
+                border-left: 3px solid #0077b6;
+            }
+
+            .parameter-contaminants {
+                border-left-color: #ffc107;
+            }
+
+            .definition-title,
+            .contaminants-title {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+
+            .definition-text,
+            .contaminants-text {
+                margin: 0;
+                line-height: 1.5;
+                color: #495057;
+            }
+
+            .parameter-no-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 6px;
+                font-style: italic;
+            }
+
+            /* Estilos para las tarjetas de información */
+            .info-cards-group {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 15px;
+                margin-top: 15px;
+            }
+
+            .info-card {
+                background: white;
+                border-radius: 10px;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .info-card-header {
+                background: #f8f9fa;
+                padding: 15px;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .info-card-body {
+                padding: 15px;
+            }
+
+            .medicion-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+                padding: 5px 0;
+            }
+
+            .uso-content {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .parameter-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .parameter-value-badge {
+                    align-self: flex-start;
+                }
+
+                .info-cards-group {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </body>
 </html>

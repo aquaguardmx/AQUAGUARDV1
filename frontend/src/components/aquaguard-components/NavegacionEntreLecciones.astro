@@ -3,86 +3,87 @@
 
 // 1. DEFINICIÓN DE TIPOS
 export interface Leccion {
-  id_leccion: number | string;
-  modulo_id: number;
-  titulo: string;
-  tipo_contenido: string;
-  contenido_texto?: string;
-  video_url?: string | null;
-  orden: number;
-  duracion_min?: number;
-  completado?: boolean;
-  bloqueado?: boolean;
+    id_leccion: number | string;
+    modulo_id: number;
+    titulo: string;
+    tipo_contenido: string;
+    contenido_texto?: string;
+    video_url?: string | null;
+    orden: number;
+    duracion_min?: number;
+    completado?: boolean;
+    bloqueado?: boolean;
 }
 
 export interface Modulo {
-  id_modulo: number | string;
-  curso_id: number;
-  titulo: string;
-  orden: number;
-  lecciones: Leccion[];
-  completado?: boolean;
+    id_modulo: number | string;
+    curso_id: number;
+    titulo: string;
+    orden: number;
+    lecciones: Leccion[];
+    completado?: boolean;
 }
 
 export interface Curso {
-  modulos: Modulo[];
+    modulos: Modulo[];
 }
 
 // 2. Obtener el ID del curso de la URL
 const url = Astro.url;
-const pathParts = url.pathname.split('/').filter(part => part !== '');
+const pathParts = url.pathname.split("/").filter((part) => part !== "");
 
 // Buscar el índice del cursoId de forma más robusta
 let cursoId: string | null = null;
 
 // Diferentes patrones de URL posibles
-if (url.pathname.includes('/admin/cursos/')) {
-  // Para URLs como /admin/cursos/9/lecciones
-  const cursosIndex = pathParts.indexOf('cursos');
-  if (cursosIndex !== -1 && pathParts[cursosIndex + 1]) {
-    cursoId = pathParts[cursosIndex + 1];
-  }
-} else if (url.pathname.includes('/curso/')) {
-  // Para URLs como /curso/9/leccion
-  const cursoIndex = pathParts.indexOf('curso');
-  if (cursoIndex !== -1 && pathParts[cursoIndex + 1]) {
-    cursoId = pathParts[cursoIndex + 1];
-  }
+if (url.pathname.includes("/admin/cursos/")) {
+    // Para URLs como /admin/cursos/9/lecciones
+    const cursosIndex = pathParts.indexOf("cursos");
+    if (cursosIndex !== -1 && pathParts[cursosIndex + 1]) {
+        cursoId = pathParts[cursosIndex + 1];
+    }
+} else if (url.pathname.includes("/curso/")) {
+    // Para URLs como /curso/9/leccion
+    const cursoIndex = pathParts.indexOf("curso");
+    if (cursoIndex !== -1 && pathParts[cursoIndex + 1]) {
+        cursoId = pathParts[cursoIndex + 1];
+    }
 }
 
 // Si no encontramos con los patrones anteriores, usar índice por defecto
 if (!cursoId && pathParts.length > 1) {
-  cursoId = pathParts[1]; // Fallback
+    cursoId = pathParts[1]; // Fallback
 }
 
 // 3. Función para cargar los módulos desde la API
 async function cargarModulos(cursoId: string | number): Promise<Modulo[]> {
-  const apiUrl = `http://localhost:8000/api/cursos/${cursoId}/modulos-y-lecciones`;
+    const apiUrl = `http://localhost:8000/api/cursos/${cursoId}/modulos-y-lecciones`;
 
-  try {
-    const response = await fetch(apiUrl);
-    
-    if (!response.ok) {
-      throw new Error(`Error al cargar módulos: ${response.status} ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    
-    // Verificar la estructura de los datos
-    if (Array.isArray(data)) {
-      return data;
-    } else {
-      return [];
-    }
+    try {
+        const response = await fetch(apiUrl);
 
-  } catch (error) {
-    console.error('❌ Error cargando módulos:', error);
-    // Mostrar más detalles del error
-    if (error instanceof Error) {
-      console.error('🔍 Detalles del error:', error.message);
+        if (!response.ok) {
+            throw new Error(
+                `Error al cargar módulos: ${response.status} ${response.statusText}`,
+            );
+        }
+
+        const data = await response.json();
+
+        // Verificar la estructura de los datos
+        if (Array.isArray(data)) {
+            return data;
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error("❌ Error cargando módulos:", error);
+        // Mostrar más detalles del error
+        if (error instanceof Error) {
+            console.error("🔍 Detalles del error:", error.message);
+        }
+        return [];
     }
-    return [];
-  }
 }
 
 // 4. Cargar los módulos
@@ -90,25 +91,26 @@ let modulos: Modulo[] = [];
 let errorCarga: string | null = null;
 
 if (cursoId) {
-  try {
-    modulos = await cargarModulos(cursoId);
-  } catch (error) {
-    errorCarga = error instanceof Error ? error.message : 'Error desconocido';
-    modulos = [];
-  }
+    try {
+        modulos = await cargarModulos(cursoId);
+    } catch (error) {
+        errorCarga =
+            error instanceof Error ? error.message : "Error desconocido";
+        modulos = [];
+    }
 } else {
-  errorCarga = 'No se pudo detectar el ID del curso';
+    errorCarga = "No se pudo detectar el ID del curso";
 }
 
 // 5. Obtener lección actual de la URL
 let leccionActualId: string | number | null = null;
 
 // Buscar lección actual en la URL
-if (url.pathname.includes('/leccion/')) {
-  const leccionIndex = pathParts.indexOf('leccion');
-  if (leccionIndex !== -1 && pathParts[leccionIndex + 1]) {
-    leccionActualId = pathParts[leccionIndex + 1];
-  }
+if (url.pathname.includes("/leccion/")) {
+    const leccionIndex = pathParts.indexOf("leccion");
+    if (leccionIndex !== -1 && pathParts[leccionIndex + 1]) {
+        leccionActualId = pathParts[leccionIndex + 1];
+    }
 }
 
 // 6. LÓGICA DE UX (Servidor) - Adaptada a la estructura de la API
@@ -117,197 +119,288 @@ let moduloActualEncontrado = false;
 
 // Crear estructura de curso para el componente
 const curso: Curso = {
-  modulos: modulos.map(modulo => ({
-    ...modulo,
-    // Mapear propiedades para compatibilidad
-    lecciones: modulo.lecciones.map(leccion => ({
-      ...leccion,
-      completado: leccion.completado || false
+    modulos: modulos.map((modulo) => ({
+        ...modulo,
+        // Mapear propiedades para compatibilidad
+        lecciones: modulo.lecciones.map((leccion) => ({
+            ...leccion,
+            completado: leccion.completado || false,
+        })),
+        completado: modulo.completado || false,
     })),
-    completado: modulo.completado || false
-  }))
 };
 
 for (const modulo of curso.modulos) {
-  const estaActivo = modulo.lecciones.some(
-    (l) => l.id_leccion.toString() === leccionActualId?.toString(),
-  );
-  moduloAbierto.set(modulo.id_modulo, estaActivo);
-  if (estaActivo) moduloActualEncontrado = true;
+    const estaActivo = modulo.lecciones.some(
+        (l) => l.id_leccion.toString() === leccionActualId?.toString(),
+    );
+    moduloAbierto.set(modulo.id_modulo, estaActivo);
+    if (estaActivo) moduloActualEncontrado = true;
 }
 
 // Si ninguna lección está activa, abre el primer módulo por defecto
 if (!moduloActualEncontrado && curso.modulos.length > 0) {
-  moduloAbierto.set(curso.modulos[0].id_modulo, true);
+    moduloAbierto.set(curso.modulos[0].id_modulo, true);
 }
 ---
 
-<aside class="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md">
-    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+<aside
+    class="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md"
+>
+    <h3
+        class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3"
+    >
+        <div
+            class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+            <svg
+                class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h7"></path>
             </svg>
         </div>
         <span class="whitespace-nowrap">Contenido del Curso</span>
     </h3>
 
-    {errorCarga ? (
-        <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <p class="text-red-700 dark:text-red-300 text-sm">
-                Error al cargar el contenido: {errorCarga}
-            </p>
-        </div>
-    ) : curso.modulos.length === 0 ? (
-        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p class="text-yellow-700 dark:text-yellow-300 text-sm">
-                No hay módulos disponibles para este curso.
-            </p>
-        </div>
-    ) : (
-        <div class="space-y-4">
-            {curso.modulos.map((modulo, moduloIndex) => {
-                const estaAbierto = moduloAbierto.get(modulo.id_modulo) || false;
+    {
+        errorCarga ? (
+            <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p class="text-red-700 dark:text-red-300 text-sm">
+                    Error al cargar el contenido: {errorCarga}
+                </p>
+            </div>
+        ) : curso.modulos.length === 0 ? (
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p class="text-yellow-700 dark:text-yellow-300 text-sm">
+                    No hay módulos disponibles para este curso.
+                </p>
+            </div>
+        ) : (
+            <div class="space-y-4">
+                {curso.modulos.map((modulo, moduloIndex) => {
+                    const estaAbierto =
+                        moduloAbierto.get(modulo.id_modulo) || false;
 
-                return (
-                    <div 
-                        class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 transition-all hover:shadow-lg"
-                        data-modulo-id={modulo.id_modulo}
-                    >
-                        {/* Header del Módulo - MEJORADO */}
-                        <div class={`
+                    return (
+                        <div
+                            class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800 transition-all hover:shadow-lg"
+                            data-modulo-id={modulo.id_modulo}
+                        >
+                            {/* Header del Módulo - MEJORADO */}
+                            <div
+                                class={`
                             p-4 flex items-start justify-between cursor-pointer transition-colors modulo-header group
-                            ${modulo.completado ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500' : 'bg-gray-50 dark:bg-gray-700 border-l-4 border-l-blue-500'}
-                        `}>
-                            <div class="flex items-start gap-3 flex-1 min-w-0">
-                                <div class={`
+                            ${modulo.completado ? "bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500" : "bg-gray-50 dark:bg-gray-700 border-l-4 border-l-blue-500"}
+                        `}
+                            >
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div
+                                        class={`
                                     w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors flex-shrink-0 mt-0.5
-                                    ${modulo.completado 
-                                        ? 'bg-green-500 text-white' 
-                                        : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-200 dark:group-hover:bg-blue-800'
+                                    ${
+                                        modulo.completado
+                                            ? "bg-green-500 text-white"
+                                            : "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-200 dark:group-hover:bg-blue-800"
                                     }
-                                `}>
-                                    {moduloIndex + 1}
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    {/* TÍTULO DEL MÓDULO COMPLETO - SIN TRUNCATE */}
-                                    <h4 class="font-semibold text-gray-900 dark:text-white text-base leading-snug break-words">
-                                        {modulo.titulo}
-                                    </h4>
-                                    <div class="flex items-center flex-wrap gap-2 mt-2">
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">
-                                            {modulo.lecciones.length} lección{modulo.lecciones.length !== 1 ? 'es' : ''}
-                                        </span>
-                                        {modulo.completado && (
-                                            <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400 text-sm bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                                </svg>
-                                                Completado
+                                `}
+                                    >
+                                        {moduloIndex + 1}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        {/* TÍTULO DEL MÓDULO COMPLETO - SIN TRUNCATE */}
+                                        <h4 class="font-semibold text-gray-900 dark:text-white text-base leading-snug break-words">
+                                            {modulo.titulo}
+                                        </h4>
+                                        <div class="flex items-center flex-wrap gap-2 mt-2">
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                                {modulo.lecciones.length}{" "}
+                                                lección
+                                                {modulo.lecciones.length !== 1
+                                                    ? "es"
+                                                    : ""}
                                             </span>
-                                        )}
+                                            {modulo.completado && (
+                                                <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400 text-sm bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                                                    <svg
+                                                        class="w-3 h-3"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    Completado
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            {/* Contenedor para iconos (check y flecha) */}
-                            <div class="flex items-center gap-2 flex-shrink-0 ml-3">
-                                {modulo.completado && (
-                                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                )}
-                                {/* Icono de flecha */}
-                                <svg class={`
+
+                                {/* Contenedor para iconos (check y flecha) */}
+                                <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                                    {modulo.completado && (
+                                        <svg
+                                            class="w-5 h-5 text-green-500 flex-shrink-0"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                    )}
+                                    {/* Icono de flecha */}
+                                    <svg
+                                        class={`
                                     w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform modulo-toggle-icon flex-shrink-0
-                                    ${estaAbierto ? 'rotate-180' : ''}
-                                `} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
+                                    ${estaAbierto ? "rotate-180" : ""}
+                                `}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
                             </div>
-                        </div>
-                        
-                        {/* Contenedor de Lecciones - MEJORADO */}
-                        <div class={`
+
+                            {/* Contenedor de Lecciones - MEJORADO */}
+                            <div
+                                class={`
                             lecciones-container transition-all duration-300 bg-white dark:bg-gray-800
-                            ${!estaAbierto ? 'hidden' : ''}
-                        `}>
-                            {modulo.lecciones.map((leccion, leccionIndex) => (
-                                <a
-                                    href={`/curso/${cursoId}/leccion/${leccion.id_leccion}`}
-                                    class={`
+                            ${!estaAbierto ? "hidden" : ""}
+                        `}
+                            >
+                                {modulo.lecciones.map(
+                                    (leccion, leccionIndex) => (
+                                        <a
+                                            href={`/curso/${cursoId}/leccion/${leccion.id_leccion}`}
+                                            data-leccion-id={leccion.id_leccion}
+                                            data-is-current={
+                                                leccion.id_leccion.toString() ===
+                                                leccionActualId?.toString()
+                                                    ? "true"
+                                                    : "false"
+                                            }
+                                            class={`
+                                        leccion-link
                                         flex items-start gap-4 p-4 transition-all group border-b border-gray-100 dark:border-gray-700 last:border-b-0
                                         hover:bg-gray-50 dark:hover:bg-gray-750
-                                        ${leccion.id_leccion.toString() === leccionActualId?.toString()
-                                            ? 'bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500'
-                                            : ''
+                                        ${
+                                            leccion.id_leccion.toString() ===
+                                            leccionActualId?.toString()
+                                                ? "bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500"
+                                                : ""
                                         }
-                                        ${leccion.completado && leccion.id_leccion.toString() !== leccionActualId?.toString() ? 'bg-green-50 dark:bg-green-900/20' : ''}
+                                        ${leccion.completado && leccion.id_leccion.toString() !== leccionActualId?.toString() ? "bg-green-50 dark:bg-green-900/20" : ""}
                                     `}
-                                >
-                                    <div class={`
+                                        >
+                                            <div
+                                                class={`
+                                        number-badge
                                         w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-colors mt-0.5
-                                        ${leccion.id_leccion.toString() === leccionActualId?.toString()
-                                            ? 'bg-blue-500 text-white'
-                                            : leccion.completado
-                                              ? 'bg-green-500 text-white'
-                                              : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 group-hover:bg-gray-300 dark:group-hover:bg-gray-500'
+                                        ${
+                                            leccion.id_leccion.toString() ===
+                                            leccionActualId?.toString()
+                                                ? "bg-blue-500 text-white"
+                                                : leccion.completado
+                                                  ? "bg-green-500 text-white"
+                                                  : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 group-hover:bg-gray-300 dark:group-hover:bg-gray-500"
                                         }
-                                    `}>
-                                        {leccionIndex + 1}
-                                    </div>
-                                    
-                                    {/* CONTENIDO DE LA LECCIÓN - MEJORADO */}
-                                    <div class="flex-1 min-w-0">
-                                        {/* TÍTULO DE LECCIÓN COMPLETO - SIN TRUNCATE */}
-                                        <div class="flex items-start gap-2 mb-2">
-                                            <span class="font-medium text-gray-900 dark:text-white text-sm leading-snug break-words flex-1">
-                                                {leccion.titulo}
-                                            </span>
-                                            {leccion.tipo_contenido === 'quiz' && (
-                                                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 mt-0.5">
-                                                    Quiz
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div class="flex items-center gap-3 flex-wrap">
-                                            <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
-                                                {leccion.tipo_contenido}
-                                            </span>
-                                            {leccion.completado && (
-                                                <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs">
-                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    Completada
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Indicadores del lado derecho */}
-                                    <div class="flex items-center gap-2 flex-shrink-0">
-                                        {leccion.completado && leccion.id_leccion.toString() !== leccionActualId?.toString() && (
-                                            <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        )}
-                                        
-                                        {/* Indicador de lección actual */}
-                                        {leccion.id_leccion.toString() === leccionActualId?.toString() && (
-                                            <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
-                                                Actual
-                                            </span>
-                                        )}
-                                    </div>
-                                </a>
-                            ))}
+                                    `}
+                                            >
+                                                {leccionIndex + 1}
+                                            </div>
+
+                                            {/* CONTENIDO DE LA LECCIÓN - MEJORADO */}
+                                            <div class="flex-1 min-w-0">
+                                                {/* TÍTULO DE LECCIÓN COMPLETO - SIN TRUNCATE */}
+                                                <div class="flex items-start gap-2 mb-2">
+                                                    <span class="font-medium text-gray-900 dark:text-white text-sm leading-snug break-words flex-1">
+                                                        {leccion.titulo}
+                                                    </span>
+                                                    {leccion.tipo_contenido ===
+                                                        "quiz" && (
+                                                        <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 mt-0.5">
+                                                            Quiz
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div class="flex items-center gap-3 flex-wrap">
+                                                    <span class="capitalize bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300">
+                                                        {leccion.tipo_contenido}
+                                                    </span>
+                                                    {leccion.completado && (
+                                                        <span class="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs">
+                                                            <svg
+                                                                class="w-3 h-3"
+                                                                fill="currentColor"
+                                                                viewBox="0 0 20 20"
+                                                            >
+                                                                <path
+                                                                    fill-rule="evenodd"
+                                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                    clip-rule="evenodd"
+                                                                />
+                                                            </svg>
+                                                            Completada
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Indicadores del lado derecho */}
+                                            <div class="indicators-container flex items-center gap-2 flex-shrink-0">
+                                                {leccion.completado &&
+                                                    leccion.id_leccion.toString() !==
+                                                        leccionActualId?.toString() && (
+                                                        <svg
+                                                            class="w-5 h-5 text-green-500 flex-shrink-0"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 20 20"
+                                                        >
+                                                            <path
+                                                                fill-rule="evenodd"
+                                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                clip-rule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    )}
+
+                                                {/* Indicador de lección actual */}
+                                                {leccion.id_leccion.toString() ===
+                                                    leccionActualId?.toString() && (
+                                                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                                                        Actual
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ),
+                                )}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
-        </div>
-    )}
+                    );
+                })}
+            </div>
+        )
+    }
 </aside>
 
 <script is:inline>
@@ -318,16 +411,20 @@ if (!moduloActualEncontrado && curso.modulos.length > 0) {
         const moduloHeaders = sidebar.querySelectorAll(".modulo-header");
 
         function closeOtherModulos(currentModuloId) {
-            moduloHeaders.forEach(header => {
+            moduloHeaders.forEach((header) => {
                 const moduloElement = header.closest("[data-modulo-id]");
                 if (!moduloElement) return;
 
                 const moduloId = moduloElement.dataset.moduloId;
-                
+
                 if (moduloId !== currentModuloId) {
-                    const otherLeccionesContainer = moduloElement.querySelector(".lecciones-container");
-                    const otherToggleIcon = header.querySelector(".modulo-toggle-icon");
-                    
+                    const otherLeccionesContainer = moduloElement.querySelector(
+                        ".lecciones-container",
+                    );
+                    const otherToggleIcon = header.querySelector(
+                        ".modulo-toggle-icon",
+                    );
+
                     if (otherLeccionesContainer) {
                         otherLeccionesContainer.classList.add("hidden");
                         otherLeccionesContainer.style.opacity = "";
@@ -340,39 +437,47 @@ if (!moduloActualEncontrado && curso.modulos.length > 0) {
                 }
             });
         }
-        
+
         moduloHeaders.forEach((header) => {
             header.addEventListener("click", () => {
                 const moduloElement = header.closest("[data-modulo-id]");
                 if (!moduloElement) {
-                    console.error("No se pudo encontrar el elemento [data-modulo-id] padre.");
+                    console.error(
+                        "No se pudo encontrar el elemento [data-modulo-id] padre.",
+                    );
                     return;
                 }
 
                 const moduloId = moduloElement.dataset.moduloId;
-                const leccionesContainer = moduloElement.querySelector(".lecciones-container");
+                const leccionesContainer = moduloElement.querySelector(
+                    ".lecciones-container",
+                );
                 const toggleIcon = header.querySelector(".modulo-toggle-icon");
 
                 if (leccionesContainer) {
-                    const isOpening = leccionesContainer.classList.contains("hidden");
+                    const isOpening =
+                        leccionesContainer.classList.contains("hidden");
 
                     // Lógica de acordeón: Si estamos abriendo, cerramos los demás
                     if (isOpening && moduloId) {
                         closeOtherModulos(moduloId);
                     }
-                    
+
                     // Toggle del módulo actual
                     leccionesContainer.classList.toggle("hidden");
 
                     // Animación suave al abrir
                     if (!leccionesContainer.classList.contains("hidden")) {
                         leccionesContainer.style.opacity = "0";
-                        leccionesContainer.style.transform = "translateY(-10px)";
-                        
+                        leccionesContainer.style.transform =
+                            "translateY(-10px)";
+
                         requestAnimationFrame(() => {
-                            leccionesContainer.style.transition = "all 0.3s ease";
+                            leccionesContainer.style.transition =
+                                "all 0.3s ease";
                             leccionesContainer.style.opacity = "1";
-                            leccionesContainer.style.transform = "translateY(0)";
+                            leccionesContainer.style.transform =
+                                "translateY(0)";
                         });
                     } else {
                         // Limpiar estilos al cerrar
@@ -389,12 +494,158 @@ if (!moduloActualEncontrado && curso.modulos.length > 0) {
         });
     }
 
+    // Lógica de Control de Acceso Secuencial
+    async function initSequentialAccess() {
+        const authToken =
+            localStorage.getItem("authToken") ||
+            sessionStorage.getItem("authToken");
+        const userDataRaw =
+            localStorage.getItem("userData") ||
+            sessionStorage.getItem("userData");
+
+        if (!authToken || !userDataRaw) {
+            console.warn(
+                "Usuario no autenticado, no se puede verificar progreso.",
+            );
+            return;
+        }
+
+        const userData = JSON.parse(userDataRaw);
+        const userId = userData.id || userData.id_usuario;
+
+        try {
+            // 1. Obtener progreso del usuario
+            const response = await fetch(
+                `http://localhost:8000/api/progreso-lecciones/usuario/${userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                        Accept: "application/json",
+                    },
+                },
+            );
+
+            if (!response.ok) throw new Error("Error al obtener progreso");
+
+            const progresoData = await response.json();
+            // Crear un Set de IDs de lecciones completadas para búsqueda rápida
+            const leccionesCompletadas = new Set(
+                progresoData.map((p) => p.leccion_id.toString()),
+            );
+
+            // 2. Iterar sobre todas las lecciones en orden del DOM
+            const lessonLinks = document.querySelectorAll(".leccion-link");
+            let previousLessonCompleted = true; // La primera lección siempre está desbloqueada
+
+            lessonLinks.forEach((link, index) => {
+                const leccionId = link.dataset.leccionId.toString();
+                const isCompleted = leccionesCompletadas.has(leccionId);
+                const isCurrent = link.dataset.isCurrent === "true";
+
+                // Actualizar UI de completado
+                if (isCompleted) {
+                    markLessonAsCompleted(link);
+                }
+
+                // Lógica de bloqueo
+                // Si la anterior no está completada, bloqueamos esta (a menos que sea la actual, por si acaso)
+                if (!previousLessonCompleted) {
+                    lockLesson(link);
+                } else {
+                    unlockLesson(link);
+                }
+
+                // Actualizar estado para la siguiente iteración
+                previousLessonCompleted = isCompleted;
+            });
+        } catch (error) {
+            console.error("Error en control de acceso secuencial:", error);
+        }
+    }
+
+    function markLessonAsCompleted(linkElement) {
+        // Buscar si ya tiene el badge de completado
+        const indicatorsDiv = linkElement.querySelector(
+            ".indicators-container",
+        );
+        if (indicatorsDiv && !indicatorsDiv.querySelector(".completed-badge")) {
+            const badge = document.createElement("span");
+            badge.className =
+                "completed-badge flex items-center gap-1 text-green-600 dark:text-green-400 text-xs";
+            badge.innerHTML = `
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Completada
+             `;
+            indicatorsDiv.insertBefore(badge, indicatorsDiv.firstChild);
+
+            if (linkElement.dataset.isCurrent !== "true") {
+                linkElement.classList.add(
+                    "bg-green-50",
+                    "dark:bg-green-900/20",
+                );
+            }
+
+            const numberBadge = linkElement.querySelector(".number-badge");
+            if (numberBadge && linkElement.dataset.isCurrent !== "true") {
+                numberBadge.classList.remove(
+                    "bg-gray-200",
+                    "dark:bg-gray-600",
+                    "text-gray-600",
+                    "dark:text-gray-400",
+                );
+                numberBadge.classList.add("bg-green-500", "text-white");
+            }
+        }
+    }
+
+    function lockLesson(linkElement) {
+        linkElement.classList.add(
+            "opacity-50",
+            "cursor-not-allowed",
+            "pointer-events-none",
+            "grayscale",
+        );
+        linkElement.setAttribute("aria-disabled", "true");
+        linkElement.tabIndex = -1;
+
+        const indicatorsDiv = linkElement.querySelector(
+            ".indicators-container",
+        );
+        if (indicatorsDiv && !indicatorsDiv.querySelector(".lock-icon")) {
+            const lockIcon = document.createElement("div");
+            lockIcon.className = "lock-icon text-gray-500 ml-2";
+            lockIcon.innerHTML =
+                '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>';
+            indicatorsDiv.appendChild(lockIcon);
+        }
+    }
+
+    function unlockLesson(linkElement) {
+        linkElement.classList.remove(
+            "opacity-50",
+            "cursor-not-allowed",
+            "pointer-events-none",
+            "grayscale",
+        );
+        linkElement.removeAttribute("aria-disabled");
+        linkElement.tabIndex = 0;
+
+        const lockIcon = linkElement.querySelector(".lock-icon");
+        if (lockIcon) lockIcon.remove();
+    }
+
     // Manejar diferentes estados de carga del DOM
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupAccordion);
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            setupAccordion();
+            initSequentialAccess();
+        });
     } else {
         // DOM ya está listo
         setupAccordion();
+        initSequentialAccess();
     }
 </script>
 
@@ -404,56 +655,61 @@ if (!moduloActualEncontrado && curso.modulos.length > 0) {
         max-height: 600px;
         overflow-y: auto;
     }
-    
+
     .lecciones-container::-webkit-scrollbar {
         width: 6px;
     }
-    
+
     .lecciones-container::-webkit-scrollbar-track {
         background: #f1f5f9;
         border-radius: 3px;
     }
-    
+
     .lecciones-container::-webkit-scrollbar-thumb {
         background: #cbd5e1;
         border-radius: 3px;
     }
-    
+
     .lecciones-container::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
     }
-    
+
     /* Mejoras de transición */
     .lecciones-container {
-        transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+        transition:
+            max-height 0.3s ease,
+            opacity 0.3s ease,
+            transform 0.3s ease;
     }
-    
+
     /* Efectos hover mejorados */
     .modulo-header:hover {
         background-color: #f8fafc !important;
         transform: translateY(-1px);
     }
-    
+
     .dark .modulo-header:hover {
         background-color: #374151 !important;
     }
-    
+
     /* Mejoras de tipografía */
     .break-words {
         word-break: break-word;
         overflow-wrap: break-word;
     }
-    
+
     /* Espaciado mejorado para textos largos */
     .leading-snug {
         line-height: 1.375;
     }
-    
+
     /* Sombra suave al hover */
     .hover\\:shadow-lg:hover {
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow:
+            0 10px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-    
+
     /* Color personalizado para hover en modo oscuro */
     .dark .hover\\:bg-gray-750:hover {
         background-color: #374151;

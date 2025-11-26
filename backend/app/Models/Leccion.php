@@ -32,5 +32,13 @@ class Leccion extends Model
         'video_url',
         'orden',
     ];
+
+    public function modulo(): BelongsTo
+    {
+        // 1er arg: Modelo padre (Modulo)
+        // 2do arg: Llave foránea en ESTA tabla ('lecciones')
+        // 3er arg: Llave primaria en la tabla 'modulos'
+        return $this->belongsTo(Modulo::class, 'modulo_id', 'id_modulo');
+    }
 }
 

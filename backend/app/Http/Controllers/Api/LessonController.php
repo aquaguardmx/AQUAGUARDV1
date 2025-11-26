@@ -43,7 +43,7 @@ class LessonController extends Controller
         $validator = Validator::make($request->all(), [
             'modulo_id' => 'required|integer|exists:modulos,id_modulo',
             'titulo' => 'required|string|max:255',
-            'tipo_contenido' => 'required|string|in:texto,video,video-texto',
+            'tipo_contenido' => 'required|string|in:texto,video,mixto',
             'contenido_texto' => 'nullable|string',
             'video_url' => 'nullable|url',
         ]);

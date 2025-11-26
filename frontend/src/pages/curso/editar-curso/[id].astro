@@ -1,0 +1,2347 @@
+---
+// src/pages/curso/editar-curso/[id].astro
+import Layout from "../../../layouts/Layout.astro";
+import Header from "../../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../../components/aquaguard-components/FooterE-Learning.astro";
+
+// 1. Definimos la interfaz para la estructura de los datos de la API
+interface Usuario {
+    id_usuario: number;
+    nombre: string;
+    ap_paterno: string;
+    ap_materno: string;
+    correo_electronico: string;
+    id_rol: number;
+    id_escuela: number | null;
+    created_at: string;
+    updated_at: string;
+    email_verified_at: string;
+}
+
+interface Categoria {
+    id: number;
+    nombre: string;
+    slug: string;
+    created_at: string;
+}
+
+interface Leccion {
+    id_leccion: number;
+    modulo_id: number;
+    titulo: string;
+    tipo_contenido: string;
+    contenido_texto: string | null;
+    video_url: string | null;
+    orden: number;
+    created_at: string;
+}
+
+interface Modulo {
+    id_modulo: number;
+    curso_id: number;
+    titulo: string;
+    orden: number;
+    lecciones: Leccion[];
+}
+
+interface ObjetivoAprendizaje {
+    id_objetivo?: number;
+    curso_id?: number;
+    descripcion: string;
+    created_at?: string;
+}
+
+interface Curso {
+    id_curso: number;
+    titulo: string;
+    descripcion: string;
+    portada_url: string;
+    tiempo_estimado_min: number;
+    autor_id: number;
+    categoria_id: number;
+    publicado: boolean;
+    created_at: string;
+    updated_at: string;
+    autor: Usuario;
+    categoria: Categoria;
+    modulos: Modulo[];
+    objetivos_aprendizaje: ObjetivoAprendizaje[];
+}
+
+// Configuración de la API
+const API_URL = "http://localhost:8000/api/cursos/";
+
+// Parámetros de la ruta
+export async function getStaticPaths() {
+    return [
+        { params: { id: '21' } },
+        { params: { id: '22' } },
+        // Agrega más IDs según necesites
+    ];
+}
+
+const { id } = Astro.params;
+
+// 2. Obtener datos del curso desde la API
+let curso: Curso | null = null;
+let error: string | null = null;
+
+try {
+    const response = await fetch(`${API_URL}${id}`);
+    
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    curso = data as Curso;
+} catch (err) {
+    console.error("Error al obtener el curso:", err);
+    error = "No se pudo cargar la información del curso";
+}
+
+// Calcular estadísticas
+const totalLecciones = curso ? curso.modulos.reduce((total, modulo) => total + modulo.lecciones.length, 0) : 0;
+const moduloCount = curso ? curso.modulos.length : 0;
+---
+
+<Layout title={`${curso ? curso.titulo : 'Editar Curso'} - AquaGuard`}>
+    <!-- Header con funcionalidad de cierre de sesión -->
+    <Header />
+
+    <!-- Hero Section para Editar Curso -->
+    <section
+        class="relative min-h-[40vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600"
+    >
+        <!-- Elementos de fondo animados -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <!-- Ondas animadas -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg
+                class="w-full h-20 md:h-28 text-blue-800/30"
+                viewBox="0 0 1200 120"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                    opacity=".25"
+                    fill="currentColor"
+                >
+                </path>
+                <path
+                    d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
+                    opacity=".5"
+                    fill="currentColor"></path>
+                <path
+                    d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
+                    fill="currentColor"></path>
+            </svg>
+        </div>
+
+        <!-- Burbujas flotantes -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="bubble bubble-1"></div>
+            <div class="bubble bubble-2"></div>
+            <div class="bubble bubble-3"></div>
+            <div class="bubble bubble-4"></div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="container mx-auto px-6 text-center relative z-10 py-12">
+            <!-- Badge destacado -->
+            <div
+                class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-5 py-2 mb-6 animate-pulse"
+            >
+                <svg
+                    class="w-4 h-4 text-blue-200"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                >
+                    <path
+                        fill-rule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd"
+                    />
+                </svg>
+                <span class="text-blue-100 text-sm font-medium tracking-wide"
+                    >Gestiona tu contenido educativo</span
+                >
+            </div>
+
+            <!-- Título principal -->
+            <div class="mb-6">
+                <h1
+                    class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight"
+                >
+                    {curso ? 'Gestionar' : 'Cargando'}
+                    <span
+                        class="block bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent mt-2"
+                    >
+                        {curso ? curso.titulo : 'Curso'}
+                    </span>
+                </h1>
+            </div>
+
+            <!-- Descripción -->
+            {curso && (
+                <div class="mb-8">
+                    <p
+                        class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed"
+                    >
+                        Organiza módulos, lecciones y controla el estado de tu curso de
+                        <span class="font-semibold text-white">educación ambiental</span>.
+                    </p>
+                </div>
+            )}
+        </div>
+    </section>
+
+    <!-- Contenido Principal -->
+    <main
+        class="bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+    >
+        <div class="container mx-auto px-6 py-16">
+            <div class="max-w-6xl mx-auto">
+                {error ? (
+                    <!-- Mensaje de error -->
+                    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-6 rounded-2xl mb-8">
+                        <div class="flex items-center">
+                            <svg class="w-8 h-8 mr-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <p class="font-bold text-xl">Error al cargar el curso</p>
+                                <p>{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : !curso ? (
+                    <!-- Loading state -->
+                    <div class="text-center py-16">
+                        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p class="text-gray-600 dark:text-gray-400 text-lg">Cargando información del curso...</p>
+                    </div>
+                ) : (
+                    <!-- Contenido del curso -->
+                    <>
+                        <!-- Información del Curso -->
+                        <div class="mb-12">
+                            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-6 text-white">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-2xl font-bold mb-1">{curso.titulo}</h2>
+                                            <p class="text-blue-100 text-sm">
+                                                Curso ID: {curso.id_curso} | 
+                                                Categoría: {curso.categoria.nombre} | 
+                                                Estado: <span class="font-semibold">{curso.publicado ? 'Publicado' : 'Borrador'}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                                        <div>
+                                            <span class="font-semibold text-gray-600 dark:text-gray-400">Autor:</span>
+                                            <p class="text-gray-800 dark:text-gray-200">{curso.autor.nombre} {curso.autor.ap_paterno}</p>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-gray-600 dark:text-gray-400">Duración:</span>
+                                            <p class="text-gray-800 dark:text-gray-200">{Math.floor(curso.tiempo_estimado_min / 60)}h {curso.tiempo_estimado_min % 60}m</p>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-gray-600 dark:text-gray-400">Creado:</span>
+                                            <p class="text-gray-800 dark:text-gray-200">{new Date(curso.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gestión de Módulos y Lecciones -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- Panel de Módulos -->
+                            <div class="lg:col-span-2">
+                                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                                    <!-- Header del panel -->
+                                    <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-6 text-white">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                                                </svg>
+                                                <h3 class="text-xl font-bold">Módulos del Curso</h3>
+                                            </div>
+                                            <button id="agregar-modulo" class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center gap-2">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                                Agregar Módulo
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Módulos -->
+                                    <div class="p-6">
+                                        <div id="modulos-container" class="space-y-4">
+                                            {curso.modulos.map((modulo) => {
+                                                const totalLeccionesModulo = modulo.lecciones.length;
+                                                const duracionEstimada = totalLeccionesModulo * 15; // Estimación de 15min por lección
+                                                
+                                                return (
+                                                    <div class="modulo-item bg-white dark:bg-gray-700 border-2 border-gray-200/50 dark:border-gray-600/50 rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-300/50 dark:hover:border-blue-600/50" data-modulo-id={modulo.id_modulo}>
+                                                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 flex items-center justify-between">
+                                                            <div class="flex items-center gap-3">
+                                                                <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                                                                    {modulo.orden}
+                                                                </div>
+                                                                <div>
+                                                                    <h4 class="font-bold text-gray-800 dark:text-gray-200">{modulo.titulo}</h4>
+                                                                    <p class="text-sm text-gray-600 dark:text-gray-400">{totalLeccionesModulo} lecciones • {duracionEstimada} minutos</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex items-center gap-2">
+                                                                <button class="editar-modulo p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-300" data-modulo-id={modulo.id_modulo}>
+                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button class="eliminar-modulo p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300" data-modulo-id={modulo.id_modulo}>
+                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="p-4">
+                                                            <div class="lecciones-container space-y-3">
+                                                                {modulo.lecciones.map((leccion) => (
+                                                                    <div class="leccion-item flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-600/50 rounded-xl" data-leccion-id={leccion.id_leccion}>
+                                                                        <div class="flex items-center gap-3 flex-1">
+                                                                            <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                                                                {leccion.orden}
+                                                                            </div>
+                                                                            <div>
+                                                                                <h5 class="font-medium text-gray-800 dark:text-gray-200">{leccion.titulo}</h5>
+                                                                                <p class="text-xs text-gray-600 dark:text-gray-400">
+                                                                                    15 minutos • {leccion.tipo_contenido === 'texto' ? 'Texto' : leccion.tipo_contenido === 'video' ? 'Video' : 'Mixto'}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="flex items-center gap-1">
+                                                                            <button class="editar-leccion p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-300" data-leccion-id={leccion.id_leccion}>
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                </svg>
+                                                                            </button>
+                                                                            <button class="eliminar-leccion p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300" data-leccion-id={leccion.id_leccion}>
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <button class="agregar-leccion mt-4 w-full py-2 border-2 border-dashed border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-600 dark:text-gray-400 hover:border-green-500 hover:text-green-500 transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium" data-modulo-id={modulo.id_modulo}>
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                                </svg>
+                                                                Agregar Lección
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel de Control -->
+                            <div class="lg:col-span-1">
+                                <!-- Estado del Curso -->
+                                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden mb-8">
+                                    <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-6 text-white">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            <h3 class="text-xl font-bold">Estado del Curso</h3>
+                                        </div>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="space-y-6">
+                                            <!-- Selector de Estado -->
+                                            <div>
+                                                <label class="block text-lg font-bold text-gray-800 dark:text-gray-200 mb-3">
+                                                    Estado Actual
+                                                </label>
+                                                <select id="estado-curso" class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300">
+                                                    <option value="false" selected={!curso.publicado}>Borrador</option>
+                                                    <option value="true" selected={curso.publicado}>Publicado</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Estadísticas -->
+                                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                                                <h4 class="font-bold text-gray-800 dark:text-gray-200 mb-3">Resumen del Curso</h4>
+                                                <div class="space-y-2">
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-600 dark:text-gray-400">Módulos:</span>
+                                                        <span class="font-bold text-gray-800 dark:text-gray-200">{moduloCount}</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-600 dark:text-gray-400">Lecciones:</span>
+                                                        <span class="font-bold text-gray-800 dark:text-gray-200">{totalLecciones}</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-gray-600 dark:text-gray-400">Duración Total:</span>
+                                                        <span class="font-bold text-gray-800 dark:text-gray-200">{Math.floor(curso.tiempo_estimado_min / 60)}h {curso.tiempo_estimado_min % 60}m</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Acciones -->
+                                            <div class="space-y-3">
+                                                <button id="guardar-cambios" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    Guardar Cambios
+                                                </button>
+                                                <button id="vista-previa" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    Vista Previa
+                                                </button>
+                                                <a href="/usuario/cursos" class="block w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 text-center flex items-center justify-center gap-2">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                    Volver a Cursos
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Información Rápida -->
+                                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-purple-600 to-pink-500 p-6 text-white">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <h3 class="text-xl font-bold">Consejos Rápidos</h3>
+                                        </div>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="space-y-4">
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Organiza los módulos en orden lógico de aprendizaje.</p>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Mantén las lecciones entre 10-20 minutos para mejor retención.</p>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Incluye diferentes tipos de contenido (video, texto, quiz).</p>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">Revisa el curso completo antes de publicarlo.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Quiz Final - NUEVA SECCIÓN -->
+                        <div class="mt-12">
+                            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                                <!-- Header del panel de quiz -->
+                                <div class="bg-gradient-to-r from-purple-600 to-pink-500 p-6 text-white">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            <h3 class="text-xl font-bold">Quiz Final del Curso</h3>
+                                        </div>
+                                        <button id="agregar-quiz" class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 flex items-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            Gestionar Quiz
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Contenido del quiz -->
+                                <div class="p-6">
+                                    <div class="text-center py-8">
+                                        <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
+                                            Quiz Final del Curso
+                                        </h4>
+                                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                                            Crea preguntas de evaluación para medir el aprendizaje de tus estudiantes
+                                        </p>
+                                        <div id="estado-quiz" class="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-full text-sm font-medium">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            No configurado
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de preguntas (se llenará dinámicamente) -->
+                                    <div id="lista-preguntas" class="space-y-4 hidden">
+                                        <!-- Las preguntas se agregarán aquí dinámicamente -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para agregar módulo -->
+    <div id="modal-modulo" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0" id="modal-modulo-content">
+                <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-6 rounded-t-3xl text-white">
+                    <h3 class="text-xl font-bold">Agregar Nuevo Módulo</h3>
+                </div>
+                <div class="p-6">
+                    <form id="form-modulo">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Título del Módulo
+                            </label>
+                            <input 
+                                type="text" 
+                                id="titulo-modulo"
+                                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300"
+                                placeholder="Ej: Introducción a la Educación Ambiental"
+                                required
+                            />
+                        </div>
+                        <div class="flex gap-3 mt-6">
+                            <button type="button" id="cancelar-modulo" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Crear Módulo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar lección -->
+    <div id="modal-leccion" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300 overflow-y-auto">
+        <div class="flex items-start justify-center min-h-screen p-2 sm:p-4 py-8">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl lg:max-w-4xl mx-auto my-8 transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col" id="modal-leccion-content">
+                <!-- Header fijo -->
+                <div class="bg-gradient-to-r from-green-600 to-teal-500 p-4 sm:p-6 rounded-t-3xl text-white flex-shrink-0">
+                    <h3 class="text-lg sm:text-xl font-bold" id="modal-leccion-titulo">Agregar Nueva Lección</h3>
+                </div>
+                
+                <!-- Contenido desplazable -->
+                <div class="p-4 sm:p-6 overflow-y-auto flex-1">
+                    <form id="form-leccion" class="space-y-4 sm:space-y-6">
+                        <!-- Título y Tipo en grid responsive -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Título de la Lección
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="titulo-leccion"
+                                    class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                                    placeholder="Ej: ¿Qué es la Educación Ambiental?"
+                                    required
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tipo de Contenido
+                                </label>
+                                <select 
+                                    id="tipo-contenido"
+                                    class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                                >
+                                    <option value="texto">Texto</option>
+                                    <option value="video">Video</option>
+                                    <option value="mixto">Mixto (Texto + Video)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Contenido de Texto -->
+                        <div id="contenido-texto-section" class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Contenido de Texto
+                            </label>
+                            <div class="border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl overflow-hidden">
+                                <!-- Toolbar del editor mejorado -->
+                                <div class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 p-2 sm:p-3 flex flex-wrap gap-1 sm:gap-2">
+                                    <button type="button" class="editor-btn p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm" data-command="bold" title="Negrita">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h16M3 12h16M3 18h7" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm" data-command="italic" title="Itálica">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm" data-command="insertUnorderedList" title="Lista">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm" data-command="createLink" title="Enlace">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="editor-btn p-1.5 sm:p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm" data-command="formatBlock" data-value="h2" title="Título">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <!-- Área de edición responsive -->
+                                <div 
+                                    id="editor-texto"
+                                    class="min-h-[150px] sm:min-h-[200px] max-h-[300px] sm:max-h-[400px] overflow-y-auto p-3 sm:p-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none text-sm sm:text-base"
+                                    contenteditable="true"
+                                ><p>Escribe el contenido de tu lección aquí...</p></div>
+                            </div>
+                        </div>
+
+                        <!-- URL de Video -->
+                        <div id="contenido-video-section" class="space-y-2 hidden">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                URL del Video de YouTube
+                            </label>
+                            <input 
+                                type="url" 
+                                id="video-url"
+                                class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                                placeholder="https://www.youtube.com/watch?v=ABCD1234 o https://youtu.be/ABCD1234"
+                            />
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Soporta enlaces de YouTube (watch o youtu.be)
+                            </p>
+                        </div>
+
+                        <!-- Vista previa del video MEJORADA -->
+                        <div id="video-preview" class="space-y-2 hidden">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Vista Previa del Video
+                            </label>
+                            <div class="bg-gray-100 dark:bg-gray-700 rounded-xl p-3 sm:p-4 aspect-video flex items-center justify-center min-h-[120px]">
+                                <p class="text-gray-500 dark:text-gray-400 text-center text-sm sm:text-base">
+                                    Ingresa una URL de YouTube para ver la vista previa
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Botones fijos en la parte inferior -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-600 flex-shrink-0">
+                            <button type="button" id="cancelar-leccion" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-300 text-sm sm:text-base">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Guardar Lección
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para gestionar quiz - Versión Mejorada -->
+<div id="modal-quiz" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300 overflow-y-auto">
+    <div class="flex items-start justify-center min-h-screen p-2 sm:p-4 py-8">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-4xl mx-auto my-8 transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700" id="modal-quiz-content">
+            <!-- Header fijo con mejor gradiente y sombra -->
+            <div class="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 p-4 sm:p-6 rounded-t-3xl text-white flex-shrink-0 shadow-md relative overflow-hidden">
+                <!-- Efecto de brillo sutil -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full animate-shimmer"></div>
+                
+                <div class="flex items-start justify-between relative z-10">
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Gestionar Quiz Final
+                        </h3>
+                        <p class="text-purple-100 text-sm mt-2 opacity-90">Agrega preguntas de evaluación para el curso</p>
+                    </div>
+                    <button id="cerrar-modal" class="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contenido desplazable -->
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1">
+                <!-- Configuración general del quiz con mejor diseño -->
+                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-5 mb-6 border border-purple-100 dark:border-purple-800/50 shadow-sm">
+                    <h4 class="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2 text-lg">
+                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Configuración del Quiz
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Puntaje mínimo para aprobar (%)
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="puntaje-minimo"
+                                    class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/70 dark:border-gray-600/70 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-300 shadow-sm"
+                                    placeholder="70"
+                                    min="0"
+                                    max="100"
+                                />
+                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Tiempo límite (minutos)
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="number" 
+                                    id="tiempo-limite"
+                                    class="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/70 dark:border-gray-600/70 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-300 shadow-sm"
+                                    placeholder="30"
+                                    min="5"
+                                />
+                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de preguntas existentes con mejor diseño -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <h4 class="font-bold text-gray-800 dark:text-gray-200 text-lg flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Preguntas del Quiz
+                        </h4>
+                        <span id="contador-preguntas" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-1">
+                            <span id="numero-preguntas">0</span> preguntas
+                        </span>
+                    </div>
+                    
+                    <div id="preguntas-container" class="space-y-4">
+                        <!-- Las preguntas se agregarán aquí dinámicamente -->
+                        <div id="sin-preguntas" class="text-center py-10 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium">No hay preguntas agregadas</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Agrega la primera pregunta usando el botón de abajo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón para agregar nueva pregunta con mejor diseño -->
+                <button id="agregar-pregunta" class="w-full py-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-2 border-dashed border-purple-300 dark:border-purple-600 rounded-xl text-purple-600 dark:text-purple-400 hover:border-purple-500 hover:text-purple-700 dark:hover:text-purple-300 hover:shadow-md transition-all duration-300 flex items-center justify-center gap-3 font-semibold mb-6 group">
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Agregar Nueva Pregunta
+                </button>
+
+                <!-- Botones de acción mejorados -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-5 border-t border-gray-200 dark:border-gray-600 flex-shrink-0">
+                    <button type="button" id="cancelar-quiz" class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancelar
+                    </button>
+                    <button type="button" id="guardar-quiz" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Guardar Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Modal para agregar/editar pregunta - NUEVO MODAL -->
+    <div id="modal-pregunta" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-opacity duration-300 overflow-y-auto">
+        <div class="flex items-start justify-center min-h-screen p-2 sm:p-4 py-8">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto my-8 transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] flex flex-col" id="modal-pregunta-content">
+                <!-- Header fijo -->
+                <div class="bg-gradient-to-r from-blue-600 to-teal-500 p-4 sm:p-6 rounded-t-3xl text-white flex-shrink-0">
+                    <h3 class="text-lg sm:text-xl font-bold" id="modal-pregunta-titulo">Agregar Nueva Pregunta</h3>
+                </div>
+                
+                <!-- Contenido desplazable -->
+                <div class="p-4 sm:p-6 overflow-y-auto flex-1">
+                    <form id="form-pregunta" class="space-y-4 sm:space-y-6">
+                        <!-- Enunciado de la pregunta -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Enunciado de la Pregunta *
+                            </label>
+                            <textarea 
+                                id="enunciado-pregunta"
+                                class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base resize-none"
+                                placeholder="Ej: ¿Cuál es el principal objetivo de la educación ambiental?"
+                                rows="3"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <!-- Tipo de pregunta -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Tipo de Pregunta *
+                            </label>
+                            <select 
+                                id="tipo-pregunta"
+                                class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                            >
+                                <option value="opcion_multiple">Opción Múltiple</option>
+                                <option value="verdadero_falso">Verdadero/Falso</option>
+                                <option value="seleccion_multiple">Selección Múltiple</option>
+                            </select>
+                        </div>
+
+                        <!-- Opciones de respuesta -->
+                        <div id="opciones-container" class="space-y-3">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Opciones de Respuesta *
+                            </label>
+                            
+                            <!-- Opción 1 -->
+                            <div class="opcion-item flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <div class="flex items-center gap-3 flex-1">
+                                    <input type="radio" name="respuesta-correcta" class="respuesta-correcta w-4 h-4 text-blue-600" />
+                                    <input 
+                                        type="text" 
+                                        class="texto-opcion w-full px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300/50 dark:border-gray-500/50 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/30 focus:border-blue-500 text-sm"
+                                        placeholder="Opción 1"
+                                        required
+                                    />
+                                </div>
+                                <button type="button" class="eliminar-opcion p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300 opacity-50 cursor-not-allowed" disabled>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Opción 2 -->
+                            <div class="opcion-item flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <div class="flex items-center gap-3 flex-1">
+                                    <input type="radio" name="respuesta-correcta" class="respuesta-correcta w-4 h-4 text-blue-600" />
+                                    <input 
+                                        type="text" 
+                                        class="texto-opcion w-full px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300/50 dark:border-gray-500/50 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/30 focus:border-blue-500 text-sm"
+                                        placeholder="Opción 2"
+                                        required
+                                    />
+                                </div>
+                                <button type="button" class="eliminar-opcion p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botón para agregar más opciones -->
+                        <button type="button" id="agregar-opcion" class="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Agregar otra opción
+                        </button>
+
+                        <!-- Puntos -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Puntos *
+                            </label>
+                            <input 
+                                type="number" 
+                                id="puntos-pregunta"
+                                class="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                                placeholder="10"
+                                min="1"
+                                max="100"
+                                value="10"
+                                required
+                            />
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-600 flex-shrink-0">
+                            <button type="button" id="cancelar-pregunta" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-300 text-sm sm:text-base">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Guardar Pregunta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <Footer />
+
+    <script is:inline>
+    // Configuración de la API
+
+    const API_URL = "http://192.168.1.163:8000/api";
+    
+    // Función mejorada para obtener el CURSO_ID
+    function obtenerCursoId() {
+        // Para URLs como /curso/editar-curso/21
+        const path = window.location.pathname;
+        const match = path.match(/\/(\d+)$/);
+        if (match && match[1]) {
+            return parseInt(match[1]);
+        }
+        
+        // Intentar obtener de la URL actual
+        const segments = path.split('/').filter(segment => segment);
+        const idSegment = segments[segments.length - 1];
+        const idNumero = parseInt(idSegment);
+        
+        if (!isNaN(idNumero)) {
+            return idNumero;
+        }
+        
+        console.error('❌ No se pudo obtener el ID del curso de la URL');
+        return null;
+    }
+
+    const CURSO_ID = obtenerCursoId();
+
+    // Función para limpiar el contenido HTML antes de enviar
+    function limpiarContenidoHTML(html) {
+        if (!html) return null;
+        
+        // Reemplazar etiquetas problemáticas pero mantener formato básico
+        const contenidoLimpio = html
+            .replace(/<p><br><\/p>/g, '') // Remover párrafos vacíos
+            .replace(/<p><\/p>/g, '') // Remover párrafos vacíos
+            .trim();
+        
+        return contenidoLimpio === '<p>Escribe el contenido de tu lección aquí...</p>' ? 
+               null : contenidoLimpio;
+    }
+
+    // Función para extraer el ID del video de YouTube
+    function extractVideoId(url) {
+        if (!url) return null;
+        
+        // Patrones para diferentes formatos de URL de YouTube
+        const patterns = [
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/, // youtube.com/watch?v=ID o youtu.be/ID
+            /(?:youtube\.com\/embed\/)([^&?#]+)/, // youtube.com/embed/ID
+            /(?:youtube\.com\/v\/)([^&?#]+)/, // youtube.com/v/ID
+        ];
+        
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        
+        return null;
+    }
+
+    // Función para truncar URLs largas
+    function truncateUrl(url, maxLength = 50) {
+        if (url.length <= maxLength) return url;
+        return url.substring(0, maxLength) + '...';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔧 Script de edición de curso inicializado - VERSIÓN COMPLETA');
+        console.log('📝 Configuración para contenido mixto y quiz activada');
+        console.log('🔍 CURSO_ID detectado:', CURSO_ID);
+
+        // Referencias a elementos
+        const agregarModuloBtn = document.getElementById('agregar-modulo');
+        const estadoSelect = document.getElementById('estado-curso');
+        const guardarBtn = document.getElementById('guardar-cambios');
+        const vistaPreviaBtn = document.getElementById('vista-previa');
+
+        // Referencias a modales
+        const modalModulo = document.getElementById('modal-modulo');
+        const modalModuloContent = document.getElementById('modal-modulo-content');
+        const formModulo = document.getElementById('form-modulo');
+        const tituloModuloInput = document.getElementById('titulo-modulo');
+        const cancelarModuloBtn = document.getElementById('cancelar-modulo');
+
+        const modalLeccion = document.getElementById('modal-leccion');
+        const modalLeccionContent = document.getElementById('modal-leccion-content');
+        const modalLeccionTitulo = document.getElementById('modal-leccion-titulo');
+        const formLeccion = document.getElementById('form-leccion');
+        const tituloLeccionInput = document.getElementById('titulo-leccion');
+        const tipoContenidoSelect = document.getElementById('tipo-contenido');
+        const contenidoTextoSection = document.getElementById('contenido-texto-section');
+        const contenidoVideoSection = document.getElementById('contenido-video-section');
+        const videoUrlInput = document.getElementById('video-url');
+        const videoPreview = document.getElementById('video-preview');
+        const editorTexto = document.getElementById('editor-texto');
+        const cancelarLeccionBtn = document.getElementById('cancelar-leccion');
+
+        // Referencias a elementos del quiz
+        const agregarQuizBtn = document.getElementById('agregar-quiz');
+        const modalQuiz = document.getElementById('modal-quiz');
+        const modalQuizContent = document.getElementById('modal-quiz-content');
+        const cancelarQuizBtn = document.getElementById('cancelar-quiz');
+        const guardarQuizBtn = document.getElementById('guardar-quiz');
+        const agregarPreguntaBtn = document.getElementById('agregar-pregunta');
+        const preguntasContainer = document.getElementById('preguntas-container');
+        const contadorPreguntas = document.getElementById('contador-preguntas');
+        const sinPreguntas = document.getElementById('sin-preguntas');
+
+        // Modal de pregunta
+        const modalPregunta = document.getElementById('modal-pregunta');
+        const modalPreguntaContent = document.getElementById('modal-pregunta-content');
+        const modalPreguntaTitulo = document.getElementById('modal-pregunta-titulo');
+        const formPregunta = document.getElementById('form-pregunta');
+        const cancelarPreguntaBtn = document.getElementById('cancelar-pregunta');
+        const agregarOpcionBtn = document.getElementById('agregar-opcion');
+        const opcionesContainer = document.getElementById('opciones-container');
+
+        // Variables para estado
+        let moduloActualId = null;
+        let leccionActualId = null;
+
+        // Variables de estado del quiz
+        let preguntas = [];
+        let preguntaActualId = null;
+        let opcionCounter = 2;
+
+        // Funciones para mostrar/ocultar modales MEJORADAS
+        function mostrarModal(modal, content) {
+            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 50);
+        }
+
+        function ocultarModal(modal, content) {
+            document.body.style.overflow = '';
+            modal.classList.remove('opacity-100');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        function setupCerrarModalExterno(modal, content) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    ocultarModal(modal, content);
+                }
+            });
+        }
+
+        // Función para mostrar mensajes
+        function mostrarMensaje(mensaje, tipo = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-message m-4 ${tipo === 'success' ? 'bg-green-50 border-green-500 text-green-700' : 'bg-red-50 border-red-500 text-red-700'} border-l-4 p-4 rounded-2xl flex items-start shadow-2xl`;
+            
+            alertDiv.innerHTML = `
+                <svg class="w-6 h-6 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="${tipo === 'success' ? 'M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' : 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'}" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                    <p class="font-bold">${tipo === 'success' ? 'Éxito' : 'Error'}</p>
+                    <p>${mensaje}</p>
+                </div>
+            `;
+
+            document.querySelectorAll('.alert-message').forEach(el => el.remove());
+            const main = document.querySelector('main');
+            if (main) {
+                main.insertBefore(alertDiv, main.firstChild);
+                setTimeout(() => {
+                    if (alertDiv.parentNode) alertDiv.remove();
+                }, 5000);
+            }
+        }
+
+        // Configurar editor de texto MEJORADO
+        function setupEditor() {
+            // Botones del editor
+            document.querySelectorAll('.editor-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    const value = this.getAttribute('data-value');
+                    
+                    if (command === 'formatBlock' && value) {
+                        document.execCommand(command, false, value);
+                    } else {
+                        document.execCommand(command, false, null);
+                    }
+                    
+                    editorTexto.focus();
+                });
+            });
+
+            // Manejar enlaces
+            document.querySelector('[data-command="createLink"]').addEventListener('click', function() {
+                const url = prompt('Ingresa la URL:');
+                if (url) {
+                    // Validar URL antes de insertar
+                    if (url.startsWith('http://') || url.startsWith('https://')) {
+                        document.execCommand('createLink', false, url);
+                    } else {
+                        alert('Por favor ingresa una URL válida (debe comenzar con http:// o https://)');
+                    }
+                }
+            });
+
+            // Establecer contenido por defecto más claro
+            if (editorTexto.innerHTML === '') {
+                editorTexto.innerHTML = '<p>Escribe el contenido de tu lección aquí...</p>';
+            }
+
+            // Prevenir problemas de contenido editable en móviles
+            editorTexto.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+        }
+
+        // Manejar cambio de tipo de contenido
+        function manejarTipoContenido() {
+            const tipo = tipoContenidoSelect.value;
+            console.log('🔄 Cambiando tipo de contenido a:', tipo);
+            
+            // Mostrar/ocultar secciones según el tipo
+            if (tipo === 'texto') {
+                contenidoTextoSection.classList.remove('hidden');
+                contenidoVideoSection.classList.add('hidden');
+                videoPreview.classList.add('hidden');
+            } else if (tipo === 'video') {
+                contenidoTextoSection.classList.add('hidden');
+                contenidoVideoSection.classList.remove('hidden');
+                videoPreview.classList.remove('hidden');
+                
+                // Forzar actualización de la vista previa si hay URL
+                if (videoUrlInput.value.trim()) {
+                    videoUrlInput.dispatchEvent(new Event('input'));
+                }
+            } else if (tipo === 'mixto') {
+                contenidoTextoSection.classList.remove('hidden');
+                contenidoVideoSection.classList.remove('hidden');
+                videoPreview.classList.remove('hidden');
+                
+                // Forzar actualización de la vista previa si hay URL
+                if (videoUrlInput.value.trim()) {
+                    videoUrlInput.dispatchEvent(new Event('input'));
+                }
+            }
+        }
+
+        // Vista previa de video MEJORADA con soporte real para YouTube
+        function setupVideoPreview() {
+            let previewTimeout;
+            
+            videoUrlInput.addEventListener('input', function() {
+                clearTimeout(previewTimeout);
+                const url = this.value.trim();
+                
+                previewTimeout = setTimeout(() => {
+                    if (url) {
+                        const videoId = extractVideoId(url);
+                        if (videoId) {
+                            // Mostrar reproductor de YouTube embebido
+                            videoPreview.innerHTML = `
+                                <div class="bg-black rounded-xl overflow-hidden aspect-video">
+                                    <iframe 
+                                        src="https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0" 
+                                        class="w-full h-full"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen
+                                        title="Vista previa del video"
+                                    ></iframe>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                                    Vista previa de YouTube - El video se reproducirá aquí
+                                </p>
+                            `;
+                        } else {
+                            // URL no reconocida, mostrar mensaje
+                            videoPreview.innerHTML = `
+                                <div class="bg-gray-900 rounded-xl p-4 aspect-video flex flex-col items-center justify-center text-center">
+                                    <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.927-6.04-2.444M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                                    </svg>
+                                    <p class="text-gray-400 text-sm">
+                                        No se pudo cargar la vista previa<br>
+                                        <span class="text-xs text-gray-500 break-all mt-1">${truncateUrl(url)}</span>
+                                    </p>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // URL vacía
+                        videoPreview.innerHTML = `
+                            <div class="bg-gray-100 dark:bg-gray-700 rounded-xl p-4 aspect-video flex items-center justify-center">
+                                <p class="text-gray-500 dark:text-gray-400 text-center text-sm">
+                                    Ingresa una URL de YouTube para ver la vista previa
+                                </p>
+                            </div>
+                        `;
+                    }
+                }, 800); // Aumentamos el timeout para dar tiempo a escribir
+            });
+        }
+
+        // Validación de URL de YouTube
+        function setupUrlValidation() {
+            videoUrlInput.addEventListener('blur', function() {
+                const url = this.value.trim();
+                if (url && !extractVideoId(url)) {
+                    this.classList.add('border-red-500');
+                    this.classList.remove('border-gray-300/50');
+                    
+                    // Mostrar mensaje de error debajo del input
+                    let errorMsg = this.parentNode.querySelector('.url-error');
+                    if (!errorMsg) {
+                        errorMsg = document.createElement('p');
+                        errorMsg.className = 'url-error text-red-500 text-xs mt-1';
+                        this.parentNode.appendChild(errorMsg);
+                    }
+                    errorMsg.textContent = 'URL de YouTube no válida. Usa formato: youtube.com/watch?v=ID o youtu.be/ID';
+                } else {
+                    this.classList.remove('border-red-500');
+                    this.classList.add('border-gray-300/50');
+                    
+                    const errorMsg = this.parentNode.querySelector('.url-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            });
+            
+            // Limpiar validación cuando el usuario empiece a escribir
+            videoUrlInput.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-gray-300/50');
+                
+                const errorMsg = this.parentNode.querySelector('.url-error');
+                if (errorMsg) {
+                    errorMsg.remove();
+                }
+            });
+        }
+
+        // =============================================
+        // FUNCIONALIDAD PARA QUIZ
+        // =============================================
+
+        function mostrarModalQuiz() {
+            mostrarModal(modalQuiz, modalQuizContent);
+            actualizarContadorPreguntas();
+        }
+
+        function ocultarModalQuiz() {
+            ocultarModal(modalQuiz, modalQuizContent);
+        }
+
+        function mostrarModalPregunta() {
+            mostrarModal(modalPregunta, modalPreguntaContent);
+        }
+
+        function ocultarModalPregunta() {
+            ocultarModal(modalPregunta, modalPreguntaContent);
+        }
+
+        function actualizarContadorPreguntas() {
+            const count = preguntas.length;
+            contadorPreguntas.textContent = `${count} pregunta${count !== 1 ? 's' : ''}`;
+            
+            if (count > 0) {
+                sinPreguntas.style.display = 'none';
+            } else {
+                sinPreguntas.style.display = 'block';
+            }
+        }
+
+        function agregarOpcion() {
+            opcionCounter++;
+            const nuevaOpcion = document.createElement('div');
+            nuevaOpcion.className = 'opcion-item flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg';
+            nuevaOpcion.innerHTML = `
+                <div class="flex items-center gap-3 flex-1">
+                    <input type="radio" name="respuesta-correcta" class="respuesta-correcta w-4 h-4 text-blue-600" />
+                    <input 
+                        type="text" 
+                        class="texto-opcion w-full px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300/50 dark:border-gray-500/50 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500/30 focus:border-blue-500 text-sm"
+                        placeholder="Opción ${opcionCounter}"
+                        required
+                    />
+                </div>
+                <button type="button" class="eliminar-opcion p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            `;
+            opcionesContainer.appendChild(nuevaOpcion);
+            setupEliminarOpcion(nuevaOpcion.querySelector('.eliminar-opcion'));
+        }
+
+        function setupEliminarOpcion(btn) {
+            btn.addEventListener('click', function() {
+                const opcionItem = this.closest('.opcion-item');
+                if (opcionesContainer.querySelectorAll('.opcion-item').length > 2) {
+                    opcionItem.remove();
+                    opcionCounter--;
+                    // Renumerar placeholders
+                    const opciones = opcionesContainer.querySelectorAll('.opcion-item');
+                    opciones.forEach((opcion, index) => {
+                        const input = opcion.querySelector('.texto-opcion');
+                        input.placeholder = `Opción ${index + 1}`;
+                    });
+                }
+            });
+        }
+
+        function crearPreguntaHTML(pregunta, index) {
+            return `
+                <div class="pregunta-item bg-white dark:bg-gray-700 border-2 border-gray-200/50 dark:border-gray-600/50 rounded-xl overflow-hidden" data-pregunta-id="${pregunta.id}">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                ${index + 1}
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-800 dark:text-gray-200 text-sm">${pregunta.enunciado}</h5>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">
+                                    ${pregunta.tipo} • ${pregunta.puntos} puntos
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="editar-pregunta p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-300" data-pregunta-id="${pregunta.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="eliminar-pregunta p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300" data-pregunta-id="${pregunta.id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderizarPreguntas() {
+            preguntasContainer.innerHTML = '';
+            if (preguntas.length === 0) {
+                sinPreguntas.style.display = 'block';
+            } else {
+                sinPreguntas.style.display = 'none';
+                preguntas.forEach((pregunta, index) => {
+                    const preguntaHTML = crearPreguntaHTML(pregunta, index);
+                    preguntasContainer.innerHTML += preguntaHTML;
+                });
+                setupEventosPreguntas();
+            }
+            actualizarContadorPreguntas();
+        }
+
+        function setupEventosPreguntas() {
+            document.querySelectorAll('.editar-pregunta').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const preguntaId = this.getAttribute('data-pregunta-id');
+                    editarPregunta(preguntaId);
+                });
+            });
+
+            document.querySelectorAll('.eliminar-pregunta').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const preguntaId = this.getAttribute('data-pregunta-id');
+                    eliminarPregunta(preguntaId);
+                });
+            });
+        }
+
+        function editarPregunta(preguntaId) {
+            const pregunta = preguntas.find(p => p.id == preguntaId);
+            if (pregunta) {
+                // Llenar el formulario con los datos de la pregunta
+                document.getElementById('enunciado-pregunta').value = pregunta.enunciado;
+                document.getElementById('tipo-pregunta').value = pregunta.tipo;
+                document.getElementById('puntos-pregunta').value = pregunta.puntos;
+                
+                // Limpiar opciones existentes
+                opcionesContainer.innerHTML = '';
+                opcionCounter = 0;
+                
+                // Agregar opciones
+                pregunta.opciones.forEach((opcion, index) => {
+                    agregarOpcion();
+                    const ultimaOpcion = opcionesContainer.lastElementChild;
+                    const input = ultimaOpcion.querySelector('.texto-opcion');
+                    const radio = ultimaOpcion.querySelector('.respuesta-correcta');
+                    
+                    input.value = opcion.texto;
+                    if (opcion.correcta) {
+                        radio.checked = true;
+                    }
+                });
+                
+                preguntaActualId = preguntaId;
+                modalPreguntaTitulo.textContent = 'Editar Pregunta';
+                mostrarModalPregunta();
+            }
+        }
+
+        function eliminarPregunta(preguntaId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
+                preguntas = preguntas.filter(p => p.id != preguntaId);
+                renderizarPreguntas();
+                mostrarMensaje('Pregunta eliminada correctamente', 'success');
+            }
+        }
+
+        // Función para cargar quiz existente - VERSIÓN CORREGIDA
+async function cargarQuizExistente() {
+    if (!CURSO_ID || isNaN(CURSO_ID)) return;
+
+    try {
+        console.log('📥 Cargando quiz existente para curso:', CURSO_ID);
+        const response = await fetch(`${API_URL}/quizzes/curso/${CURSO_ID}`);
+        
+        if (response.ok) {
+            const quizData = await response.json();
+            console.log('✅ Quiz cargado:', quizData);
+            
+            if (quizData && quizData.preguntas && Array.isArray(quizData.preguntas)) {
+                // Convertir el formato de la API al formato interno
+                preguntas = quizData.preguntas.map((pregunta, index) => ({
+                    id: pregunta.id || Date.now() + index,
+                    enunciado: pregunta.texto_pregunta,
+                    tipo: pregunta.tipo_pregunta,
+                    puntos: 10, // Valor por defecto
+                    opciones: pregunta.opciones ? pregunta.opciones.map(opcion => ({
+                        texto: opcion.texto_opcion,
+                        correcta: opcion.es_correcta
+                    })) : [],
+                    orden: index
+                }));
+                
+                // Actualizar configuración si existe
+                if (quizData.puntaje_minimo) {
+                    document.getElementById('puntaje-minimo').value = quizData.puntaje_minimo;
+                }
+                if (quizData.tiempo_limite) {
+                    document.getElementById('tiempo-limite').value = quizData.tiempo_limite;
+                }
+                
+                renderizarPreguntas();
+                actualizarEstadoQuiz();
+            }
+        } else if (response.status === 404) {
+            console.log('ℹ️ No se encontró quiz existente para este curso');
+        } else {
+            console.error('❌ Error al cargar quiz:', response.status);
+        }
+    } catch (error) {
+        console.error('❌ Error de conexión al cargar quiz:', error);
+    }
+}
+
+        // Función para actualizar el estado visual del quiz
+        function actualizarEstadoQuiz() {
+            const estadoQuiz = document.getElementById('estado-quiz');
+            if (preguntas.length > 0) {
+                estadoQuiz.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''} configurada${preguntas.length !== 1 ? 's' : ''}
+                `;
+                estadoQuiz.className = 'inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-2 rounded-full text-sm font-medium';
+            }
+        }
+
+        // =============================================
+        // EVENT LISTENERS PRINCIPALES
+        // =============================================
+
+        // Agregar módulo - Mostrar modal
+        if (agregarModuloBtn) {
+            agregarModuloBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                tituloModuloInput.value = '';
+                mostrarModal(modalModulo, modalModuloContent);
+            });
+        }
+
+        // Cancelar módulo
+        cancelarModuloBtn.addEventListener('click', function() {
+            ocultarModal(modalModulo, modalModuloContent);
+        });
+
+        // ENVIAR FORMULARIO DE MÓDULO - VERSIÓN CORREGIDA
+        formModulo.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const titulo = tituloModuloInput.value.trim();
+            if (!titulo) {
+                mostrarMensaje('Por favor ingresa un título para el módulo', 'error');
+                return;
+            }
+
+            // Verificar CURSO_ID
+            if (!CURSO_ID || isNaN(CURSO_ID)) {
+                mostrarMensaje('Error: ID del curso no válido. Recarga la página.', 'error');
+                console.error('❌ CURSO_ID inválido:', CURSO_ID);
+                return;
+            }
+
+            try {
+                mostrarMensaje('Creando nuevo módulo...', 'success');
+                
+                console.log('📡 Enviando solicitud a:', `${API_URL}/modulos`);
+                console.log('📦 Datos enviados:', {
+                    curso_id: CURSO_ID,
+                    titulo: titulo
+                });
+
+                const response = await fetch(`${API_URL}/modulos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        curso_id: CURSO_ID,
+                        titulo: titulo
+                    })
+                });
+
+                console.log('📨 Respuesta recibida - Status:', response.status, 'OK:', response.ok);
+
+                // MANEJO CORREGIDO DE LA RESPUESTA
+                if (!response.ok) {
+                    let errorMessage = `Error ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log('✅ Módulo creado exitosamente:', data);
+                
+                ocultarModal(modalModulo, modalModuloContent);
+                mostrarMensaje('Módulo creado correctamente. Recargando...', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+                
+            } catch (error) {
+                console.error('❌ Error completo al crear módulo:', error);
+                mostrarMensaje('Error al crear el módulo: ' + error.message, 'error');
+            }
+        });
+
+        // Agregar lección - Mostrar modal MEJORADO
+        function setupAgregarLeccion() {
+            document.querySelectorAll('.agregar-leccion').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    moduloActualId = this.getAttribute('data-modulo-id');
+                    
+                    // Resetear formulario
+                    tituloLeccionInput.value = '';
+                    tipoContenidoSelect.value = 'texto';
+                    editorTexto.innerHTML = '<p>Escribe el contenido de tu lección aquí...</p>';
+                    videoUrlInput.value = '';
+                    videoPreview.innerHTML = `
+                        <div class="bg-gray-100 dark:bg-gray-700 rounded-xl p-4 aspect-video flex items-center justify-center">
+                            <p class="text-gray-500 dark:text-gray-400 text-center text-sm">
+                                Ingresa una URL de YouTube para ver la vista previa
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Limpiar validación
+                    videoUrlInput.classList.remove('border-red-500');
+                    videoUrlInput.classList.add('border-gray-300/50');
+                    const errorMsg = videoUrlInput.parentNode.querySelector('.url-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                    
+                    modalLeccionTitulo.textContent = 'Agregar Nueva Lección';
+                    leccionActualId = null;
+                    manejarTipoContenido();
+                    mostrarModal(modalLeccion, modalLeccionContent);
+                    
+                    // Enfocar el primer campo
+                    setTimeout(() => tituloLeccionInput.focus(), 300);
+                });
+            });
+        }
+
+        // Cancelar lección
+        cancelarLeccionBtn.addEventListener('click', function() {
+            ocultarModal(modalLeccion, modalLeccionContent);
+        });
+
+        // ENVIAR FORMULARIO DE LECCIÓN - VERSIÓN CORREGIDA PARA CONTENIDO MIXTO
+        formLeccion.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const titulo = tituloLeccionInput.value.trim();
+            const tipoContenido = tipoContenidoSelect.value;
+            const contenidoTexto = editorTexto.innerHTML;
+            const videoUrl = videoUrlInput.value.trim();
+
+            if (!titulo) {
+                mostrarMensaje('Por favor ingresa un título para la lección', 'error');
+                return;
+            }
+
+            // VALIDACIÓN CORREGIDA PARA CONTENIDO MIXTO
+            if (tipoContenido === 'video' && !videoUrl) {
+                mostrarMensaje('Para contenido de video, ingresa una URL', 'error');
+                return;
+            }
+
+            if (tipoContenido === 'texto' && (!contenidoTexto || contenidoTexto === '<p>Escribe el contenido de tu lección aquí...</p>')) {
+                mostrarMensaje('Para contenido de texto, ingresa el contenido', 'error');
+                return;
+            }
+
+            if (tipoContenido === 'mixto') {
+                if (!videoUrl) {
+                    mostrarMensaje('Para contenido mixto, ingresa una URL de video', 'error');
+                    return;
+                }
+                if (!contenidoTexto || contenidoTexto === '<p>Escribe el contenido de tu lección aquí...</p>') {
+                    mostrarMensaje('Para contenido mixto, ingresa el contenido de texto', 'error');
+                    return;
+                }
+            }
+
+            // Validar URL de YouTube si se proporciona
+            if (videoUrl && !extractVideoId(videoUrl)) {
+                mostrarMensaje('Por favor ingresa una URL válida de YouTube', 'error');
+                return;
+            }
+
+            const modulo = document.querySelector(`.modulo-item[data-modulo-id="${moduloActualId}"]`);
+            const leccionesCount = modulo ? modulo.querySelectorAll('.leccion-item').length : 0;
+            const nuevoOrden = leccionesCount + 1;
+
+            try {
+                mostrarMensaje('Creando nueva lección...', 'success');
+                
+                // PREPARAR DATOS CORRECTAMENTE
+                const datosLeccion = {
+                    modulo_id: moduloActualId,
+                    titulo: titulo,
+                    tipo_contenido: tipoContenido,
+                    orden: nuevoOrden
+                };
+
+                // Agregar campos según el tipo de contenido
+                if (tipoContenido === 'texto' || tipoContenido === 'mixto') {
+                    // Limpiar el contenido HTML antes de enviar
+                    const contenidoLimpio = limpiarContenidoHTML(contenidoTexto);
+                    datosLeccion.contenido_texto = contenidoLimpio;
+                } else {
+                    datosLeccion.contenido_texto = null;
+                }
+
+                if (tipoContenido === 'video' || tipoContenido === 'mixto') {
+                    datosLeccion.video_url = videoUrl;
+                } else {
+                    datosLeccion.video_url = null;
+                }
+
+                console.log('📡 Enviando lección:', datosLeccion);
+
+                const response = await fetch(`${API_URL}/lecciones`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosLeccion)
+                });
+
+                // Manejo mejorado de errores
+                if (!response.ok) {
+                    let errorMessage = `Error ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        console.error('❌ Error del servidor:', errorData);
+                        errorMessage = errorData.message || errorData.error || errorMessage;
+                        
+                        // Mostrar errores específicos de validación
+                        if (errorData.errors) {
+                            const errores = Object.values(errorData.errors).flat();
+                            errorMessage = errores.join(', ');
+                        }
+                    } catch (e) {
+                        const errorText = await response.text();
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log('✅ Lección creada exitosamente:', data);
+                
+                ocultarModal(modalLeccion, modalLeccionContent);
+                mostrarMensaje('Lección creada correctamente. Recargando...', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+                
+            } catch (error) {
+                console.error('❌ Error completo al crear lección:', error);
+                mostrarMensaje('Error al crear la lección: ' + error.message, 'error');
+            }
+        });
+
+        // Configurar eventos de tipo de contenido
+        tipoContenidoSelect.addEventListener('change', manejarTipoContenido);
+
+        // Funciones de eliminación
+        function setupEliminarModulo() {
+            document.querySelectorAll('.eliminar-modulo').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const moduloId = this.getAttribute('data-modulo-id');
+                    const modulosActuales = document.querySelectorAll('.modulo-item').length;
+                    
+                    if (modulosActuales <= 1) {
+                        mostrarMensaje('Debe haber al menos un módulo en el curso', 'error');
+                        return;
+                    }
+
+                    if (confirm('¿Estás seguro de que quieres eliminar este módulo?')) {
+                        try {
+                            mostrarMensaje('Eliminando módulo...', 'success');
+                            const response = await fetch(`${API_URL}/modulos/${moduloId}`, { method: 'DELETE' });
+
+                            if (response.ok) {
+                                mostrarMensaje('Módulo eliminado correctamente. Recargando...', 'success');
+                                setTimeout(() => window.location.reload(), 500);
+                            } else {
+                                const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                                mostrarMensaje('Error al eliminar el módulo: ' + (errorData.message || response.status), 'error');
+                            }
+                        } catch (error) {
+                            mostrarMensaje('Error de conexión al eliminar módulo: ' + error.message, 'error');
+                        }
+                    }
+                });
+            });
+        }
+
+        function setupEliminarLeccion() {
+            document.querySelectorAll('.eliminar-leccion').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const leccionId = this.getAttribute('data-leccion-id');
+                    const modulo = this.closest('.modulo-item');
+                    const leccionesEnModulo = modulo ? modulo.querySelectorAll('.leccion-item').length : 0;
+                    
+                    if (leccionesEnModulo <= 1) {
+                        mostrarMensaje('Cada módulo debe tener al menos una lección', 'error');
+                        return;
+                    }
+
+                    if (confirm('¿Estás seguro de que quieres eliminar esta lección?')) {
+                        try {
+                            mostrarMensaje('Eliminando lección...', 'success');
+                            const response = await fetch(`${API_URL}/lecciones/${leccionId}`, { method: 'DELETE' });
+
+                            if (response.ok) {
+                                mostrarMensaje('Lección eliminada correctamente. Recargando...', 'success');
+                                setTimeout(() => window.location.reload(), 500);
+                            } else {
+                                const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                                mostrarMensaje('Error al eliminar la lección: ' + (errorData.message || response.status), 'error');
+                            }
+                        } catch (error) {
+                            mostrarMensaje('Error de conexión al eliminar lección: ' + error.message, 'error');
+                        }
+                    }
+                });
+            });
+        }
+
+        // Event Listeners para el quiz
+        if (agregarQuizBtn) {
+            agregarQuizBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                mostrarModalQuiz();
+            });
+        }
+
+        cancelarQuizBtn.addEventListener('click', ocultarModalQuiz);
+
+// Función alternativa más robusta para guardar quiz
+guardarQuizBtn.addEventListener('click', async function() {
+    const puntajeMinimo = document.getElementById('puntaje-minimo').value;
+    const tiempoLimite = document.getElementById('tiempo-limite').value;
+    
+    if (preguntas.length === 0) {
+        mostrarMensaje('Agrega al menos una pregunta al quiz', 'error');
+        return;
+    }
+
+    if (!CURSO_ID || isNaN(CURSO_ID)) {
+        mostrarMensaje('Error: ID del curso no válido', 'error');
+        return;
+    }
+
+    try {
+        mostrarMensaje('Guardando quiz...', 'success');
+        
+        const quizData = {
+            curso_id: CURSO_ID,
+            titulo: `Quiz Final - ${document.querySelector('h1').textContent.trim()}`,
+            preguntas: preguntas.map(pregunta => ({
+                texto_pregunta: pregunta.enunciado,
+                tipo_pregunta: pregunta.tipo,
+                opciones: pregunta.opciones.map(opcion => ({
+                    texto_opcion: opcion.texto,
+                    es_correcta: opcion.correcta
+                }))
+            }))
+        };
+
+        console.log('📡 Enviando quiz a:', `${API_URL}/quizzes/`);
+        console.log('📦 Datos del quiz:', quizData);
+
+        const response = await fetch(`${API_URL}/quizzes/`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(quizData)
+        });
+
+        // Manejo simplificado de respuesta
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Quiz guardado exitosamente:', data);
+            mostrarMensaje('Quiz guardado correctamente', 'success');
+            ocultarModalQuiz();
+            actualizarEstadoQuiz();
+        } else {
+            // Manejo de error simplificado
+            let errorText;
+            try {
+                errorText = await response.text();
+                const errorData = JSON.parse(errorText);
+                throw new Error(errorData.message || errorData.error || `Error ${response.status}`);
+            } catch (parseError) {
+                throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
+            }
+        }
+
+    } catch (error) {
+        console.error('❌ Error completo al guardar quiz:', error);
+        mostrarMensaje('Error al guardar el quiz: ' + error.message, 'error');
+    }
+});
+
+        agregarPreguntaBtn.addEventListener('click', function() {
+            // Resetear formulario
+            formPregunta.reset();
+            opcionesContainer.innerHTML = '';
+            opcionCounter = 2;
+            
+            // Agregar dos opciones por defecto
+            for (let i = 0; i < 2; i++) {
+                agregarOpcion();
+            }
+            
+            preguntaActualId = null;
+            modalPreguntaTitulo.textContent = 'Agregar Nueva Pregunta';
+            mostrarModalPregunta();
+        });
+
+        cancelarPreguntaBtn.addEventListener('click', ocultarModalPregunta);
+
+        agregarOpcionBtn.addEventListener('click', agregarOpcion);
+
+        formPregunta.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const enunciado = document.getElementById('enunciado-pregunta').value.trim();
+            const tipo = document.getElementById('tipo-pregunta').value;
+            const puntos = parseInt(document.getElementById('puntos-pregunta').value);
+            
+            // Validaciones básicas
+            if (!enunciado) {
+                mostrarMensaje('El enunciado de la pregunta es requerido', 'error');
+                return;
+            }
+
+            const opcionesItems = opcionesContainer.querySelectorAll('.opcion-item');
+            const opciones = [];
+            let tieneCorrecta = false;
+
+            opcionesItems.forEach((item, index) => {
+                const texto = item.querySelector('.texto-opcion').value.trim();
+                const correcta = item.querySelector('.respuesta-correcta').checked;
+                
+                if (!texto) {
+                    mostrarMensaje(`La opción ${index + 1} no puede estar vacía`, 'error');
+                    return;
+                }
+
+                if (correcta) {
+                    tieneCorrecta = true;
+                }
+
+                opciones.push({
+                    texto: texto,
+                    correcta: correcta,
+                    orden: index
+                });
+            });
+
+            if (!tieneCorrecta) {
+                mostrarMensaje('Debes seleccionar una opción correcta', 'error');
+                return;
+            }
+
+            if (opciones.length < 2) {
+                mostrarMensaje('Debe haber al menos 2 opciones', 'error');
+                return;
+            }
+
+            // Crear o actualizar pregunta
+            const nuevaPregunta = {
+                id: preguntaActualId || Date.now(), // ID temporal
+                enunciado: enunciado,
+                tipo: tipo,
+                puntos: puntos,
+                opciones: opciones,
+                orden: preguntas.length
+            };
+
+            if (preguntaActualId) {
+                // Editar pregunta existente
+                const index = preguntas.findIndex(p => p.id == preguntaActualId);
+                if (index !== -1) {
+                    preguntas[index] = nuevaPregunta;
+                }
+            } else {
+                // Agregar nueva pregunta
+                preguntas.push(nuevaPregunta);
+            }
+
+            renderizarPreguntas();
+            ocultarModalPregunta();
+            mostrarMensaje(`Pregunta ${preguntaActualId ? 'actualizada' : 'agregada'} correctamente`, 'success');
+        });
+
+        // Eventos generales
+        if (estadoSelect) {
+            estadoSelect.addEventListener('change', async function() {
+                const publicado = this.value === 'true';
+                try {
+                    const response = await fetch(`${API_URL}/cursos/${CURSO_ID}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ publicado: publicado })
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensaje(`Curso ${publicado ? 'publicado' : 'cambiado a borrador'} correctamente`);
+                    } else {
+                        const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                        mostrarMensaje('Error al actualizar el estado del curso: ' + (errorData.message || response.status), 'error');
+                        this.value = !publicado;
+                    }
+                } catch (error) {
+                    mostrarMensaje('Error de conexión al actualizar estado: ' + error.message, 'error');
+                    this.value = !publicado;
+                }
+            });
+        }
+
+        if (guardarBtn) {
+            guardarBtn.addEventListener('click', () => mostrarMensaje('Cambios guardados correctamente'));
+        }
+        if (vistaPreviaBtn) {
+            vistaPreviaBtn.addEventListener('click', () => window.open(`/curso/${CURSO_ID}`, '_blank'));
+        }
+
+        // Inicializar todo
+        function inicializarEventListeners() {
+            setupEliminarModulo();
+            setupAgregarLeccion();
+            setupEliminarLeccion();
+            setupEditor();
+            setupVideoPreview();
+            setupUrlValidation();
+            setupCerrarModalExterno(modalModulo, modalModuloContent);
+            setupCerrarModalExterno(modalLeccion, modalLeccionContent);
+            setupCerrarModalExterno(modalQuiz, modalQuizContent);
+            setupCerrarModalExterno(modalPregunta, modalPreguntaContent);
+            
+            // Inicializar manejo de tipo de contenido
+            manejarTipoContenido();
+
+            // Inicializar eventos de eliminación para las primeras opciones
+            document.querySelectorAll('.eliminar-opcion').forEach(btn => {
+                if (!btn.disabled) {
+                    setupEliminarOpcion(btn);
+                }
+            });
+
+            // Cargar quiz existente al inicializar
+            cargarQuizExistente();
+        }
+
+        // Verificar que tenemos un CURSO_ID válido antes de inicializar
+        if (CURSO_ID && !isNaN(CURSO_ID)) {
+            inicializarEventListeners();
+            console.log('🎉 SISTEMA COMPLETO INICIALIZADO CORRECTAMENTE');
+            console.log('✅ MÓDULOS, LECCIONES Y QUIZ CONFIGURADOS');
+        } else {
+            console.error('❌ No se pudo inicializar el script - CURSO_ID inválido:', CURSO_ID);
+            mostrarMensaje('Error: No se pudo cargar el editor correctamente. Recarga la página.', 'error');
+        }
+    });
+</script>
+
+    <style>
+        /* Animaciones de burbujas mejoradas */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.05) 100%
+            );
+            animation: float 25s infinite ease-in-out;
+            backdrop-filter: blur(10px);
+        }
+
+        .bubble-1 {
+            width: 80px;
+            height: 80px;
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .bubble-2 {
+            width: 60px;
+            height: 60px;
+            top: 25%;
+            right: 15%;
+            animation-delay: 5s;
+        }
+
+        .bubble-3 {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+
+        .bubble-4 {
+            width: 70px;
+            height: 70px;
+            bottom: 30%;
+            right: 10%;
+            animation-delay: 15s;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+            }
+            25% {
+                transform: translateY(-40px) translateX(20px) rotate(5deg)
+                    scale(1.1);
+            }
+            50% {
+                transform: translateY(-60px) translateX(-20px) rotate(-5deg)
+                    scale(0.9);
+            }
+            75% {
+                transform: translateY(-40px) translateX(20px) rotate(5deg)
+                    scale(1.05);
+            }
+        }
+
+        .shadow-3xl {
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
+        }
+
+        .backdrop-blur-lg {
+            backdrop-filter: blur(20px);
+        }
+
+        .transition-all {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bubble,
+            .transition-all {
+                animation: none;
+                transition: none;
+            }
+        }
+
+        .group:hover .group-hover\:scale-110 {
+            transform: scale(1.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            transform: none !important;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .bubble {
+                display: none;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Estilos para el editor de texto */
+        #editor-texto:focus {
+            outline: none;
+        }
+
+        #editor-texto ul, #editor-texto ol {
+            padding-left: 2rem;
+        }
+
+        #editor-texto ul {
+            list-style-type: disc;
+        }
+
+        #editor-texto ol {
+            list-style-type: decimal;
+        }
+
+        #editor-texto a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        #editor-texto a:hover {
+            color: #1d4ed8;
+        }
+
+        /* Mejoras específicas para el modal responsive */
+        @media (max-width: 640px) {
+            #modal-leccion-content {
+                margin: 0.5rem;
+                max-height: 85vh;
+            }
+        }
+
+        /* Mejorar la experiencia táctil en móviles */
+        @media (hover: none) and (pointer: coarse) {
+            .editor-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            input, select, textarea {
+                font-size: 16px; /* Previene zoom en iOS */
+            }
+        }
+
+        /* Scroll suave para el modal */
+        #modal-leccion-content {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e0 transparent;
+        }
+
+        #modal-leccion-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #modal-leccion-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #modal-leccion-content::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+
+        #modal-leccion-content::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        /* Mejoras de accesibilidad */
+        @media (prefers-reduced-motion: reduce) {
+            #modal-leccion-content {
+                transition: none;
+            }
+        }
+
+        /* Estilos para el iframe de YouTube */
+        #video-preview iframe {
+            border-radius: 0.75rem;
+        }
+
+        /* Estilos específicos para el quiz */
+        .pregunta-item {
+            transition: all 0.3s ease;
+        }
+
+        .pregunta-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .opcion-item {
+            transition: all 0.2s ease;
+        }
+
+        .opcion-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .dark .opcion-item:hover {
+            background-color: #374151;
+        }
+
+        /* Mejoras de accesibilidad para radio buttons */
+        .respuesta-correcta:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        @keyframes shimmer {
+    0% { transform: translateX(-100%) skewX(-12deg); }
+    100% { transform: translateX(200%) skewX(-12deg); }
+}
+.animate-shimmer {
+    animation: shimmer 3s infinite;
+}
+    </style>
+</Layout>

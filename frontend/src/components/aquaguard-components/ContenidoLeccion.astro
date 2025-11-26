@@ -5,11 +5,37 @@ const { leccion, leccionAnterior, leccionSiguiente, cursoId } = Astro.props;
 
 // Normalizar el tipo de contenido
 const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
+
+// Función para extraer el ID de YouTube de una URL
+function extraerIdYoutube(url: string) {
+  if (!url) return null;
+  
+  // Patrones para diferentes formatos de URL de YouTube
+  const patrones = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/,
+    /(?:youtube\.com\/embed\/)([^?]+)/,
+    /(?:youtube\.com\/v\/)([^?]+)/
+  ];
+  
+  for (const patron of patrones) {
+    const coincidencia = url.match(patron);
+    if (coincidencia) {
+      return coincidencia[1];
+    }
+  }
+  
+  return null;
+}
+
+// Verificar si es un video de YouTube
+const esVideoYoutube = tipoContenido === "video" && leccion.url_contenido && 
+  (leccion.url_contenido.includes('youtube.com') || leccion.url_contenido.includes('youtu.be'));
+
+// Obtener ID de YouTube si es aplicable
+const idYoutube = esVideoYoutube ? extraerIdYoutube(leccion.url_contenido) : null;
 ---
 
-<div
-    class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden"
->
+<div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
     <div class="p-8">
         {
             tipoContenido === "video" && (
@@ -39,17 +65,33 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
                     </div>
 
                     <div class="video-container bg-black rounded-2xl shadow-2xl mb-6">
-                        <video
-                            controls
-                            src={leccion.url_contenido}
-                            class="rounded-2xl w-full h-full"
-                        >
-                            Tu navegador no soporta el tag de video.
-                        </video>
+                        {
+                            esVideoYoutube && idYoutube ? (
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${idYoutube}?rel=0&modestbranding=1`}
+                                    title={`Video: ${leccion.titulo}`}
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen
+                                    class="rounded-2xl w-full h-full"
+                                ></iframe>
+                            ) : (
+                                <video
+                                    controls
+                                    src={leccion.url_contenido}
+                                    class="rounded-2xl w-full h-full"
+                                >
+                                    Tu navegador no soporta el tag de video.
+                                </video>
+                            )
+                        }
                     </div>
 
                     <div class="flex justify-between items-center px-2">
-                        <button class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button 
+                            id="retroceder-btn"
+                            class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
                             <svg
                                 class="w-5 h-5"
                                 fill="none"
@@ -67,7 +109,10 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
                         </button>
 
                         <div class="flex items-center gap-2">
-                            <button class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button 
+                                id="velocidad-btn"
+                                class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
                                 <svg
                                     class="w-5 h-5"
                                     fill="currentColor"
@@ -82,7 +127,10 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
                                 Velocidad
                             </button>
 
-                            <button class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <button 
+                                id="pantalla-completa-btn"
+                                class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
                                 <svg
                                     class="w-5 h-5"
                                     fill="none"
@@ -100,7 +148,10 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
                             </button>
                         </div>
 
-                        <button class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button 
+                            id="avanzar-btn"
+                            class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
                             Avanzar 10s
                             <svg
                                 class="w-5 h-5"
@@ -123,7 +174,7 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
 
         {
             tipoContenido === "lectura" && leccion.contenido_texto && (
-                <div class="contenido-texto">
+                <div class="contenido-leccion">
                     <div class="bg-gray-50 dark:bg-gray-900/30 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
                         <div set:html={leccion.contenido_texto} />
                     </div>
@@ -161,12 +212,8 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
         }
     </div>
 
-    <div
-        class="border-t border-gray-200 dark:border-gray-700 p-8 bg-gray-50 dark:bg-gray-900/30"
-    >
-        <div
-            class="flex flex-col sm:flex-row justify-between items-center gap-6"
-        >
+    <div class="border-t border-gray-200 dark:border-gray-700 p-8 bg-gray-50 dark:bg-gray-900/30">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
             <div class="flex-1">
                 {
                     leccionAnterior ? (
@@ -294,222 +341,147 @@ const tipoContenido = leccion.tipo === "texto" ? "lectura" : leccion.tipo;
         border-radius: 16px;
     }
 
-    /* Estilos para el contenido de texto */
-    .contenido-texto {
+    /* Estilos mínimos para el contenido de la lección - solo espaciado básico */
+    .contenido-leccion {
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         line-height: 1.7;
         letter-spacing: -0.01em;
     }
     
-    .contenido-texto h1,
-    .contenido-texto h2,
-    .contenido-texto h3,
-    .contenido-texto h4,
-    .contenido-texto h5,
-    .contenido-texto h6 {
-        margin: 2rem 0 1rem 0;
-        font-weight: 700;
-        color: #111827;
-    }
-    
-    .contenido-texto h1 {
-        font-size: 2rem;
-        border-bottom: 3px solid #3b82f6;
-        padding-bottom: 0.5rem;
-    }
-    
-    .contenido-texto h2 {
-        font-size: 1.75rem;
-        border-bottom: 2px solid #e5e7eb;
-        padding-bottom: 0.5rem;
-    }
-    
-    .contenido-texto h3 {
-        font-size: 1.5rem;
-    }
-    
-    .contenido-texto h4 {
-        font-size: 1.25rem;
-    }
-    
-    .contenido-texto h5 {
-        font-size: 1.125rem;
-    }
-    
-    .contenido-texto h6 {
-        font-size: 1rem;
-        color: #6b7280;
-    }
-    
-    .contenido-texto p {
+    /* Solo estilos de espaciado muy básicos que no interfieren con los atributos HTML */
+    .contenido-leccion > * {
         margin-bottom: 1.25rem;
-        line-height: 1.7;
-        color: #4b5563;
     }
     
-    .contenido-texto ul,
-    .contenido-texto ol {
-        margin: 1.25rem 0;
-        padding-left: 1.5rem;
+    .contenido-leccion > *:last-child {
+        margin-bottom: 0;
     }
     
-    .contenido-texto li {
-        margin-bottom: 0.75rem;
-        line-height: 1.6;
-        color: #4b5563;
-        position: relative;
-    }
-    
-    .contenido-texto ul li::before {
-        content: "•";
-        color: #3b82f6;
-        font-weight: bold;
-        display: inline-block;
-        width: 1em;
-        margin-left: -1em;
-    }
-    
-    .contenido-texto ol {
-        list-style-type: decimal;
-    }
-    
-    .contenido-texto ol li::marker {
-        color: #3b82f6;
-        font-weight: bold;
-    }
-    
-    .contenido-texto strong {
-        color: #1e40af;
-        font-weight: 600;
-    }
-    
-    .contenido-texto em {
-        color: #7c3aed;
-        font-style: italic;
-    }
-    
-    .contenido-texto blockquote {
-        border-left: 4px solid #3b82f6;
-        padding-left: 1.5rem;
-        margin: 1.5rem 0;
-        font-style: italic;
-        color: #6b7280;
-        background-color: #f9fafb;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-    }
-    
-    .contenido-texto code {
-        background-color: #f3f4f6;
-        color: #dc2626;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        font-family: 'Monaco', 'Consolas', monospace;
-        font-size: 0.875rem;
-    }
-    
-    .contenido-texto pre {
-        background-color: #1f2937;
-        color: #f9fafb;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        overflow-x: auto;
-        margin: 1.5rem 0;
-    }
-    
-    .contenido-texto pre code {
-        background-color: transparent;
-        color: inherit;
-        padding: 0;
-    }
-    
-    .contenido-texto a {
-        color: #3b82f6;
-        text-decoration: underline;
-        transition: color 0.2s;
-    }
-    
-    .contenido-texto a:hover {
-        color: #1d4ed8;
-    }
-    
-    /* Modo oscuro */
-    .dark .contenido-texto {
+    /* Estilos para modo oscuro que respetan los atributos originales */
+    .dark .contenido-leccion {
         color: #d1d5db;
     }
     
-    .dark .contenido-texto h1,
-    .dark .contenido-texto h2,
-    .dark .contenido-texto h3,
-    .dark .contenido-texto h4,
-    .dark .contenido-texto h5,
-    .dark .contenido-texto h6 {
+    /* Solo cambiar colores básicos en modo oscuro, sin forzar estilos específicos */
+    .dark .contenido-leccion :where(h1, h2, h3, h4, h5, h6):not([class]) {
         color: #f9fafb;
     }
     
-    .dark .contenido-texto h2 {
-        border-bottom-color: #374151;
-    }
-    
-    .dark .contenido-texto p {
+    .dark .contenido-leccion :where(p):not([class]) {
         color: #d1d5db;
     }
     
-    .dark .contenido-texto li {
-        color: #d1d5db;
-    }
-    
-    .dark .contenido-texto ul li::before {
-        color: #60a5fa;
-    }
-    
-    .dark .contenido-texto strong {
-        color: #93c5fd;
-    }
-    
-    .dark .contenido-texto em {
-        color: #c4b5fd;
-    }
-    
-    .dark .contenido-texto blockquote {
+    .dark .contenido-leccion :where(blockquote):not([class]) {
         background-color: #374151;
         color: #e5e7eb;
         border-left-color: #60a5fa;
     }
     
-    .dark .contenido-texto code {
+    .dark .contenido-leccion :where(code):not([class]) {
         background-color: #374151;
         color: #fca5a5;
     }
     
-    .dark .contenido-texto pre {
+    .dark .contenido-leccion :where(pre):not([class]) {
         background-color: #111827;
     }
     
-    .dark .contenido-texto a {
+    .dark .contenido-leccion :where(a):not([class]) {
         color: #60a5fa;
     }
     
-    .dark .contenido-texto a:hover {
+    .dark .contenido-leccion :where(a):not([class]):hover {
         color: #93c5fd;
     }
-    
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .contenido-texto h1 {
-            font-size: 1.75rem;
-        }
-        
-        .contenido-texto h2 {
-            font-size: 1.5rem;
-        }
-        
-        .contenido-texto h3 {
-            font-size: 1.375rem;
-        }
-        
-        .contenido-texto h4 {
-            font-size: 1.125rem;
-        }
-    }
 </style>
+
+<script is:inline>
+    // Script para manejar la funcionalidad de los controles de video
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si es un video de YouTube
+        const videoIframe = document.querySelector('.video-container iframe');
+        const videoElement = document.querySelector('.video-container video');
+        
+        // Botones de control
+        const retrocederBtn = document.getElementById('retroceder-btn');
+        const avanzarBtn = document.getElementById('avanzar-btn');
+        const pantallaCompletaBtn = document.getElementById('pantalla-completa-btn');
+        const velocidadBtn = document.getElementById('velocidad-btn');
+        
+        // Funciones para videos HTML5 nativos
+        if (videoElement) {
+            // Retroceder 10 segundos
+            retrocederBtn?.addEventListener('click', function() {
+                videoElement.currentTime = Math.max(0, videoElement.currentTime - 10);
+            });
+            
+            // Avanzar 10 segundos
+            avanzarBtn?.addEventListener('click', function() {
+                videoElement.currentTime = Math.min(videoElement.duration, videoElement.currentTime + 10);
+            });
+            
+            // Pantalla completa
+            pantallaCompletaBtn?.addEventListener('click', function() {
+                if (videoElement.requestFullscreen) {
+                    videoElement.requestFullscreen();
+                } else if (videoElement.webkitRequestFullscreen) {
+                    videoElement.webkitRequestFullscreen();
+                } else if (videoElement.mozRequestFullScreen) {
+                    videoElement.mozRequestFullScreen();
+                }
+            });
+            
+            // Control de velocidad (menú simple)
+            velocidadBtn?.addEventListener('click', function() {
+                const velocidades = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                const velocidadActual = videoElement.playbackRate;
+                const siguienteVelocidad = velocidades[(velocidades.indexOf(velocidadActual) + 1) % velocidades.length] || 1;
+                videoElement.playbackRate = siguienteVelocidad;
+                
+                // Feedback visual
+                const originalText = velocidadBtn.innerHTML;
+                velocidadBtn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/></svg> ${siguienteVelocidad}x`;
+                
+                setTimeout(() => {
+                    velocidadBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Para videos de YouTube, los controles están limitados por la API
+        if (videoIframe && videoIframe.src.includes('youtube.com')) {
+            // Deshabilitar funcionalidad avanzada para YouTube (requeriría API)
+            if (retrocederBtn) {
+                retrocederBtn.style.opacity = '0.5';
+                retrocederBtn.style.cursor = 'not-allowed';
+            }
+            if (avanzarBtn) {
+                avanzarBtn.style.opacity = '0.5';
+                avanzarBtn.style.cursor = 'not-allowed';
+            }
+            if (velocidadBtn) {
+                velocidadBtn.style.opacity = '0.5';
+                velocidadBtn.style.cursor = 'not-allowed';
+            }
+            
+            // Pantalla completa sí funciona con iframe
+            pantallaCompletaBtn?.addEventListener('click', function() {
+                if (videoIframe.requestFullscreen) {
+                    videoIframe.requestFullscreen();
+                } else if (videoIframe.webkitRequestFullscreen) {
+                    videoIframe.webkitRequestFullscreen();
+                } else if (videoIframe.mozRequestFullScreen) {
+                    videoIframe.mozRequestFullScreen();
+                }
+            });
+            
+            // Tooltip para explicar limitaciones
+            const tooltipText = 'Los controles avanzados no están disponibles para videos de YouTube';
+            [retrocederBtn, avanzarBtn, velocidadBtn].forEach(btn => {
+                if (btn) {
+                    btn.title = tooltipText;
+                }
+            });
+        }
+    });
+</script>

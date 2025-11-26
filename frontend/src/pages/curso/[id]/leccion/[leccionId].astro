@@ -14,13 +14,13 @@ async function cargarLeccionActual(leccionId: string) {
   try {
     const apiUrl = `http://localhost:8000/api/lecciones/${leccionId}/`;
     const response = await fetch(apiUrl);
-    
+
     if (!response.ok) {
       throw new Error(`Error al cargar lección: ${response.status}`);
     }
-    
+
     const leccion = await response.json();
-    
+
     // Adaptar la estructura a lo que espera el componente
     return {
       id_leccion: leccion.id_leccion,
@@ -32,10 +32,10 @@ async function cargarLeccionActual(leccionId: string) {
       contenido_texto: leccion.contenido_texto || "",
       completado: leccion.completado || false,
       bloqueado: leccion.bloqueado || false,
-      modulo_id: leccion.modulo_id
+      modulo_id: leccion.modulo_id,
     };
   } catch (error) {
-    console.error('Error cargando lección:', error);
+    console.error("Error cargando lección:", error);
     // Datos de fallback en caso de error
     return {
       id_leccion: leccionId,
@@ -44,10 +44,11 @@ async function cargarLeccionActual(leccionId: string) {
       duracion_min: 0,
       tipo: "lectura",
       url_contenido: "",
-      contenido_texto: "<p>El contenido de esta lección no está disponible en este momento.</p>",
+      contenido_texto:
+        "<p>El contenido de esta lección no está disponible en este momento.</p>",
       completado: false,
       bloqueado: false,
-      modulo_id: null
+      modulo_id: null,
     };
   }
 }
@@ -57,21 +58,21 @@ async function cargarInfoCurso(cursoId: string) {
   try {
     const apiUrl = `http://localhost:8000/api/cursos/${cursoId}`;
     const response = await fetch(apiUrl);
-    
+
     if (!response.ok) {
       throw new Error(`Error al cargar curso: ${response.status}`);
     }
-    
+
     const curso = await response.json();
     return {
       id_curso: curso.id_curso,
-      titulo: curso.titulo || "Curso sin título"
+      titulo: curso.titulo || "Curso sin título",
     };
   } catch (error) {
-    console.error('Error cargando curso:', error);
+    console.error("Error cargando curso:", error);
     return {
       id_curso: cursoId,
-      titulo: "Curso no disponible"
+      titulo: "Curso no disponible",
     };
   }
 }
@@ -83,68 +84,140 @@ let infoCurso = await cargarInfoCurso(cursoId!);
 // Datos para la navegación
 const curso = {
   id_curso: cursoId,
-  titulo: infoCurso.titulo
+  titulo: infoCurso.titulo,
 };
 
-// Encontrar lección anterior y siguiente (esto necesitaría una API adicional o lógica más compleja)
-const leccionAnterior = null;
-const leccionSiguiente = null;
+// Definir interfaz para navegación
+interface LeccionNavegacion {
+  id_leccion: string;
+  titulo?: string;
+}
 
+// Encontrar lección anterior y siguiente (esto necesitaría una API adicional o lógica más compleja)
+let leccionAnterior: any = null;
+let leccionSiguiente: any = null;
+
+// Función para extraer ID de YouTube
+function extractYouTubeId(url: string | null): string {
+  if (!url) return "";
+
+  const regex =
+    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : "";
+}
+
+// Determinar el tipo de contenido para renderizado condicional
+const tipoContenido = leccionActual.tipo;
+const youtubeId = extractYouTubeId(leccionActual.url_contenido);
 ---
 
 <Layout title={`${leccionActual.titulo} - ${infoCurso.titulo}`}>
   <Header />
-  
+
   <div class="min-h-screen bg-white dark:bg-gray-900">
     <!-- Header de la Lección Mejorado -->
-    <section class="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+    <section
+      class="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900"
+    >
       <div class="container mx-auto px-6 py-8">
         <div class="max-w-6xl mx-auto">
           <!-- Migas de pan más compactas -->
-          <nav class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-6">
+          <nav
+            class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-6"
+          >
             <a href="/" class="hover:text-blue-600 transition-colors">Inicio</a>
             <span>›</span>
-            <a href="/cursos" class="hover:text-blue-600 transition-colors">Cursos</a>
+            <a href="/cursos" class="hover:text-blue-600 transition-colors"
+              >Cursos</a
+            >
             <span>›</span>
-            <a href={`/curso/${curso.id_curso}`} class="hover:text-blue-600 transition-colors truncate max-w-[120px]">{infoCurso.titulo}</a>
+            <a
+              href={`/curso/${curso.id_curso}`}
+              class="hover:text-blue-600 transition-colors truncate max-w-[120px]"
+              >{infoCurso.titulo}</a
+            >
             <span>›</span>
-            <span class="text-blue-600 font-medium truncate max-w-[200px]">{leccionActual.titulo}</span>
+            <span class="text-blue-600 font-medium truncate max-w-[200px]"
+              >{leccionActual.titulo}</span
+            >
           </nav>
-          
-          <div class="flex flex-col lg:flex-row items-start justify-between gap-6">
+
+          <div
+            class="flex flex-col lg:flex-row items-start justify-between gap-6"
+          >
             <div class="flex-1">
-              <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+              <h1
+                class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight"
+              >
                 {leccionActual.titulo}
               </h1>
-              <!-- Aquí está la corrección: usar set:html para renderizar el HTML -->
-              <div class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl contenido-texto" set:html={leccionActual.contenido_texto} />
+              <!-- CORRECCIÓN: Usar descripción en lugar de id_leccion -->
+              <div
+                class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl contenido-texto"
+                set:html={leccionActual.descripcion}
+              />
             </div>
-            
+
             <!-- Badge de información más limpio -->
-            <div class="flex items-center gap-6 bg-white dark:bg-gray-800 px-6 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <div
+              class="flex items-center gap-6 bg-white dark:bg-gray-800 px-6 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm"
+            >
+              <div
+                class="flex items-center gap-2 text-gray-700 dark:text-gray-300"
+              >
+                <div
+                  class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center"
+                >
+                  <svg
+                    class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">Duración</div>
-                  <div class="font-semibold">{leccionActual.duracion_min} min</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Duración
+                  </div>
+                  <div class="font-semibold">
+                    {leccionActual.duracion_min} min
+                  </div>
                 </div>
               </div>
-              
+
               <div class="w-px h-12 bg-gray-200 dark:bg-gray-600"></div>
-              
-              <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                  <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+
+              <div
+                class="flex items-center gap-2 text-gray-700 dark:text-gray-300"
+              >
+                <div
+                  class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center"
+                >
+                  <svg
+                    class="w-5 h-5 text-orange-600 dark:text-orange-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clip-rule="evenodd"></path>
                   </svg>
                 </div>
                 <div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">Tipo</div>
-                  <div class="font-semibold capitalize">{leccionActual.tipo}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Tipo
+                  </div>
+                  <div class="font-semibold capitalize">
+                    {leccionActual.tipo}
+                  </div>
                 </div>
               </div>
             </div>
@@ -159,23 +232,144 @@ const leccionSiguiente = null;
         <div class="flex flex-col lg:flex-row gap-8">
           <!-- Sidebar de Navegación más compacta -->
           <div class="lg:w-80">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm sticky top-8">
-              <NavegacionLecciones 
-                curso={curso} 
+            <div
+              class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm sticky top-8"
+            >
+              <NavegacionLecciones
+                curso={curso}
                 leccionActualId={leccionActual.id_leccion}
-                cursoId={curso.id_curso} 
+                cursoId={curso.id_curso}
               />
             </div>
           </div>
-          
+
           <!-- Contenido de la Lección más amplio y limpio -->
           <div class="flex-1 min-w-0">
-            <ContenidoLeccion 
-              leccion={leccionActual}
-              leccionAnterior={leccionAnterior}
-              leccionSiguiente={leccionSiguiente}
-              cursoId={curso.id_curso}
-            />
+            <!-- Renderizado condicional basado en el tipo de contenido -->
+            <div
+              class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden"
+            >
+              <div class="p-8">
+                {
+                  tipoContenido === "texto" && (
+                    <div
+                      class="contenido-texto"
+                      set:html={leccionActual.contenido_texto}
+                    />
+                  )
+                }
+
+                {
+                  tipoContenido === "video" && leccionActual.url_contenido && (
+                    <div class="space-y-6">
+                      <div class="video-container">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${youtubeId}`}
+                          title={leccionActual.titulo}
+                          frameborder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowfullscreen
+                          class="w-full h-full"
+                        />
+                      </div>
+                      {leccionActual.contenido_texto && (
+                        <div
+                          class="contenido-texto mt-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          set:html={leccionActual.contenido_texto}
+                        />
+                      )}
+                    </div>
+                  )
+                }
+
+                {
+                  tipoContenido === "mixto" && leccionActual.url_contenido && (
+                    <div class="space-y-8">
+                      <div class="video-container">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${youtubeId}`}
+                          title={leccionActual.titulo}
+                          frameborder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowfullscreen
+                          class="w-full h-full"
+                        />
+                      </div>
+                      {leccionActual.contenido_texto && (
+                        <div
+                          class="contenido-texto mt-6"
+                          set:html={leccionActual.contenido_texto}
+                        />
+                      )}
+                    </div>
+                  )
+                }
+              </div>
+
+              <!-- Navegación entre lecciones -->
+              <div
+                class="border-t border-gray-200 dark:border-gray-700 px-8 py-6 bg-gray-50 dark:bg-gray-700/50"
+              >
+                <div class="flex justify-between items-center">
+                  {
+                    leccionAnterior ? (
+                      <a
+                        href={`/curso/${cursoId}/leccion/${leccionAnterior.id_leccion}`}
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                        Anterior
+                      </a>
+                    ) : (
+                      <span />
+                    )
+                  }
+
+                  {
+                    leccionSiguiente ? (
+                      <a
+                        href={`/curso/${cursoId}/leccion/${leccionSiguiente.id_leccion}`}
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Siguiente
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </a>
+                    ) : (
+                      <button
+                        id="btn-completar"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Completar Lección
+                      </button>
+                    )
+                  }
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -185,11 +379,112 @@ const leccionSiguiente = null;
   <Footer />
 </Layout>
 
+<script define:vars={{ leccionActual, cursoId }}>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const btnCompletar = document.getElementById("btn-completar");
+    const messageDiv = document.getElementById("message-container"); // Asegúrate de tener un contenedor para mensajes si lo deseas
+
+    // Obtener token y usuario
+    const authToken =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    const userDataRaw =
+      localStorage.getItem("userData") || sessionStorage.getItem("userData");
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+    const userId = userData?.id || userData?.id_usuario; // Ajustar según tu estructura de usuario
+
+    if (!authToken || !userId) {
+      console.warn("Usuario no autenticado");
+      if (btnCompletar) btnCompletar.style.display = "none";
+      return;
+    }
+
+    // Función para verificar si la lección ya está completada
+    async function verificarProgreso() {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/progreso-lecciones/usuario/${userId}/leccion/${leccionActual.id_leccion}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              Accept: "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.completed) {
+            marcarBotonComoCompletado();
+          }
+        }
+      } catch (error) {
+        console.error("Error verificando progreso:", error);
+      }
+    }
+
+    function marcarBotonComoCompletado() {
+      if (!btnCompletar) return;
+      btnCompletar.textContent = "Lección Completada";
+      btnCompletar.classList.remove("bg-green-600", "hover:bg-green-700");
+      btnCompletar.classList.add("bg-gray-400", "cursor-not-allowed");
+      btnCompletar.disabled = true;
+    }
+
+    // Verificar progreso al cargar
+    await verificarProgreso();
+
+    // Manejar click en completar
+    if (btnCompletar) {
+      btnCompletar.addEventListener("click", async () => {
+        try {
+          // Estado de carga
+          const originalText = btnCompletar.textContent;
+          btnCompletar.textContent = "Guardando...";
+          btnCompletar.disabled = true;
+
+          const response = await fetch(
+            "http://localhost:8000/api/progreso-lecciones",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                usuario_id: userId,
+                leccion_id: leccionActual.id_leccion,
+                fecha_completado: new Date()
+                  .toISOString()
+                  .slice(0, 19)
+                  .replace("T", " "),
+              }),
+            },
+          );
+
+          if (response.ok) {
+            marcarBotonComoCompletado();
+            // Opcional: Mostrar notificación de éxito
+            alert("¡Lección completada con éxito!");
+          } else {
+            const errorData = await response.text();
+            console.error("Error response:", errorData);
+            throw new Error(
+              `Error al guardar progreso: ${response.status} - ${errorData}`,
+            );
+          }
+        } catch (error) {
+          console.error("Error completo:", error);
+          alert(`Hubo un error al guardar el progreso: ${error.message}`);
+          btnCompletar.textContent = "Completar Lección";
+          btnCompletar.disabled = false;
+        }
+      });
+    }
+  });
+</script>
+
 <style>
-  .sticky {
-    position: sticky;
-  }
-  
   .video-container {
     position: relative;
     padding-bottom: 56.25%; /* 16:9 aspect ratio */
@@ -197,7 +492,7 @@ const leccionSiguiente = null;
     overflow: hidden;
     border-radius: 16px;
   }
-  
+
   .video-container iframe,
   .video-container video {
     position: absolute;
@@ -207,14 +502,18 @@ const leccionSiguiente = null;
     height: 100%;
     border-radius: 16px;
   }
-  
+
   /* Estilos mejorados para el contenido de texto */
   .contenido-texto {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
     line-height: 1.7;
     letter-spacing: -0.01em;
   }
-  
+
   .contenido-texto h1,
   .contenido-texto h2,
   .contenido-texto h3,
@@ -225,55 +524,55 @@ const leccionSiguiente = null;
     font-weight: 700;
     color: #111827;
   }
-  
+
   .contenido-texto h1 {
     font-size: 2rem;
     border-bottom: 3px solid #3b82f6;
     padding-bottom: 0.5rem;
   }
-  
+
   .contenido-texto h2 {
     font-size: 1.75rem;
     border-bottom: 2px solid #e5e7eb;
     padding-bottom: 0.5rem;
   }
-  
+
   .contenido-texto h3 {
     font-size: 1.5rem;
   }
-  
+
   .contenido-texto h4 {
     font-size: 1.25rem;
   }
-  
+
   .contenido-texto h5 {
     font-size: 1.125rem;
   }
-  
+
   .contenido-texto h6 {
     font-size: 1rem;
     color: #6b7280;
   }
-  
+
   .contenido-texto p {
     margin-bottom: 1.25rem;
     line-height: 1.7;
     color: #4b5563;
   }
-  
+
   .contenido-texto ul,
   .contenido-texto ol {
     margin: 1.25rem 0;
     padding-left: 1.5rem;
   }
-  
+
   .contenido-texto li {
     margin-bottom: 0.75rem;
     line-height: 1.6;
     color: #4b5563;
     position: relative;
   }
-  
+
   .contenido-texto ul li::before {
     content: "•";
     color: #3b82f6;
@@ -282,26 +581,26 @@ const leccionSiguiente = null;
     width: 1em;
     margin-left: -1em;
   }
-  
+
   .contenido-texto ol {
     list-style-type: decimal;
   }
-  
+
   .contenido-texto ol li::marker {
     color: #3b82f6;
     font-weight: bold;
   }
-  
+
   .contenido-texto strong {
     color: #1e40af;
     font-weight: 600;
   }
-  
+
   .contenido-texto em {
     color: #7c3aed;
     font-style: italic;
   }
-  
+
   .contenido-texto blockquote {
     border-left: 4px solid #3b82f6;
     padding-left: 1.5rem;
@@ -312,16 +611,16 @@ const leccionSiguiente = null;
     padding: 1.5rem;
     border-radius: 0.5rem;
   }
-  
+
   .contenido-texto code {
     background-color: #f3f4f6;
     color: #dc2626;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-family: 'Monaco', 'Consolas', monospace;
+    font-family: "Monaco", "Consolas", monospace;
     font-size: 0.875rem;
   }
-  
+
   .contenido-texto pre {
     background-color: #1f2937;
     color: #f9fafb;
@@ -330,28 +629,28 @@ const leccionSiguiente = null;
     overflow-x: auto;
     margin: 1.5rem 0;
   }
-  
+
   .contenido-texto pre code {
     background-color: transparent;
     color: inherit;
     padding: 0;
   }
-  
+
   .contenido-texto a {
     color: #3b82f6;
     text-decoration: underline;
     transition: color 0.2s;
   }
-  
+
   .contenido-texto a:hover {
     color: #1d4ed8;
   }
-  
+
   /* Modo oscuro mejorado */
   .dark .contenido-texto {
     color: #d1d5db;
   }
-  
+
   .dark .contenido-texto h1,
   .dark .contenido-texto h2,
   .dark .contenido-texto h3,
@@ -360,73 +659,73 @@ const leccionSiguiente = null;
   .dark .contenido-texto h6 {
     color: #f9fafb;
   }
-  
+
   .dark .contenido-texto h2 {
     border-bottom-color: #374151;
   }
-  
+
   .dark .contenido-texto p {
     color: #d1d5db;
   }
-  
+
   .dark .contenido-texto li {
     color: #d1d5db;
   }
-  
+
   .dark .contenido-texto ul li::before {
     color: #60a5fa;
   }
-  
+
   .dark .contenido-texto strong {
     color: #93c5fd;
   }
-  
+
   .dark .contenido-texto em {
     color: #c4b5fd;
   }
-  
+
   .dark .contenido-texto blockquote {
     background-color: #374151;
     color: #e5e7eb;
     border-left-color: #60a5fa;
   }
-  
+
   .dark .contenido-texto code {
     background-color: #374151;
     color: #fca5a5;
   }
-  
+
   .dark .contenido-texto pre {
     background-color: #111827;
   }
-  
+
   .dark .contenido-texto a {
     color: #60a5fa;
   }
-  
+
   .dark .contenido-texto a:hover {
     color: #93c5fd;
   }
-  
+
   /* Mejoras de scroll suave */
   html {
     scroll-behavior: smooth;
   }
-  
+
   /* Mejoras de responsive */
   @media (max-width: 1024px) {
     .contenido-texto h1 {
       font-size: 1.75rem;
     }
-    
+
     .contenido-texto h2 {
       font-size: 1.5rem;
     }
-    
+
     .contenido-texto h3 {
       font-size: 1.375rem;
     }
-    
+
     .contenido-texto h4 {
       font-size: 1.125rem;
     }

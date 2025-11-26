@@ -1,0 +1,1119 @@
+---
+// src/pages/usuario/crear-curso.astro
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
+import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
+
+// 1. Definimos la interfaz para la estructura de los datos de la API
+interface Category {
+    id: string | number; // Usamos 'string | number' para flexibilidad con IDs
+    nombre: string;
+    // Si usas más campos (como 'slug'), puedes añadirlos aquí
+    // slug?: string;
+}
+
+// Configuración de la API
+const API_URL = "http://192.168.1.163:8000/api/categorias/";
+
+// 2. Tipamos 'cats' como un array de la interfaz 'Category'
+let cats: Category[] = [];
+
+try {
+    // 1. Realiza la petición y espera la respuesta (fetch)
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    // 2. Procesa la respuesta y le indicamos a TypeScript el tipo de datos esperado (as Category[])
+    cats = (await response.json()) as Category[];
+} catch (error) {
+    // Manejo de errores en caso de que la API no esté disponible o falle
+    console.error("Error al obtener las categorías:", error);
+    // Opcional: Establecer un array vacío o un mensaje de error si la carga falla
+}
+
+// Nota: La estructura de cada objeto de 'cats' es: { "id": "valor_para_select", "nombre": "Texto a mostrar" }
+---
+
+<Layout title="Crear Nuevo Curso - AquaGuard">
+    <!-- Header con funcionalidad de cierre de sesión -->
+    <Header />
+
+    <!-- Hero Section para Crear Curso -->
+    <section
+        class="relative min-h-[50vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600"
+    >
+        <!-- Elementos de fondo animados -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <!-- Ondas animadas -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg
+                class="w-full h-20 md:h-28 text-blue-800/30"
+                viewBox="0 0 1200 120"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                    opacity=".25"
+                    fill="currentColor"
+                >
+                </path>
+                <path
+                    d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
+                    opacity=".5"
+                    fill="currentColor"></path>
+                <path
+                    d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
+                    fill="currentColor"></path>
+            </svg>
+        </div>
+
+        <!-- Burbujas flotantes -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="bubble bubble-1"></div>
+            <div class="bubble bubble-2"></div>
+            <div class="bubble bubble-3"></div>
+            <div class="bubble bubble-4"></div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="container mx-auto px-6 text-center relative z-10 py-16">
+            <!-- Badge destacado -->
+            <div
+                class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-full px-5 py-2 mb-6 animate-pulse"
+            >
+                <svg
+                    class="w-4 h-4 text-blue-200"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                >
+                    <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-blue-100 text-sm font-medium tracking-wide"
+                    >Comparte tu conocimiento</span
+                >
+            </div>
+
+            <!-- Título principal -->
+            <div class="mb-6">
+                <h1
+                    class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight"
+                >
+                    Crear Nuevo
+                    <span
+                        class="block bg-gradient-to-r from-blue-200 to-teal-200 bg-clip-text text-transparent mt-2"
+                    >
+                        Curso
+                    </span>
+                </h1>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-8">
+                <p
+                    class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed"
+                >
+                    Diseña experiencias de aprendizaje transformadoras en
+                    <span class="font-semibold text-white"
+                        >cuidado ambiental</span
+                    > y
+                    <span class="font-semibold text-white"
+                        >gestión sostenible del agua</span
+                    >.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario de Creación de Curso -->
+    <main
+        class="bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+    >
+        <div class="container mx-auto px-6 py-16">
+            <div class="max-w-6xl mx-auto">
+                <!-- Progreso del Formulario -->
+                <div class="mb-12">
+                    <div
+                        class="flex items-center justify-between max-w-2xl mx-auto"
+                    >
+                        <div class="flex items-center">
+                            <div
+                                class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg"
+                            >
+                                1
+                            </div>
+                            <span
+                                class="ml-3 font-semibold text-gray-700 dark:text-gray-300"
+                                >Información Básica</span
+                            >
+                        </div>
+                        <div
+                            class="flex-1 h-1 bg-gray-300 dark:bg-gray-600 mx-4"
+                        >
+                        </div>
+                        <div class="flex items-center">
+                            <div
+                                class="w-10 h-10 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded-full flex items-center justify-center font-bold text-lg"
+                            >
+                                2
+                            </div>
+                            <span
+                                class="ml-3 font-semibold text-gray-500 dark:text-gray-400"
+                                >Contenido</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta del formulario -->
+                <div
+                    class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl border-2 border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                >
+                    <!-- Header del formulario -->
+                    <div
+                        class="bg-gradient-to-r from-blue-600 to-teal-500 p-8 text-white"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm"
+                            >
+                                <svg
+                                    class="w-7 h-7"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-bold mb-2">
+                                    Información del Curso
+                                </h2>
+                                <p class="text-blue-100 text-lg">
+                                    Completa todos los campos para crear una
+                                    experiencia educativa excepcional
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario -->
+                    <form class="p-8" id="cursoForm">
+                        <div class="space-y-10">
+                            <!-- Información Básica -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <!-- Título del Curso -->
+                                <div class="lg:col-span-2">
+                                    <label
+                                        for="titulo"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Título del Curso *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="titulo"
+                                        name="titulo"
+                                        required
+                                        class="w-full px-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-lg"
+                                        placeholder="Ej: Introducción a la Conservación del Agua"
+                                    />
+                                </div>
+
+                                <!-- Descripción -->
+                                <div class="lg:col-span-2">
+                                    <label
+                                        for="descripcion"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Descripción del Curso *
+                                    </label>
+                                    <textarea
+                                        id="descripcion"
+                                        name="descripcion"
+                                        rows="5"
+                                        required
+                                        class="w-full px-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 resize-none text-lg"
+                                        placeholder="Describe los objetivos, contenido y beneficios del curso..."
+                                    ></textarea>
+                                </div>
+
+                                <div class="mb-8">
+                                    <label
+                                        for="categoria"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Categoría *
+                                    </label>
+                                    <select
+                                        id="categoria"
+                                        name="categoria"
+                                        required
+                                        class="w-full px-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-lg"
+                                    >
+                                        <option value=""
+                                            >Selecciona una categoría</option
+                                        >
+
+                                        <!-- Inserción dinámica de las opciones -->
+                                        {
+                                            cats.length > 0 ? (
+                                                // TypeScript ya conoce el tipo de 'cat' gracias a la interfaz
+                                                cats.map((cat) => (
+                                                    <option value={cat.id}>
+                                                        {cat.nombre}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option value="" disabled>
+                                                    Error al cargar categorías
+                                                </option>
+                                            )
+                                        }
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="nivel"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Nivel de Dificultad *
+                                    </label>
+                                    <select
+                                        id="nivel"
+                                        name="nivel"
+                                        required
+                                        class="w-full px-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-lg"
+                                    >
+                                        <option value="principiante"
+                                            >Principiante</option
+                                        >
+                                        <option value="intermedio"
+                                            >Intermedio</option
+                                        >
+                                        <option value="avanzado"
+                                            >Avanzado</option
+                                        >
+                                    </select>
+                                </div>
+
+                                <!-- Tiempo Estimado y Precio -->
+                                <div>
+                                    <label
+                                        for="tiempo_estimado_min"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Tiempo Estimado (horas) *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="tiempo_estimado_min"
+                                        name="tiempo_estimado_min"
+                                        required
+                                        min="1"
+                                        class="w-full px-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-lg"
+                                        placeholder="Ej: 8"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="precio"
+                                        class="block text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                                    >
+                                        Precio (USD)
+                                    </label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg"
+                                            >$</span
+                                        >
+                                        <input
+                                            type="number"
+                                            id="precio"
+                                            name="precio"
+                                            min="0"
+                                            step="0.01"
+                                            class="w-full pl-12 pr-6 py-5 bg-white dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300 text-lg"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos de Aprendizaje -->
+                            <div
+                                class="border-t border-gray-200/50 dark:border-gray-700/50 pt-10"
+                            >
+                                <div
+                                    class="flex items-center justify-between mb-6"
+                                >
+                                    <label
+                                        class="block text-2xl font-bold text-gray-800 dark:text-gray-200"
+                                    >
+                                        Objetivos de Aprendizaje
+                                    </label>
+                                    <span
+                                        class="text-sm text-gray-500 dark:text-gray-400"
+                                        >Mínimo 3 objetivos</span
+                                    >
+                                </div>
+
+                                <div id="objetivos-container" class="space-y-4">
+                                    <!-- Objetivos se agregarán aquí dinámicamente -->
+                                </div>
+
+                                <button
+                                    type="button"
+                                    id="agregar-objetivo"
+                                    class="mt-6 w-full py-4 border-2 border-dashed border-gray-300/50 dark:border-gray-600/50 rounded-2xl text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all duration-300 flex items-center justify-center gap-3 text-lg font-semibold"
+                                >
+                                    <svg
+                                        class="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        ></path>
+                                    </svg>
+                                    Agregar Objetivo de Aprendizaje
+                                </button>
+                            </div>
+
+                            <!-- Imagen de Portada -->
+                            <div
+                                class="border-t border-gray-200/50 dark:border-gray-700/50 pt-10"
+                            >
+                                <label
+                                    class="block text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6"
+                                >
+                                    Imagen de Portada
+                                </label>
+                                <div
+                                    class="border-2 border-dashed border-gray-300/50 dark:border-gray-600/50 rounded-2xl p-12 text-center transition-all duration-300 hover:border-blue-500/50 bg-white/50 dark:bg-gray-700/50"
+                                >
+                                    <svg
+                                        class="w-16 h-16 text-gray-400 mx-auto mb-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        ></path>
+                                    </svg>
+                                    <p
+                                        class="text-xl text-gray-600 dark:text-gray-400 mb-3"
+                                    >
+                                        Arrastra una imagen o haz clic para
+                                        subir
+                                    </p>
+                                    <p
+                                        class="text-gray-500 dark:text-gray-500 mb-6"
+                                    >
+                                        Recomendado: 1280x720 px, formato JPG o
+                                        PNG, máximo 5MB
+                                    </p>
+                                    <input
+                                        type="file"
+                                        id="portada"
+                                        name="portada_url"
+                                        accept="image/*"
+                                        class="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onclick="document.getElementById('portada').click()"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 text-lg"
+                                    >
+                                        Seleccionar Imagen
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Estado de Publicación -->
+                            <div
+                                class="flex items-center justify-between p-8 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border-2 border-blue-200/50 dark:border-blue-700/50"
+                            >
+                                <div>
+                                    <h3
+                                        class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2"
+                                    >
+                                        Publicar Curso
+                                    </h3>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        El curso será revisado por nuestro
+                                        equipo antes de su publicación
+                                    </p>
+                                </div>
+                                <label
+                                    class="relative inline-flex items-center cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        name="publicado"
+                                        class="sr-only peer"
+                                    />
+                                    <div
+                                        class="w-16 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
+                                    >
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div
+                                class="flex flex-col sm:flex-row gap-6 pt-10 border-t border-gray-200/50 dark:border-gray-700/50"
+                            >
+                                <button
+                                    type="submit"
+                                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl flex items-center justify-center gap-3 text-lg"
+                                >
+                                    <svg
+                                        class="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Crear Curso
+                                </button>
+                                <a
+                                    href="/usuario/cursos"
+                                    class="flex-1 bg-white/90 dark:bg-gray-700/90 text-gray-700 dark:text-gray-300 border-2 border-gray-300/50 dark:border-gray-600/50 hover:border-blue-500 hover:text-blue-500 font-bold py-5 px-8 rounded-xl transition-all duration-300 text-center text-lg flex items-center justify-center gap-3"
+                                >
+                                    <svg
+                                        class="w-6 h-6"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div
+                        class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-8 text-center border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300 group"
+                    >
+                        <div
+                            class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
+                        >
+                            <svg
+                                class="w-8 h-8 text-blue-500"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h3
+                            class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                        >
+                            Calidad Garantizada
+                        </h3>
+                        <p
+                            class="text-gray-600 dark:text-gray-400 leading-relaxed"
+                        >
+                            Todos los cursos son revisados por nuestro equipo de
+                            expertos en educación ambiental
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-8 text-center border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-green-300/50 dark:hover:border-green-600/50 transition-all duration-300 group"
+                    >
+                        <div
+                            class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
+                        >
+                            <svg
+                                class="w-8 h-8 text-green-500"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h3
+                            class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                        >
+                            Comunidad Activa
+                        </h3>
+                        <p
+                            class="text-gray-600 dark:text-gray-400 leading-relaxed"
+                        >
+                            Comparte conocimiento con más de 5,000 estudiantes
+                            comprometidos con el medio ambiente
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-8 text-center border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-purple-300/50 dark:hover:border-purple-600/50 transition-all duration-300 group"
+                    >
+                        <div
+                            class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
+                        >
+                            <svg
+                                class="w-8 h-8 text-purple-500"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3
+                            class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4"
+                        >
+                            Impacto Real
+                        </h3>
+                        <p
+                            class="text-gray-600 dark:text-gray-400 leading-relaxed"
+                        >
+                            Contribuye directamente a la educación ambiental y
+                            al cuidado sostenible del agua
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <Footer />
+
+    <script>
+        // Configuración de la API (Asegúrate de que la URL base sea correcta)
+        const API_URL_CREATE = "http://localhost:8000/api/cursos";
+
+        // ** NUEVA CONSTANTE PARA LA REDIRECCIÓN **
+        const EDIT_URL_BASE = "/curso/editar-curso/";
+
+        // Interfaz para la respuesta de la API (opcional, para mejor tipado)
+        interface ApiResponse {
+            success: boolean;
+            message: string;
+            data?: {
+                curso_id?: number; // Agregamos el campo para el ID del curso
+                [key: string]: any;
+            };
+            errors?: Record<string, string[]>;
+            error?: string;
+        }
+
+        // Función para mostrar alertas (sacada del listener para claridad)
+        function displayAlert(
+            form: HTMLFormElement,
+            type: "success" | "error",
+            message: string,
+            errors?: Record<string, string[]>,
+        ): void {
+            const isSuccess = type === "success";
+            const bgColor = isSuccess
+                ? "bg-green-50 dark:bg-green-900/20"
+                : "bg-red-50 dark:bg-red-900/20";
+            const borderColor = isSuccess
+                ? "border-green-500"
+                : "border-red-500";
+            const textColor = isSuccess
+                ? "text-green-700 dark:text-green-300"
+                : "text-red-700 dark:text-red-300";
+            const iconPath = isSuccess
+                ? "M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                : "M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z";
+
+            const alertDiv: HTMLDivElement = document.createElement("div");
+            alertDiv.className = `alert-message m-6 ${bgColor} border-l-4 ${borderColor} ${textColor} p-6 rounded-2xl flex items-start shadow-2xl`;
+
+            let errorsHtml = "";
+            if (errors && Object.keys(errors).length > 0) {
+                errorsHtml =
+                    '<ul class="mt-3 list-disc list-inside space-y-1">';
+                for (const field in errors) {
+                    // Lógica de limpieza para arrays anidados (objetivos)
+                    let cleanFieldName = field
+                        .replace("objetivos_aprendizaje.", "Objetivo ")
+                        .replace(".descripcion", "")
+                        .replace(/(\d+)/, (match) => `#${parseInt(match) + 1}`);
+
+                    // Si es un campo principal, solo capitaliza
+                    if (cleanFieldName.startsWith("Objetivo") === false) {
+                        cleanFieldName =
+                            cleanFieldName.charAt(0).toUpperCase() +
+                            cleanFieldName.slice(1).replace(/_id/g, " ID");
+                    }
+
+                    errorsHtml += `<li><strong>${cleanFieldName}:</strong> ${errors[field][0]}</li>`;
+                }
+                errorsHtml += "</ul>";
+            }
+
+            alertDiv.innerHTML = `
+    <svg class="w-8 h-8 mr-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="${iconPath}" clip-rule="evenodd"/>
+    </svg>
+    <div>
+        <p class="font-bold text-xl mb-2">${isSuccess ? "¡Éxito!" : "¡Error de Validación!"}</p>
+        <p class="text-lg">${message}</p>
+        ${errorsHtml}
+    </div>
+`;
+            // Limpia alertas anteriores
+            form.parentElement
+                ?.querySelectorAll(".alert-message")
+                .forEach((el) => el.remove());
+            // Insertar antes del formulario
+            form.parentElement?.insertBefore(alertDiv, form);
+        }
+
+        // Gestión de objetivos de aprendizaje con TypeScript
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Obtención de elementos del DOM con tipado estricto.
+            const objetivosContainer = document.getElementById(
+                "objetivos-container",
+            ) as HTMLDivElement;
+            const agregarObjetivoBtn = document.getElementById(
+                "agregar-objetivo",
+            ) as HTMLButtonElement;
+            const cursoForm = document.getElementById(
+                "cursoForm",
+            ) as HTMLFormElement;
+
+            if (!objetivosContainer || !agregarObjetivoBtn || !cursoForm) {
+                console.error(
+                    "ERROR: Uno o más elementos del DOM (contenedor, botón o formulario) no se encontraron. Script detenido.",
+                );
+                return;
+            }
+
+            let objetivoCount: number = 0;
+
+            function updateDeleteButtonsState(): void {
+                const deleteButtons: NodeListOf<HTMLButtonElement> =
+                    document.querySelectorAll(".eliminar-objetivo");
+
+                const currentCount =
+                    document.querySelectorAll(".objetivo-item").length;
+                const isMinimumReached = currentCount <= 3;
+
+                deleteButtons.forEach((btn) => {
+                    btn.disabled = isMinimumReached;
+                    if (isMinimumReached) {
+                        btn.classList.add("opacity-50", "cursor-not-allowed");
+                        btn.classList.remove(
+                            "hover:bg-red-50",
+                            "dark:hover:bg-red-900/20",
+                        );
+                    } else {
+                        btn.classList.remove(
+                            "opacity-50",
+                            "cursor-not-allowed",
+                        );
+                        btn.classList.add(
+                            "hover:bg-red-50",
+                            "dark:hover:bg-red-900/20",
+                        );
+                    }
+                });
+            }
+
+            function agregarObjetivo(): void {
+                objetivoCount++;
+
+                const objetivoDiv: HTMLDivElement =
+                    document.createElement("div");
+                objetivoDiv.className =
+                    "objetivo-item flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-700/50 rounded-2xl border-2 border-gray-200/50 dark:border-gray-600/50";
+
+                objetivoDiv.innerHTML = `
+        <div class="flex-1">
+            <input 
+                type="text" 
+                data-objetivo-index="${objetivoCount}" 
+                required 
+                class="objetivo-input w-full px-4 py-3 bg-white dark:bg-gray-600 border-2 border-gray-300/50 dark:border-gray-500/50 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all duration-300"
+                placeholder="Ej: Los estudiantes podrán identificar las principales fuentes de contaminación del agua"
+            />
+        </div>
+        <button 
+            type="button" 
+            class="eliminar-objetivo p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+        </button>
+    `;
+
+                objetivosContainer.appendChild(objetivoDiv);
+
+                const eliminarBtn = objetivoDiv.querySelector(
+                    ".eliminar-objetivo",
+                ) as HTMLButtonElement | null;
+
+                if (eliminarBtn) {
+                    eliminarBtn.addEventListener("click", function (): void {
+                        if (
+                            document.querySelectorAll(".objetivo-item").length >
+                            3
+                        ) {
+                            objetivoDiv.remove();
+                            updateDeleteButtonsState();
+                        }
+                    });
+                }
+
+                updateDeleteButtonsState();
+            }
+
+            // --- Inicialización y Event Listeners ---
+            for (let i = 0; i < 3; i++) {
+                agregarObjetivo();
+            }
+            agregarObjetivoBtn.addEventListener("click", agregarObjetivo);
+
+            // ** Lógica de Envío del Formulario **
+            cursoForm.addEventListener(
+                "submit",
+                async function (e: Event): Promise<void> {
+                    e.preventDefault();
+
+                    const submitBtn = this.querySelector(
+                        'button[type="submit"]',
+                    ) as HTMLButtonElement | null;
+
+                    if (!submitBtn) {
+                        console.error("El botón de envío no se encontró.");
+                        return;
+                    }
+
+                    // 2. Obtener y validar todos los objetivos
+                    const objetivosInputs: NodeListOf<HTMLInputElement> =
+                        document.querySelectorAll(".objetivo-input");
+
+                    const objetivosPayload = Array.from(objetivosInputs)
+                        .map((input) => ({ descripcion: input.value.trim() }))
+                        .filter((obj) => obj.descripcion.length > 0);
+
+                    if (objetivosPayload.length < 3) {
+                        alert(
+                            "Por favor, asegúrate de que haya al menos 3 objetivos de aprendizaje válidos.",
+                        );
+                        return;
+                    }
+
+                    // 3. Recolectar datos del formulario
+                    const formData = new FormData(this);
+                    const payload = new FormData(); // EL PAYLOAD FINAL QUE ENVIAREMOS
+
+                    // ** CORRECCIÓN CLAVE: ASEGURAR QUE LOS VALORES NO SEAN NULOS **
+
+                    // Usamos || '' para asegurarnos de que el valor siempre sea un string vacío si es nulo.
+                    const titulo = (formData.get("titulo") as string) || "";
+                    const descripcion =
+                        (formData.get("descripcion") as string) || "";
+                    const categoria_id =
+                        (formData.get("categoria") as string) || ""; // Asumiendo 'categoria' es el name en HTML
+
+                    // Conversión de tiempo (asegurando un número)
+                    const tiempoEstimadoHoras = parseInt(
+                        (formData.get("tiempo_estimado_min") as string) || "0",
+                    );
+                    const tiempo_estimado_min = tiempoEstimadoHoras * 60;
+
+                    const publicado =
+                        formData.get("publicado") === "on" ? "1" : "0";
+
+                    // 4. Construir el objeto de datos (PAYLOAD)
+
+                    payload.append("titulo", titulo);
+                    payload.append("descripcion", descripcion);
+                    payload.append("categoria_id", categoria_id);
+                    payload.append(
+                        "tiempo_estimado_min",
+                        tiempo_estimado_min.toString(),
+                    );
+                    payload.append("publicado", publicado);
+
+                    // ** IMPORTANTE: REEMPLAZAR CON ID REAL DEL AUTOR LOGUEADO **
+                    payload.append("autor_id", "1");
+
+                    // Manejo del archivo de portada
+                    const portadaFile = (
+                        document.getElementById(
+                            "portada_url",
+                        ) as HTMLInputElement
+                    )?.files?.[0];
+
+                    if (portadaFile) {
+                        // Si hay un archivo, lo adjuntamos con el nombre 'portada'
+                        // que es el que espera el controlador de Laravel ahora
+                        payload.append("portada_url", portadaFile);
+                    } else {
+                        // Si no hay archivo, envía el campo 'portada_url' con un valor nulo o vacío
+                        // Si tu campo en Laravel es 'nullable', enviar un string vacío ('') funciona bien.
+                        const portada_url =
+                            (formData.get("portada_url") as string) || "";
+                        payload.append("portada_url", portada_url);
+                    }
+
+                    // 5. Agregar los objetivos en el formato correcto (objetivos_aprendizaje[0][descripcion]=...)
+                    objetivosPayload.forEach((obj, index) => {
+                        payload.append(
+                            `objetivos_aprendizaje[${index}][descripcion]`,
+                            obj.descripcion,
+                        );
+                    });
+
+                    // 6. Estado de Envío (Loading UI)
+                    const originalText: string = submitBtn.innerHTML;
+                    submitBtn.innerHTML = `<svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Creando curso...`;
+                    submitBtn.disabled = true;
+
+                    try {
+                        // 7. Enviar la solicitud
+                        const response = await fetch(API_URL_CREATE, {
+                            method: "POST",
+                            body: payload,
+                        });
+
+                        const data: ApiResponse =
+                            (await response.json()) as ApiResponse;
+
+                        // 8. Manejar la respuesta
+                        if (response.ok && data.success) {
+                            displayAlert(this, "success", data.message);
+
+                            // ** LÓGICA DE REDIRECCIÓN A EDITAR-CURSO **
+                            const cursoId = data.data?.curso_id;
+
+                            if (cursoId) {
+                                const redirectUrl = `${EDIT_URL_BASE}${cursoId}`;
+                                // Pequeña pausa para que el usuario vea el mensaje de éxito
+                                setTimeout(() => {
+                                    window.location.href = redirectUrl;
+                                }, 1500); // Redirige después de 1.5 segundos
+                            } else {
+                                console.warn(
+                                    "Éxito, pero no se encontró el ID del curso en la respuesta de la API.",
+                                );
+                                // Si no hay ID, simplemente resetea el formulario como antes
+                                this.reset();
+                                objetivosContainer.innerHTML = "";
+                                objetivoCount = 0;
+                                for (let i = 0; i < 3; i++) {
+                                    agregarObjetivo();
+                                }
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            }
+                            // ** FIN LÓGICA DE REDIRECCIÓN **
+                        } else {
+                            const message =
+                                data.message ||
+                                data.error ||
+                                "Ocurrió un error inesperado.";
+                            displayAlert(this, "error", message, data.errors);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
+                    } catch (error) {
+                        console.error("Error de red o del servidor:", error);
+                        displayAlert(
+                            this,
+                            "error",
+                            "Error de conexión con el servidor.",
+                        );
+                    } finally {
+                        // Restaurar botón (solo si no hay redirección)
+                        if (
+                            window.location.href.indexOf(EDIT_URL_BASE) === -1
+                        ) {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }
+                    }
+                },
+            );
+        });
+    </script>
+</Layout>
+
+<style>
+    /* Animaciones de burbujas mejoradas */
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.05) 100%
+        );
+        animation: float 25s infinite ease-in-out;
+        backdrop-filter: blur(10px);
+    }
+
+    .bubble-1 {
+        width: 80px;
+        height: 80px;
+        top: 15%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .bubble-2 {
+        width: 60px;
+        height: 60px;
+        top: 25%;
+        right: 15%;
+        animation-delay: 5s;
+    }
+
+    .bubble-3 {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 10s;
+    }
+
+    .bubble-4 {
+        width: 70px;
+        height: 70px;
+        bottom: 30%;
+        right: 10%;
+        animation-delay: 15s;
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+        }
+        25% {
+            transform: translateY(-40px) translateX(20px) rotate(5deg)
+                scale(1.1);
+        }
+        50% {
+            transform: translateY(-60px) translateX(-20px) rotate(-5deg)
+                scale(0.9);
+        }
+        75% {
+            transform: translateY(-40px) translateX(20px) rotate(5deg)
+                scale(1.05);
+        }
+    }
+
+    /* Mejoras de sombras */
+    .shadow-3xl {
+        box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Efectos de glassmorphism */
+    .backdrop-blur-lg {
+        backdrop-filter: blur(20px);
+    }
+
+    /* Transiciones suaves mejoradas */
+    .transition-all {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mejoras de accesibilidad */
+    @media (prefers-reduced-motion: reduce) {
+        .bubble,
+        .transition-all {
+            animation: none;
+            transition: none;
+        }
+    }
+
+    /* Efectos hover mejorados */
+    .group:hover .group-hover\:scale-110 {
+        transform: scale(1.1);
+    }
+
+    /* Estilos para inputs deshabilitados */
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    button:disabled:hover {
+        transform: none !important;
+    }
+
+    /* Animación de carga */
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .bubble {
+            display: none;
+        }
+    }
+
+    /* Mejoras de scroll suave */
+    html {
+        scroll-behavior: smooth;
+    }
+</style>

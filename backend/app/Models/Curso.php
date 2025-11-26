@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 use App\Models\Contenido;
 
 class Curso extends Model
@@ -67,5 +68,15 @@ class Curso extends Model
         // ¡BONUS! Añadimos orderBy para que siempre los regrese en el orden correcto.
         return $this->hasMany(Modulo::class, 'curso_id', 'id_curso')
                     ->orderBy('orden', 'asc');
+    }
+
+    public function objetivosAprendizaje()
+    {
+        return $this->hasMany(ObjetivoDeAprendizaje::class, 'curso_id', 'id_curso');
+    }
+
+    public function quizzes()
+    {
+        return $this->hasMany(QuizCurso::class, 'curso_id', 'id_curso');
     }
 }

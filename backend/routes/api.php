@@ -16,6 +16,14 @@ use App\Http\Controllers\Api\ModuleController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\CursoInscritoUsuarioController;
 use App\Http\Controllers\Api\SchoolController;
+use App\Http\Controllers\Api\EstadosController;
+use App\Http\Controllers\Api\MunicipiosController;
+use App\Http\Controllers\Api\CuencasController;
+use App\Http\Controllers\Api\TiposController;
+use App\Http\Controllers\Api\SubtiposController;
+use App\Http\Controllers\Api\ParametrosController;
+use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\ProgresoLeccionController;
 
 use App\Http\Controllers\Api\EstacionesController;
 /*
@@ -29,6 +37,7 @@ use App\Http\Controllers\Api\EstacionesController;
 
 // Registro y Login
 Route::post('/register', [RegisterController::class, 'store']);
+
 Route::post('/login', [LoginController::class, 'login']);
 
 // Ruta para manejar el clic en el enlace de verificación de correo desde el frontend
@@ -114,20 +123,11 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
-Route::delete('/cursos/{id}', [CourseController::class, 'destroy']);
-
-Route::post('/subir-portada', [CourseController::class, 'subirPortada']);
-
+// API PARA CURSOS INSCRITOS
 Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
-
+Route::get('/cursos-inscritos/usuario/{usuarioId}', [CursoInscritoUsuarioController::class, 'getCursosPorUsuario']);
 Route::post('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'store']);
 
-Route::get('/cursos-por-usuario/{usuarioId}', [CourseController::class, 'getCursosPorUsuario']);
-
-// API PARA MODULOS
-Route::get('/modulos', [ModuleController::class, 'index']);
-
-Route::get('/modulos/{id}', [ModuleController::class, 'show']);
 
 Route::post('/modulos', [ModuleController::class, 'store']);
 
@@ -147,26 +147,33 @@ Route::get('/lecciones/{id}', [LessonController::class, 'show']);
 
 Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorModulo']);
 
+// API PARA PROGRESO DE LECCIONES
+Route::post('/progreso-lecciones', [ProgresoLeccionController::class, 'store']);
+Route::get('/progreso-lecciones/usuario/{usuario_id}', [ProgresoLeccionController::class, 'index']);
+Route::get('/progreso-lecciones/usuario/{usuario_id}/leccion/{leccion_id}', [ProgresoLeccionController::class, 'show']);
+
+Route::get('/quizzes', [QuizController::class, 'index']);
+
 // API PARA ESCUELAS
 Route::get('/escuelas', [SchoolController::class, 'index']);
 
 Route::post('/escuelas', [SchoolController::class, 'store']);
 
+//API para obtener datos geográficos 
+Route::get('/estados', [EstadosController::class, 'index']);
+Route::get('/municipios/estado/{estadoId}', [MunicipiosController::class, 'getMunicipiosPorEstado']);
+Route::get('/cuencas', [CuencasController::class, 'index']);
+Route::get('/tipos', [TiposController::class, 'index']);
+Route::get('/subtipos', [SubtiposController::class, 'index']);
+Route::get('/parametros', [ParametrosController::class, 'index']);
+
 //API PARA  MAPA 
 Route::get('/mapa', [EstacionesController::class, 'mapData']);
-
-//API para obtener datos geográficos 
-Route::get('/estados', [EstacionesController::class, 'getEstados']);
-Route::get('/municipios/estado/{estadoId}', [EstacionesController::class, 'getMunicipiosPorEstado']);
-Route::get('/cuencas', [EstacionesController::class, 'getCuencas']);
-Route::get('/tipos', [EstacionesController::class, 'getTipos']);
-Route::get('/subtipos', [EstacionesController::class, 'getSubtipos']);
-Route::get('/parametros', [EstacionesController::class, 'getParametros']);
 
 //API para agregar estaciones/cuerpos de agua por usuario normal
 Route::post('/estaciones', [EstacionesController::class, 'store']);
 
-//API para admin sobre estaciones/cuerpos de agua
+//APIs para admin sobre estaciones/cuerpos de agua
 
 // Obtener todas las estaciones (para admin) con paginación y limite 
 Route::get('/admin/estaciones', [EstacionesController::class, 'index']);

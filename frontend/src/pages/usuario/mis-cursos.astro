@@ -4,7 +4,41 @@ import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
 import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
 
-// Interfaces para los datos
+// Interfaces para los datos de la API
+interface CursoAPI {
+  id_curso: number;
+  titulo: string;
+  descripcion: string;
+  portada_url: string | null;
+  tiempo_estimado_min: number;
+  autor: {
+    id_usuario: number;
+    nombre: string;
+    ap_paterno: string;
+    ap_materno: string;
+    correo_electronico: string;
+  };
+  categoria: {
+    id: number;
+    nombre: string;
+    slug: string;
+  };
+  // Campos inyectados por el backend
+  progreso?: number;
+  lecciones_completadas?: number;
+  total_lecciones?: number;
+  ultima_leccion?: string;
+  siguiente_leccion_id?: number | null;
+}
+
+interface CursoInscritoAPI {
+  usuario_id: number;
+  curso_id: number;
+  fecha_inscripcion: string;
+  curso: CursoAPI;
+}
+
+// Interface para el frontend
 interface CursoInscrito {
   id_curso: number;
   titulo: string;
@@ -19,71 +53,57 @@ interface CursoInscrito {
   nivel: 'principiante' | 'intermedio' | 'avanzado';
   lecciones_completadas: number;
   total_lecciones: number;
+  siguiente_leccion_id?: number | null;
 }
 
-// Datos de ejemplo con imágenes optimizadas
-const cursosInscritos: CursoInscrito[] = [
-  {
-    id_curso: 1,
-    titulo: "Fundamentos de Conservación del Agua",
-    descripcion: "Aprende los principios básicos para preservar y optimizar el uso del agua en tu comunidad.",
-    portada_url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    tiempo_estimado_min: 180,
-    progreso: 75,
-    ultima_leccion: "Técnicas de Riego Eficiente",
-    fecha_inscripcion: "2024-01-15",
-    instructor: "María González",
-    categoria: "Conservación",
-    nivel: "principiante",
-    lecciones_completadas: 9,
-    total_lecciones: 12
-  },
-  {
-    id_curso: 2,
-    titulo: "Tecnologías de Purificación Avanzada",
-    descripcion: "Domina las últimas tecnologías en tratamiento y purificación de recursos hídricos.",
-    portada_url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    tiempo_estimado_min: 240,
-    progreso: 30,
-    ultima_leccion: "Sistemas de Ósmosis Inversa",
-    fecha_inscripcion: "2024-02-10",
-    instructor: "Carlos Rodríguez",
-    categoria: "Tecnología",
-    nivel: "avanzado",
-    lecciones_completadas: 4,
-    total_lecciones: 16
-  },
-  {
-    id_curso: 3,
-    titulo: "Educación Ambiental para Comunidades",
-    descripcion: "Estrategias efectivas para implementar programas de concienciación ambiental.",
-    portada_url: "https://images.unsplash.com/photo-1569163139394-de44cb2c8cb7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    tiempo_estimado_min: 150,
-    progreso: 100,
-    ultima_leccion: "Evaluación de Impacto",
-    fecha_inscripcion: "2024-01-05",
-    instructor: "Ana Martínez",
-    categoria: "Educación",
-    nivel: "intermedio",
-    lecciones_completadas: 10,
-    total_lecciones: 10
-  },
-  {
-    id_curso: 4,
-    titulo: "Gestión Sostenible de Recursos Hídricos",
-    descripcion: "Aprende a gestionar los recursos hídricos de manera sostenible y eficiente.",
-    portada_url: "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-    tiempo_estimado_min: 200,
-    progreso: 45,
-    ultima_leccion: "Planificación de Cuencas",
-    fecha_inscripcion: "2024-03-01",
-    instructor: "Roberto Sánchez",
-    categoria: "Gestión",
-    nivel: "intermedio",
-    lecciones_completadas: 6,
-    total_lecciones: 15
+// Función para obtener datos de la API
+async function fetchCursosInscritos() {
+  try {
+    // Obtener usuario de localStorage si es posible (esto corre en build time o server side en Astro por defecto, 
+    // pero si es SSR podemos acceder a cookies/headers. Si es estático, necesitamos fetch client-side o hardcode para demo)
+    // Asumimos usuario ID 1 para demo o lo tomamos de una cookie si implementamos auth real SSR.
+    // Para este caso, mantenemos el hardcode ID 1 como estaba, pero idealmente sería dinámico.
+    const response = await fetch('http://localhost:8000/api/cursos-inscritos/usuario/1');
+    
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    
+    const data: CursoInscritoAPI[] = await response.json();
+    
+    // Transformar datos de la API al formato que espera el frontend
+    const cursosTransformados: CursoInscrito[] = data.map((inscripcion) => {
+      const curso = inscripcion.curso;
+      
+      return {
+        id_curso: curso.id_curso,
+        titulo: curso.titulo,
+        descripcion: curso.descripcion,
+        portada_url: curso.portada_url ? `http://localhost:8000/storage/${curso.portada_url}` : null,
+        tiempo_estimado_min: curso.tiempo_estimado_min,
+        progreso: curso.progreso || 0,
+        ultima_leccion: curso.ultima_leccion || "Introducción al curso",
+        fecha_inscripcion: inscripcion.fecha_inscripcion,
+        instructor: `${curso.autor.nombre} ${curso.autor.ap_paterno}`,
+        categoria: curso.categoria.nombre,
+        nivel: 'principiante' as const, // Esto podría venir de la BD si agregamos el campo
+        lecciones_completadas: curso.lecciones_completadas || 0,
+        total_lecciones: curso.total_lecciones || 0,
+        siguiente_leccion_id: curso.siguiente_leccion_id
+      };
+    });
+    
+    return cursosTransformados;
+    
+  } catch (error) {
+    console.error('Error fetching cursos inscritos:', error);
+    // En caso de error, retornar array vacío
+    return [];
   }
-];
+}
+
+// Obtener los datos de la API
+const cursosInscritos = await fetchCursosInscritos();
 
 const cursosCompletados = cursosInscritos.filter(curso => curso.progreso === 100);
 const cursosEnProgreso = cursosInscritos.filter(curso => curso.progreso < 100);
@@ -92,8 +112,8 @@ const cursosEnProgreso = cursosInscritos.filter(curso => curso.progreso < 100);
 let usuario = {
   nombre: "Estudiante",
   cursos_completados: cursosCompletados.length,
-  horas_estudiadas: 45,
-  nivel: "Avanzado"
+  horas_estudiadas: Math.floor(cursosInscritos.reduce((total, curso) => total + (curso.tiempo_estimado_min * curso.progreso / 100), 0) / 60),
+  nivel: cursosCompletados.length >= 3 ? "Avanzado" : cursosCompletados.length >= 1 ? "Intermedio" : "Principiante"
 };
 ---
 
@@ -181,12 +201,20 @@ let usuario = {
                 <div class="flex flex-col h-full">
                   <!-- Header de la tarjeta -->
                   <div class="relative h-48 overflow-hidden">
-                    <img 
-                      src={curso.portada_url} 
-                      alt={curso.titulo}
-                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
+                    {curso.portada_url ? (
+                      <img 
+                        src={curso.portada_url} 
+                        alt={curso.titulo}
+                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="w-full h-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                      </div>
+                    )}
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                     
                     <!-- Badges superpuestos -->
@@ -240,10 +268,10 @@ let usuario = {
                       </div>
                       <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div 
-                          class="h-2.5 rounded-full transition-all duration-1000 ease-out ${
+                          class={`h-2.5 rounded-full transition-all duration-1000 ease-out ${
                             curso.progreso === 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
                             'bg-gradient-to-r from-blue-500 to-teal-400'
-                          }" 
+                          }`}
                           style={`width: ${curso.progreso}%`}
                         ></div>
                       </div>
@@ -255,20 +283,20 @@ let usuario = {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        <span class="font-medium">Última lección: {curso.ultima_leccion}</span>
+                        <span class="font-medium">Siguiente: {curso.ultima_leccion}</span>
                       </div>
                     </div>
 
                     <!-- Botones de acción -->
                     <div class="flex gap-3 pt-4 border-t border-gray-200">
                       <a 
-                        href={`/curso/${curso.id_curso}/continuar`}
+                        href={curso.siguiente_leccion_id ? `/curso/${curso.id_curso}/leccion/${curso.siguiente_leccion_id}` : `/curso/${curso.id_curso}/lecciones`}
                         class="flex-1 bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white text-center py-3 px-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                         </svg>
-                        Continuar Curso
+                        {curso.progreso > 0 ? 'Continuar Curso' : 'Iniciar Curso'}
                       </a>
                       <button 
                         class="relative bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center curso-options-trigger"
@@ -322,12 +350,20 @@ let usuario = {
             {cursosCompletados.map((curso) => (
               <div class="group bg-white rounded-xl shadow-lg hover:shadow-xl border border-gray-100 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                 <div class="relative">
-                  <img 
-                    src={curso.portada_url} 
-                    alt={curso.titulo}
-                    class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                  {curso.portada_url ? (
+                    <img 
+                      src={curso.portada_url} 
+                      alt={curso.titulo}
+                      class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="w-full h-40 bg-gradient-to-br from-green-500 to-emerald-400 flex items-center justify-center">
+                      <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                      </svg>
+                    </div>
+                  )}
                   <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                   <div class="absolute top-3 right-3 bg-green-500 text-white p-2 rounded-full shadow-lg">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -612,7 +648,7 @@ let usuario = {
   }
 </style>
 
-<script>
+<script is:inline>
   // Funcionalidad del modal para abandonar curso
   document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('abandonarCursoModal');

@@ -156,7 +156,7 @@ import "tailwindcss/tailwind.css";
               sessionStorage.getItem("userData");
             const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
 
-            // Obtener rol del usuario 
+            // Obtener rol del usuario
             const userRole = userData?.id_rol;
 
             // Obtener la URL de redirección (si fue pasada por query param)
@@ -184,7 +184,7 @@ import "tailwindcss/tailwind.css";
 
           return;
         }
-        
+
         // Formulario y MSJ
         const form = document.querySelector("form#loginForm");
         const messageDiv = document.getElementById("responseMessage");
@@ -233,7 +233,7 @@ import "tailwindcss/tailwind.css";
           setLoading(true);
 
           try {
-            const response = await fetch("http://127.0.0.1:8000/api/login", {
+            const response = await fetch("http://localhost:8000/api/login", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

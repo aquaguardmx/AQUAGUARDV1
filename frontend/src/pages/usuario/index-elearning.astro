@@ -32,13 +32,27 @@ export interface Curso {
 let cursos: Curso[] = [];
 let cursosRecientes: Curso[] = [];
 let fetchError = false;
+let debugInfo: any = null; // Añadir debugInfo
+
+// Configuración del backend
+const BACKEND_URL = "http://localhost:8000";
 
 try {
-  const response = await fetch("http://localhost:8000/api/cursos");
+  const response = await fetch(`${BACKEND_URL}/api/cursos`);
 
   if (response.ok) {
     const data = await response.json();
     cursos = data.filter((curso: Curso) => curso.publicado);
+    
+    // Obtener información de debug
+    try {
+      const debugResponse = await fetch(`${BACKEND_URL}/debug-cursos`);
+      if (debugResponse.ok) {
+        debugInfo = await debugResponse.json();
+      }
+    } catch (e) {
+      // Ignorar errores de debug
+    }
     
     // Ordenar cursos por fecha (más recientes primero) y tomar solo 6
     cursosRecientes = cursos
@@ -362,112 +376,142 @@ try {
       <!-- Grid de cursos mejorado - Solo 6 cursos -->
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {
-          cursosRecientes.map((curso) => (
-            <a
-              href={`/detalle-curso/${curso.id_curso}`}
-              class="group block bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl hover:shadow-3xl overflow-hidden transition-all duration-500 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/80 dark:hover:border-blue-600/80 hover:-translate-y-4"
-            >
-              <article class="flex flex-col h-full">
-                <div class="relative overflow-hidden">
-                  {curso.portada_url ? (
-                    <div class="relative">
-                      <img
-                        src={curso.portada_url}
-                        alt={`Portada del curso ${curso.titulo}`}
-                        class="w-full h-60 object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      <!-- Badge Nuevo -->
-                      <div class="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+          cursosRecientes.map((curso) => {
+            // SOLUCIÓN: Buscar la imagen correcta (igual que en cursos.astro)
+            const nombreArchivo = curso.portada_url ? curso.portada_url.split('/').pop() : null;
+            
+            // Buscar en los archivos disponibles
+            let rutaImagen = null;
+            if (nombreArchivo && debugInfo) {
+              const archivoExistente = debugInfo.available_images.find((img: string) => 
+                img.includes(nombreArchivo.split('.')[0]) // Buscar por nombre sin extensión
+              );
+              if (archivoExistente) {
+                rutaImagen = `${BACKEND_URL}/storage/portadas/${archivoExistente}`;
+              }
+            }
+            
+            // Si no se encuentra, usar el primer archivo disponible como fallback
+            if (!rutaImagen && debugInfo && debugInfo.available_images.length > 0) {
+              rutaImagen = `${BACKEND_URL}/storage/portadas/${debugInfo.available_images[0]}`;
+            }
+
+            return (
+              <a
+                href={`/detalle-curso/${curso.id_curso}`}
+                class="group block bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-3xl shadow-2xl hover:shadow-3xl overflow-hidden transition-all duration-500 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/80 dark:hover:border-blue-600/80 hover:-translate-y-4"
+              >
+                <article class="flex flex-col h-full">
+                  <div class="curso-image-container relative overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    {rutaImagen ? (
+                      <div class="curso-image-wrapper relative aspect-[16/9] w-full">
+                        <img
+                          src={rutaImagen}
+                          alt={`Portada del curso ${curso.titulo}`}
+                          width="400"
+                          height="225"
+                          class="curso-image w-full h-60 object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        />
+                        <!-- Fallback que se muestra si la imagen falla -->
+                        <div class="curso-image-fallback w-full h-60 bg-gradient-to-br from-blue-900 to-teal-700 flex items-center justify-center relative hidden">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-white/70">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+                          </svg>
+                          <div class="absolute inset-0 bg-black/30" />
+                        </div>
+                      </div>
+                    ) : (
+                      <!-- Mostrar placeholder si no hay imagen -->
+                      <div class="curso-image-placeholder w-full h-60 bg-gradient-to-br from-blue-900 to-teal-700 flex items-center justify-center relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12 text-white/70">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+                        </svg>
+                        <div class="absolute inset-0 bg-black/20" />
+                      </div>
+                    )}
+
+                    <!-- Overlay de gradiente para mejor legibilidad del texto -->
+                    <div class="curso-image-overlay absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300"></div>
+
+                    <!-- Badge Nuevo -->
+                    <div class="curso-badges absolute top-4 left-4 flex flex-wrap gap-2">
+                      <span class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         NUEVO
-                      </div>
+                      </span>
+                      <span class="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                        {curso.categoria.nombre}
+                      </span>
                     </div>
-                  ) : (
-                    <div class="w-full h-60 bg-gradient-to-br from-blue-900 to-teal-700 flex items-center justify-center relative">
+
+                    <div class="curso-duration absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 shadow-lg">
                       <svg
-                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4"
                         fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-12 text-white/80"
+                        viewBox="0 0 24 24"
                       >
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
-                          d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <div class="absolute inset-0 bg-black/20" />
+                      {curso.tiempo_estimado_min} min
                     </div>
-                  )}
+                  </div>
 
-                  <div class="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 shadow-lg">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  <div class="p-8 flex flex-col flex-grow">
+                    <div class="mb-6">
+                      <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-4 line-clamp-2 leading-tight">
+                        {curso.titulo}
+                      </h3>
+                      <p
+                        class="text-gray-600 dark:text-gray-300 text-base leading-relaxed line-clamp-3"
+                        set:html={curso.descripcion}
                       />
-                    </svg>
-                    {curso.tiempo_estimado_min} min
-                  </div>
-                </div>
-
-                <div class="p-8 flex flex-col flex-grow">
-                  <div class="mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-4 line-clamp-2 leading-tight">
-                      {curso.titulo}
-                    </h3>
-                    <p
-                      class="text-gray-600 dark:text-gray-300 text-base leading-relaxed line-clamp-3"
-                      set:html={curso.descripcion}
-                    />
-                  </div>
-
-                  <div class="flex items-center justify-between mb-6 text-sm">
-                    <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
-                      <svg
-                        class="w-5 h-5 text-yellow-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      <span>4.8</span>
-                      <span class="text-gray-400">•</span>
-                      <span>125 estudiantes</span>
                     </div>
-                  </div>
 
-                  <div class="mt-auto pt-6 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold text-base shadow-lg">
-                        {curso.autor.nombre.charAt(0)}
+                    <div class="flex items-center justify-between mb-6 text-sm">
+                      <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                        <svg
+                          class="w-5 h-5 text-yellow-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span>4.8</span>
+                        <span class="text-gray-400">•</span>
+                        <span>125 estudiantes</span>
                       </div>
-                      <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                          Instructor
-                        </p>
-                        <p class="text-base font-bold text-gray-800 dark:text-gray-200">
-                          {curso.autor.nombre}
-                        </p>
+                    </div>
+
+                    <div class="mt-auto pt-6 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold text-base shadow-lg">
+                          {curso.autor.nombre.charAt(0)}
+                        </div>
+                        <div>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            Instructor
+                          </p>
+                          <p class="text-base font-bold text-gray-800 dark:text-gray-200">
+                            {curso.autor.nombre}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </article>
-            </a>
-          ))
+                </article>
+              </a>
+            );
+          })
         }
       </div>
 
@@ -485,16 +529,17 @@ try {
           </p>
           <div class="flex flex-col sm:flex-row gap-5 justify-center">
             <a
-            href="/usuario/cursos"
+            href="/cursos"
               class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-12 rounded-xl transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl text-lg"
             >
               Ver Catálogo Completo
           </a>
-            <button
-              class="border-2 border-white text-white hover:bg-white/15 font-bold py-4 px-12 rounded-xl transition-all backdrop-blur-md hover:border-white/80 text-lg"
+            <a
+            href="#"
+              class="bg-blue border-2 border-white text-white hover:bg-white/15 font-bold py-4 px-12 rounded-xl transition-all backdrop-blur-md hover:border-white/80 text-lg"
             >
               Crear Curso
-            </button>
+        </a>
           </div>
         </div>
       </div>
@@ -577,42 +622,55 @@ try {
     }
   }
 
-  /* Animación de gradiente para texto */
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+  /* Mejoras específicas para las imágenes de cursos (igual que en cursos.astro) */
+  .curso-image-container {
+    position: relative;
+    background: linear-gradient(135deg, #1e40af 0%, #0d9488 100%);
   }
 
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 6s ease infinite;
+  .curso-image-wrapper {
+    position: relative;
+    overflow: hidden;
   }
 
-  /* Mejoras de sombras */
-  .shadow-3xl {
-    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.4);
+  .curso-image {
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
 
-  /* Efectos de glassmorphism */
-  .backdrop-blur-lg {
-    backdrop-filter: blur(20px);
+  .curso-image-fallback,
+  .curso-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Responsive improvements */
-  @media (max-width: 768px) {
-    .bubble {
-      display: none;
-    }
+  .curso-image-overlay {
+    pointer-events: none;
+    transition: opacity 0.3s ease;
   }
 
-  /* Utilidades CSS mejoradas */
+  .curso-badges {
+    z-index: 10;
+  }
+
+  .curso-duration {
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Mejoras de hover */
+  .curso-image-wrapper:hover .curso-image {
+    transform: scale(1.05);
+  }
+
+  .curso-image-wrapper:hover .curso-image-overlay {
+    opacity: 0.4;
+  }
+
+  /* Utilidades CSS */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -627,27 +685,25 @@ try {
     overflow: hidden;
   }
 
-  /* Transiciones suaves mejoradas */
-  .transition-all {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   /* Mejoras de accesibilidad */
   @media (prefers-reduced-motion: reduce) {
     .bubble,
-    .animate-gradient,
+    .curso-image,
     .transition-all {
       animation: none;
       transition: none;
     }
   }
 
-  /* Efectos hover mejorados */
-  .group:hover .group-hover\:scale-110 {
-    transform: scale(1.1);
-  }
-
-  .group:hover .group-hover\:translate-x-2 {
-    transform: translateX(0.5rem);
+  /* Responsive */
+  @media (max-width: 768px) {
+    .bubble {
+      display: none;
+    }
+    
+    .curso-badges {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>
