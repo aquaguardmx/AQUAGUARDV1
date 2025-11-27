@@ -136,7 +136,6 @@ class CourseController extends Controller
 
     public function show($id)
     {
-<<<<<<< HEAD
         // Carga ansiosa (Eager Loading) de 'autor', 'categoria', y ahora 'modulos.lecciones'
         $curso = Curso::with('autor', 'categoria', 'modulos.lecciones', 'objetivosAprendizaje')->find($id);
     
@@ -147,40 +146,6 @@ class CourseController extends Controller
         return response()->json($curso);
     }
 
-=======
-        $curso = Curso::with('autor', 'categoria')->find($id);
-        if (!$curso) {
-            return response()->json(['message' => 'Curso no encontrado'], 404);
-        }
-        return response()->json($curso);
-    }
-
-
-    public function store(Request $request)
-    {
-    $validated = $request->validate([
-        'titulo' => 'required|string|max:255',
-        'descripcion' => 'required|string',
-        'autor_id' => 'required|integer',
-        'categoria_id' => 'required|integer',
-        'tiempo_estimado_min' => 'nullable|integer',
-        'portada_url' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        'publicado' => 'boolean'
-    ]);
-
-    // Procesar la imagen si existe
-    if ($request->hasFile('portada_url')) {
-        $image = $request->file('portada_url');
-        $imageName = time() . '_' . $image->getClientOriginalName();
-        $imagePath = $image->storeAs('portadas', $imageName, 'public');
-        $validated['portada_url'] = 'storage/' . $imagePath;
-    }
-
-    $curso = Curso::create($validated);
-    return response()->json($curso, 201);
-    }
-
->>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
     public function update(Request $request, $id)
     {
         $curso = Curso::find($id);
