@@ -165,7 +165,8 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
             </p>
         </main>
 
-        <script define:vars={{ API_URL }}>
+        <script lang="ts">
+            const API_URL = import.meta.env.PUBLIC_API_URL;
             const authToken =
                 localStorage.getItem("authToken") ||
                 sessionStorage.getItem("authToken");
