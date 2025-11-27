@@ -1,84 +1,71 @@
 ---
-import "tailwindcss/tailwind.css";
+import "../../styles/global.css";
+
+// 1. Capturamos la variable en el servidor (Server-Side)
+const API_URL = import.meta.env.PUBLIC_API_URL;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iniciar sesión</title>
+    <title>Iniciar Sesión</title>
   </head>
   <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
     <main
-      class="w-full max-w-md sm:bg-white/90 sm:backdrop-blur-sm sm:shadow-2xl sm:rounded-2xl p-4 sm:p-6 flex flex-col gap-4 justify-center mx-auto"
+      class="w-full max-w-md sm:bg-white/90 sm:backdrop-blur-sm sm:shadow-2xl sm:rounded-2xl p-4 sm:p-6 flex flex-col gap-4 sm:gap-3 justify-center"
     >
       <header class="flex items-center justify-center gap-3">
         <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
-          Inicia sesión
+          Iniciar sesión
         </h1>
       </header>
 
       <p class="text-center text-sm text-gray-500 max-w-[85%] mx-auto">
-        Accede con tu correo y contraseña para continuar.
+        Ingresa tus credenciales para acceder a tu panel de AquaGuard.
       </p>
 
       <form
         id="loginForm"
-        class="flex flex-col gap-3"
+        class="flex flex-col gap-3 sm:gap-2"
         aria-label="Formulario de inicio de sesión"
-        method="POST"
       >
         <label
           for="correo_electronico"
-          class="flex flex-col gap-1 text-sm text-gray-700"
+          class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
         >
-          <span class="font-medium">Correo Electrónico</span>
+          <span class="font-medium">Correo electrónico</span>
           <input
-            id="correo_electronico"
-            name="correo_electronico"
             type="email"
-            required
+            id="correo_electronico"
+            name="email"
             placeholder="tucorreo@ejemplo.com"
-            class="w-full border border-gray-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+            required
+            class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
           />
         </label>
 
         <label
           for="contrasena"
-          class="flex flex-col gap-1 text-sm text-gray-700"
+          class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
         >
           <span class="font-medium">Contraseña</span>
           <input
-            id="contrasena"
-            name="contrasena"
             type="password"
+            id="contrasena"
+            name="password"
+            placeholder="••••••••"
             required
-            placeholder="Tu contraseña"
-            class="w-full border border-gray-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+            class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
           />
         </label>
 
-        <div class="flex items-center justify-between text-sm">
-          <label class="flex items-center gap-2 text-gray-600">
-            <input
-              type="checkbox"
-              name="remember"
-              class="rounded border-gray-300"
-            />
-            <span>Recuérdame</span>
-          </label>
-          <a href="/forgot" class="text-blue-600 hover:underline"
-            >¿Olvidaste tu contraseña?</a
-          >
-        </div>
-
         <button
-          id="submitButton"
           type="submit"
-          class="bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors shadow-lg w-full text-sm font-medium"
+          class="bg-blue-600 text-white py-3 sm:py-1.5 rounded-md hover:bg-blue-700 transition-colors shadow-lg w-full text-sm sm:text-sm font-medium mt-2"
         >
-          Iniciar sesión
+          Ingresar
         </button>
       </form>
 
@@ -100,30 +87,6 @@ import "tailwindcss/tailwind.css";
         class="flex items-center justify-center gap-3 border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition shadow-sm w-full"
         aria-label="Continuar con Google"
       >
-        <svg
-          class="w-5 h-5"
-          viewBox="0 0 533.5 544.3"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            fill="#4285F4"
-            d="M533.5 278.4c0-17.6-1.6-35-4.8-51.8H272v98h147.1c-6.4 34.8-25.6 64.2-54.6 83.8v69.6h88.3c51.6-47.6 81.7-117.6 81.7-199.6z"
-          ></path>
-          <path
-            fill="#34A853"
-            d="M272 544.3c73.5 0 135.3-24.2 180.4-65.8l-88.3-69.6c-24.6 16.5-56 26.2-92.1 26.2-70.7 0-130.6-47.6-152-111.6H31.6v70.2C76.7 482.2 167.5 544.3 272 544.3z"
-          ></path>
-          <path
-            fill="#FBBC05"
-            d="M120 325.1c-9.6-28.8-9.6-59.8 0-88.6V166.3H31.6C11.7 209.9 0 245.4 0 281.6s11.7 71.7 31.6 115.3L120 325.1z"
-          ></path>
-          <path
-            fill="#EA4335"
-            d="M272 109.5c39.9 0 75.8 13.7 104.1 40.6l78.1-78.1C408.2 19.8 345.4 0 272 0 167.5 0 76.7 62.1 31.6 166.3l88.4 70.2C141.4 157.1 201.3 109.5 272 109.5z"
-          ></path>
-        </svg>
         <span class="text-sm text-gray-700 font-medium"
           >Continuar con Google</span
         >
@@ -132,111 +95,69 @@ import "tailwindcss/tailwind.css";
       <p class="text-center text-gray-500 text-sm">
         ¿No tienes cuenta? <a
           href="../auth/register"
-          class="text-blue-600 hover:underline">Crea una</a
+          class="text-blue-600 hover:underline">Regístrate aquí</a
         >
       </p>
-      <p class="text-center text-gray-500 text-sm mt-2">
-        <a href="/" class="text-blue-600 hover:underline">Regresar a inicio</a>
-      </p>
     </main>
-    <script type="module">
-      // Esperar a que el DOM esté completamente cargado
+
+    <script define:vars={{ API_URL }}>
+      const authToken =
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("authToken");
+
+      if (authToken) {
+        window.location.href = "/home";
+      }
+
+      // Estilos del spinner
+      if (!document.getElementById("register-spinner-style")) {
+        const style = document.createElement("style");
+        style.id = "register-spinner-style";
+        style.textContent = `
+                .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
+                @keyframes rg-spin { to { transform: rotate(360deg); } }
+            `;
+        document.head.appendChild(style);
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
-        // Verificar si el usuario ya está autenticado
-        const authToken =
-          localStorage.getItem("authToken") ||
-          sessionStorage.getItem("authToken");
+        const form = document.querySelector("#loginForm");
+        const messageEl = document.getElementById("responseMessage");
 
-        // Si hay un token, redirigir al usuario según su rol
-        if (authToken) {
-          try {
-            // Recuperar los datos del usuario almacenados
-            const userDataRaw =
-              localStorage.getItem("userData") ||
-              sessionStorage.getItem("userData");
-            const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
+        if (!form || !messageEl) return;
 
-            // Obtener rol del usuario
-            const userRole = userData?.id_rol;
-
-            // Obtener la URL de redirección (si fue pasada por query param)
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get("redirect");
-
-            if (redirectUrl) {
-              window.location.href = redirectUrl;
-              return;
-            }
-
-            // Redirigir segun el rol
-            if (userRole === 1) {
-              window.location.href = "/admin/dashboardAdmin";
-            } else {
-              window.location.href = "/usuario/index-elearning";
-            }
-          } catch (error) {
-            // Si hay algún problema, limpiar los datos y mostrar el login
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userData");
-            sessionStorage.removeItem("authToken");
-            sessionStorage.removeItem("userData");
-          }
-
-          return;
-        }
-
-        // Formulario y MSJ
-        const form = document.querySelector("form#loginForm");
-        const messageDiv = document.getElementById("responseMessage");
-
-        if (!form) {
-          console.error('No se encontró el formulario con id "loginForm"');
-          return;
-        }
-
-        // Boton envio
-        const submitButton = document.querySelector("#submitButton");
-        const originalButtonHTML = submitButton?.innerHTML || "";
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonHTML = submitButton
+          ? submitButton.innerHTML
+          : "Ingresar";
 
         function setLoading(isLoading) {
           if (!submitButton) return;
           if (isLoading) {
             submitButton.disabled = true;
-            submitButton.setAttribute("aria-busy", "true");
-            submitButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
-            <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
-            <path d="M22 12a10 10 0 0 0-10-10" />
-          </svg>
-          <span>Cargando...</span>
-        `;
+            submitButton.innerHTML = `<span>Ingresando...</span>`; // Simplificado
+            submitButton.classList.add("opacity-70", "cursor-not-allowed");
           } else {
             submitButton.disabled = false;
-            submitButton.removeAttribute("aria-busy");
             submitButton.innerHTML = originalButtonHTML;
+            submitButton.classList.remove("opacity-70", "cursor-not-allowed");
           }
         }
 
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
-
           const formData = new FormData(form);
           const data = Object.fromEntries(formData.entries());
 
-          if (!data.correo_electronico || !data.contrasena) {
-            messageDiv.textContent = "Por favor completa todos los campos";
-            messageDiv.style.color = "red";
-            return;
-          }
-
-          const rememberMe = formData.has("remember");
           setLoading(true);
-
-          // ASÍ DEBE QUEDAR:
-          const backendUrl = import.meta.env.PUBLIC_API_URL;
+          messageEl.textContent = "";
 
           try {
-            const response = await fetch(`${backendUrl}/api/login`, {
+            // 3. AQUÍ USAMOS 'API_URL' DIRECTAMENTE
+            // Ya no usamos import.meta.env dentro del script
+            console.log("Conectando a:", API_URL);
+
+            const response = await fetch(`${API_URL}/api/login`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -248,59 +169,33 @@ import "tailwindcss/tailwind.css";
             const result = await response.json();
 
             if (!response.ok) {
-              let errorMessage = "Error al iniciar sesión: ";
-              if (typeof result === "object") {
-                const messages = Object.values(result).flat();
-                errorMessage += messages.join(" | ");
-              }
-              messageDiv.textContent = errorMessage;
-              messageDiv.style.color = "red";
+              messageEl.textContent =
+                result.message || "Credenciales incorrectas.";
+              messageEl.style.color = "red";
             } else {
-              const storage = rememberMe ? localStorage : sessionStorage;
-              storage.setItem("authToken", result.token);
-              storage.setItem("userData", JSON.stringify(result.user));
+              const token = result.token || result.access_token;
 
-              messageDiv.textContent = "¡Inicio exitoso! Serás redirigido.";
-              messageDiv.style.color = "green";
+              if (token) {
+                localStorage.setItem("authToken", token);
+                messageEl.textContent = "¡Bienvenido! Redirigiendo...";
+                messageEl.style.color = "green";
 
-              const userRole =
-                result.user?.id_rol || result.user?.role || result.role;
-              const urlParams = new URLSearchParams(window.location.search);
-              const redirectUrl = urlParams.get("redirect");
-
-              setTimeout(() => {
-                if (redirectUrl && userRole !== 1) {
-                  window.location.href = redirectUrl;
-                } else if (userRole === 1) {
-                  window.location.href = "/admin/dashboardAdmin";
-                } else {
-                  window.location.href = "/usuario/index-elearning";
-                }
-              }, 1500);
+                setTimeout(() => {
+                  window.location.href = "/home";
+                }, 1000);
+              } else {
+                messageEl.textContent = "Error: No se recibió token.";
+                messageEl.style.color = "red";
+              }
             }
           } catch (error) {
-            console.error("Error de conexión:", error);
-            messageDiv.textContent = "No se pudo conectar con el servidor.";
-            messageDiv.style.color = "red";
+            console.error("Error:", error);
+            messageEl.textContent = "Error de conexión con el servidor.";
+            messageEl.style.color = "red";
           } finally {
             setLoading(false);
           }
         });
-
-        const clearButton = document.createElement("button");
-        clearButton.type = "button";
-        clearButton.textContent = "Usar otra cuenta";
-        clearButton.className = "text-sm text-blue-600 hover:underline mt-2";
-        clearButton.addEventListener("click", function () {
-          form.reset();
-          localStorage.removeItem("authToken");
-          sessionStorage.removeItem("authToken");
-          messageDiv.textContent =
-            "Campos limpiados. Puedes ingresar nuevas credenciales.";
-          messageDiv.style.color = "blue";
-        });
-
-        form.parentNode.insertBefore(clearButton, form.nextSibling);
       });
     </script>
   </body>
