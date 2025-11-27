@@ -141,10 +141,6 @@
         console.log("Navbar check:", userString);
 
         // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
-        if (!userString) {
-            window.location.href = "../../auth/login";
-            return; // Detenemos la ejecución del script
-        }
 
         try {
             const user = JSON.parse(userString);
