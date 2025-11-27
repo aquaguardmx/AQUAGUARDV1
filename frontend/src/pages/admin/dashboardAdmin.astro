@@ -14,12 +14,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 localStorage.getItem("userData") ||
                 sessionStorage.getItem("userData");
             // --- FIN DE LA CORRECCIÓN ---
-            
+
             console.log("Dashboard check:", userString);
 
             // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
             if (!userString) {
-                window.location.href = "../../pages/auth/login.astro";
+                window.location.href = "../../auth/login";
                 return; // Detenemos la ejecución del script
             }
 
@@ -38,7 +38,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 );
                 localStorage.clear();
                 sessionStorage.clear(); // Limpia ambos también
-                window.location.href = "../../pages/auth/login.astro";
+                window.location.href = "../../auth/login";
             }
         });
     </script>
