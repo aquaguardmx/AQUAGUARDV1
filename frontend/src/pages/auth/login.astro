@@ -101,25 +101,28 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
     </main>
 
     <script define:vars={{ API_URL }}>
+      // --- 1. VERIFICACIÓN INICIAL ---
       const authToken =
         localStorage.getItem("authToken") ||
         sessionStorage.getItem("authToken");
 
       if (authToken) {
-        window.location.href = "../admin/dashboardAdmin";
+        // Usamos ruta absoluta (con / al inicio) para evitar errores relativos
+        window.location.href = "/admin/dashboardAdmin";
       }
 
-      // Estilos del spinner
+      // --- 2. ESTILOS SPINNER ---
       if (!document.getElementById("register-spinner-style")) {
         const style = document.createElement("style");
         style.id = "register-spinner-style";
         style.textContent = `
-                .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
-                @keyframes rg-spin { to { transform: rotate(360deg); } }
-            `;
+        .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
+        @keyframes rg-spin { to { transform: rotate(360deg); } }
+    `;
         document.head.appendChild(style);
       }
 
+      // --- 3. LÓGICA DEL FORMULARIO ---
       document.addEventListener("DOMContentLoaded", () => {
         const form = document.querySelector("#loginForm");
         const messageEl = document.getElementById("responseMessage");
@@ -135,7 +138,7 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
           if (!submitButton) return;
           if (isLoading) {
             submitButton.disabled = true;
-            submitButton.innerHTML = `<span>Ingresando...</span>`; // Simplificado
+            submitButton.innerHTML = `<span>Ingresando...</span>`;
             submitButton.classList.add("opacity-70", "cursor-not-allowed");
           } else {
             submitButton.disabled = false;
@@ -153,8 +156,6 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
           messageEl.textContent = "";
 
           try {
-            // 3. AQUÍ USAMOS 'API_URL' DIRECTAMENTE
-            // Ya no usamos import.meta.env dentro del script
             console.log("Conectando a:", API_URL);
 
             const response = await fetch(`${API_URL}/api/login`, {
@@ -173,15 +174,30 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
                 result.message || "Credenciales incorrectas.";
               messageEl.style.color = "red";
             } else {
+              // Obtenemos token y USUARIO
               const token = result.token || result.access_token;
+              const user = result.user || result.data?.user; // Ajusta según tu API
 
               if (token) {
+                // A. Guardamos el Token
                 localStorage.setItem("authToken", token);
-                messageEl.textContent = "bienvenido! Redirigiendo...";
+
+                // B. CORRECCIÓN PRINCIPAL: Guardamos los datos del usuario
+                if (user) {
+                  localStorage.setItem("userData", JSON.stringify(user));
+                  console.log("Usuario guardado correctamente:", user);
+                } else {
+                  console.warn(
+                    "ADVERTENCIA: La API no devolvió el objeto 'user'. El Dashboard podría fallar.",
+                  );
+                }
+
+                messageEl.textContent = "¡Bienvenido! Redirigiendo...";
                 messageEl.style.color = "green";
 
                 setTimeout(() => {
-                  window.location.href = "../admin/dashboardAdmin";
+                  // C. Redirección absoluta
+                  window.location.href = "/admin/dashboardAdmin";
                 }, 1000);
               } else {
                 messageEl.textContent = "Error: No se recibió token.";
