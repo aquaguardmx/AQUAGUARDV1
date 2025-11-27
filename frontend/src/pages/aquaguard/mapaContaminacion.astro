@@ -92,7 +92,6 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
 
                 <div id="mapa"></div>
                 <!-- Overlay de carga -->
-<<<<<<< HEAD
                 <div
                     id="loadingOverlay"
                     class="loading-overlay"
@@ -103,12 +102,6 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                         <div class="loading-text">
                             Cargando mapa y puntos...
                         </div>
-=======
-                <div id="loadingOverlay" class="loading-overlay" style="display:none;">
-                    <div class="loading-box">
-                        <div class="spinner" aria-hidden="true"></div>
-                        <div class="loading-text">Cargando mapa y puntos...</div>
->>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
                     </div>
                 </div>
 
@@ -476,7 +469,6 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                 legend.addTo(map);
             }
 
-<<<<<<< HEAD
             function cargarCuerposAgua() {
                 initMap();
                 // Mostrar overlay de carga
@@ -519,70 +511,6 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                                         estacion.longitud,
                                     );
                                     return;
-=======
-        function cargarCuerposAgua() {
-            initMap();
-            // Mostrar overlay de carga
-            const loadingEl = document.getElementById('loadingOverlay');
-            if (loadingEl) loadingEl.style.display = 'flex';
-
-            fetch('http://localhost:8000/api/mapa')
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Datos recibidos:', data);
-                    
-                    const estaciones = data.estaciones || [];
-                    cuerposAguaOriginal = estaciones;
-                    
-                    // Limpia capas anteriores
-                    if (capasAgua) {
-                        map.removeLayer(capasAgua);
-                    }
-                    
-                    // Crea marcadores para cada estación
-                    capasAgua = L.layerGroup();
-                    
-                    estaciones.forEach(estacion => {
-                        if (estacion.latitud && estacion.longitud) {
-                            let lat = parseFloat(estacion.latitud);
-                            let lng = parseFloat(estacion.longitud);
-                            
-                            if (isNaN(lat) || isNaN(lng)) {
-                                console.warn('Coordenadas inválidas:', estacion.latitud, estacion.longitud);
-                                return;
-                            }
-                            
-                            // Determina color según semáforo
-                            const semaforoActual = estacion.semaforo && estacion.semaforo.length > 0 
-                                ? estacion.semaforo[0]
-                                : null;
-                            
-                            let color = '#007bff'; // Azul por defecto (sin datos)
-                            let calidad = 'Sin datos';
-                            
-                            if (semaforoActual) {
-                                switch(semaforoActual.color.toUpperCase()) {
-                                    case 'VERDE':
-                                        color = '#28a745';
-                                        calidad = 'Buena';
-                                        break;
-                                    case 'AMARILLO':
-                                        color = '#ffc107';
-                                        calidad = 'Moderada';
-                                        break;
-                                    case 'ROJO':
-                                        color = '#dc3545';
-                                        calidad = 'Mala';
-                                        break;
-                                    default:
-                                        color = '#007bff';
-                                        calidad = 'Sin datos';
->>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
                                 }
 
                                 // Determina color según semáforo
@@ -635,47 +563,6 @@ import Footer from "../../components/aquaguard-components/Footer.astro";
                                     </button>
                                 </div>
                             `;
-<<<<<<< HEAD
-=======
-                            
-                            const marker = L.circleMarker([lat, lng], {
-                                radius: 8,
-                                fillColor: color,
-                                color: '#ffffff',
-                                weight: 2,
-                                fillOpacity: 0.8
-                            }).bindPopup(popup);
-                            
-                            // SOLO MOSTRAR POPUP AL HACER CLIC, NO EL MODAL
-                            marker.on('click', function(e) {
-                                // Solo abre el popup, no el modal
-                                marker.openPopup();
-                            });
-                            
-                            capasAgua.addLayer(marker);
-                        } else {
-                            console.warn('Estación sin coordenadas:', estacion.nombre);
-                        }
-                    });
-                    
-                    capasAgua.addTo(map);
-                    console.log(`Cargadas ${estaciones.length} estaciones en el mapa`);
-                    // Ocultar overlay cuando terminen de cargarse los puntos
-                    if (loadingEl) {
-                        // pequeña espera para suavizar la transición
-                        setTimeout(() => loadingEl.style.display = 'none', 200);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error al cargar los datos:", error);
-                    alert("Error al cargar los datos. Por favor intente más tarde.");
-                    if (loadingEl) loadingEl.style.display = 'none';
-                })
-                .finally(() => {
-                    if (loadingEl) loadingEl.style.display = 'none';
-                });
-        }
->>>>>>> bf0619ee8b28bd026c8cc61aa782fcd0682c3c24
 
                                 const marker = L.circleMarker([lat, lng], {
                                     radius: 8,
