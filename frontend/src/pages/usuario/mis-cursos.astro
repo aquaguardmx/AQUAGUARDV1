@@ -4,6 +4,8 @@ import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
 import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
 
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // Interfaces para los datos de la API
 interface CursoAPI {
   id_curso: number;
@@ -63,7 +65,7 @@ async function fetchCursosInscritos() {
     // pero si es SSR podemos acceder a cookies/headers. Si es estático, necesitamos fetch client-side o hardcode para demo)
     // Asumimos usuario ID 1 para demo o lo tomamos de una cookie si implementamos auth real SSR.
     // Para este caso, mantenemos el hardcode ID 1 como estaba, pero idealmente sería dinámico.
-    const response = await fetch('http://localhost:8000/api/cursos-inscritos/usuario/1');
+    const response = await fetch(`${API_URL}/api/cursos-inscritos/usuario/1`);
     
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);

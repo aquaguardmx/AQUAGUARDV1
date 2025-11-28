@@ -1,6 +1,8 @@
 ---
 // src/components/aquaguard-components/NavegacionEntreLecciones.astro
 
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // 1. DEFINICIÓN DE TIPOS
 export interface Leccion {
     id_leccion: number | string;
@@ -57,7 +59,7 @@ if (!cursoId && pathParts.length > 1) {
 
 // 3. Función para cargar los módulos desde la API
 async function cargarModulos(cursoId: string | number): Promise<Modulo[]> {
-    const apiUrl = `http://localhost:8000/api/cursos/${cursoId}/modulos-y-lecciones`;
+    const apiUrl = `${API_URL}/api/cursos/${cursoId}/modulos-y-lecciones`;
 
     try {
         const response = await fetch(apiUrl);
@@ -516,7 +518,7 @@ if (!moduloActualEncontrado && curso.modulos.length > 0) {
         try {
             // 1. Obtener progreso del usuario
             const response = await fetch(
-                `http://localhost:8000/api/progreso-lecciones/usuario/${userId}`,
+                `${API_URL}/api/progreso-lecciones/usuario/${userId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${authToken}`,
