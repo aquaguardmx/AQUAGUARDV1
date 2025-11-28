@@ -799,7 +799,7 @@ function getUserFullName() {
     <Footer />
 
     <!-- El script permanece igual, solo se actualizaron los estilos -->
-    <script is:inline>
+    <script define:vars={{ API_URL }} is:inline>
         document.addEventListener("DOMContentLoaded", async function () {
             const profileForm = document.getElementById("profileForm");
             const saveButton = document.getElementById("saveButton");
