@@ -741,11 +741,6 @@ function getUserFullName() {
             return;
         }
 
-        // Mostrar loading inicial
-        heroSection.classList.add("opacity-75");
-        heroSection.innerHTML +=
-            '<div class="absolute inset-0 bg-black/20 flex items-center justify-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>';
-
         // Poblar displays y form con datos reales de user
         function populateUserData() {
             // Hero displays
