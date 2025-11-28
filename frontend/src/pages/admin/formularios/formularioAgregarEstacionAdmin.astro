@@ -1,17 +1,23 @@
 ---
 // src/pages/admin/formularios/formularioAgregarEstacion.astro
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
 ---
 
-<AdminLayout title="Agregar Cuerpo de Agua - Admin">    
+<AdminLayout title="Agregar Cuerpo de Agua - Admin">
     <div class="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100 py-8">
         <!-- Header -->
         <div class="container mx-auto px-4 mb-8">
             <div class="text-center">
                 <div class="mb-6">
-                        <img src="/img/logo.png" alt="AquaGuard Logo" class="h-16 mx-auto">
+                    <img
+                        src="/img/logo.png"
+                        alt="AquaGuard Logo"
+                        class="h-16 mx-auto"
+                    />
                 </div>
-                
+
                 <div class="max-w-4xl mx-auto">
                     <h1 class="text-4xl font-bold text-gray-800 mb-4">
                         Reportar Nueva Estación
@@ -23,71 +29,120 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         <!-- Formulario -->
         <div class="container mx-auto px-4">
             <div class="max-w-6xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-xl border-l-4 border-blue-600 p-8">
+                <div
+                    class="bg-white rounded-2xl shadow-xl border-l-4 border-blue-600 p-8"
+                >
                     <form id="estacionForm" class="space-y-8" novalidate>
                         <!-- Información Básica -->
                         <div class="border-b border-gray-200 pb-8">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <div
+                                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-blue-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        ></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-2xl font-bold text-gray-800">Información Básica</h3>
+                                <h3 class="text-2xl font-bold text-gray-800">
+                                    Información Básica
+                                </h3>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="nombre" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="nombre"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Nombre de la Estación *
                                     </label>
-                                    <input type="text" 
-                                           id="nombre" 
-                                           name="nombre" 
-                                           required
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                           placeholder="Ej: Río Lerma - Tramo Centro">
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="nombreError">
-                                        Por favor ingresa el nombre de la estación.
+                                    <input
+                                        type="text"
+                                        id="nombre"
+                                        name="nombre"
+                                        required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                        placeholder="Ej: Río Lerma - Tramo Centro"
+                                    />
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="nombreError"
+                                    >
+                                        Por favor ingresa el nombre de la
+                                        estación.
                                     </div>
                                 </div>
-                                
+
                                 <div>
-                                    <label for="clave_sitio" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="clave_sitio"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Clave del Sitio
                                     </label>
-                                    <input type="text" 
-                                           id="clave_sitio" 
-                                           name="clave_sitio"
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                           placeholder="Ej: RL-TC-2024">
+                                    <input
+                                        type="text"
+                                        id="clave_sitio"
+                                        name="clave_sitio"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                        placeholder="Ej: RL-TC-2024"
+                                    />
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"
+                            >
                                 <div>
-                                    <label for="id_tipo" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="id_tipo"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Tipo de Cuerpo de Agua *
                                     </label>
-                                    <select id="id_tipo" 
-                                            name="id_tipo" 
-                                            required
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                                        <option value="">Selecciona un tipo</option>
+                                    <select
+                                        id="id_tipo"
+                                        name="id_tipo"
+                                        required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                    >
+                                        <option value=""
+                                            >Selecciona un tipo</option
+                                        >
                                     </select>
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="tipoError">
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="tipoError"
+                                    >
                                         Selecciona el tipo de cuerpo de agua.
                                     </div>
                                 </div>
-                                
+
                                 <div>
-                                    <label for="id_subtipo" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="id_subtipo"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Subtipo
                                     </label>
-                                    <select id="id_subtipo" 
-                                            name="id_subtipo"
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                                        <option value="">Selecciona un subtipo</option>
+                                    <select
+                                        id="id_subtipo"
+                                        name="id_subtipo"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                    >
+                                        <option value=""
+                                            >Selecciona un subtipo</option
+                                        >
                                     </select>
                                 </div>
                             </div>
@@ -96,77 +151,134 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                         <!-- Ubicación -->
                         <div class="border-b border-gray-200 pb-8">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <div
+                                    class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-green-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                        ></path>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                        ></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-2xl font-bold text-gray-800">Ubicación</h3>
+                                <h3 class="text-2xl font-bold text-gray-800">
+                                    Ubicación
+                                </h3>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="id_estado" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="id_estado"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Estado *
                                     </label>
-                                    <select id="id_estado" 
-                                            name="id_estado" 
-                                            required
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                                        <option value="">Selecciona un estado</option>
+                                    <select
+                                        id="id_estado"
+                                        name="id_estado"
+                                        required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                    >
+                                        <option value=""
+                                            >Selecciona un estado</option
+                                        >
                                     </select>
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="estadoError">
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="estadoError"
+                                    >
                                         Selecciona el estado.
                                     </div>
                                 </div>
-                                
+
                                 <div>
-                                    <label for="id_municipio" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="id_municipio"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Municipio *
                                     </label>
-                                    <select id="id_municipio" 
-                                            name="id_municipio" 
-                                            required 
-                                            disabled
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-gray-50">
-                                        <option value="">Primero selecciona un estado</option>
+                                    <select
+                                        id="id_municipio"
+                                        name="id_municipio"
+                                        required
+                                        disabled
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-gray-50"
+                                    >
+                                        <option value=""
+                                            >Primero selecciona un estado</option
+                                        >
                                     </select>
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="municipioError">
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="municipioError"
+                                    >
                                         Selecciona el municipio.
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"
+                            >
                                 <div>
-                                    <label for="latitud" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="latitud"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Latitud *
                                     </label>
-                                    <input type="number" 
-                                           step="any" 
-                                           id="latitud" 
-                                           name="latitud" 
-                                           required
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                           placeholder="Ej: 20.675000">
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="latitudError">
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        id="latitud"
+                                        name="latitud"
+                                        required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                        placeholder="Ej: 20.675000"
+                                    />
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="latitudError"
+                                    >
                                         La latitud es requerida.
                                     </div>
                                 </div>
-                                
+
                                 <div>
-                                    <label for="longitud" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="longitud"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Longitud *
                                     </label>
-                                    <input type="number" 
-                                           step="any" 
-                                           id="longitud" 
-                                           name="longitud" 
-                                           required
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                                           placeholder="Ej: -103.345000">
-                                    <div class="text-red-500 text-sm mt-1 hidden" id="longitudError">
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        id="longitud"
+                                        name="longitud"
+                                        required
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                        placeholder="Ej: -103.345000"
+                                    />
+                                    <div
+                                        class="text-red-500 text-sm mt-1 hidden"
+                                        id="longitudError"
+                                    >
                                         La longitud es requerida.
                                     </div>
                                 </div>
@@ -174,12 +286,19 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
                             <!-- Mapa -->
                             <div class="mt-6">
-                                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 mb-3"
+                                >
                                     Selecciona la ubicación en el mapa:
                                 </label>
-                                <div id="mapaSeleccion" class="h-80 rounded-xl border-2 border-gray-200 overflow-hidden"></div>
+                                <div
+                                    id="mapaSeleccion"
+                                    class="h-80 rounded-xl border-2 border-gray-200 overflow-hidden"
+                                >
+                                </div>
                                 <p class="text-gray-500 text-sm mt-2">
-                                    Haz clic en el mapa para establecer las coordenadas automáticamente
+                                    Haz clic en el mapa para establecer las
+                                    coordenadas automáticamente
                                 </p>
                             </div>
                         </div>
@@ -187,23 +306,55 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                         <!-- Mediciones de Calidad del Agua -->
                         <div class="border-b border-gray-200 pb-8">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                <div
+                                    class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-purple-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                                        ></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-2xl font-bold text-gray-800">Mediciones de Calidad del Agua</h3>
+                                <h3 class="text-2xl font-bold text-gray-800">
+                                    Mediciones de Calidad del Agua
+                                </h3>
                             </div>
-                            
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+
+                            <div
+                                class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6"
+                            >
                                 <div class="flex items-start gap-3">
-                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <svg
+                                        class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        ></path>
                                     </svg>
                                     <div>
-                                        <strong class="text-blue-800">Información importante:</strong>
-                                        <span id="tipoAguaInfo" class="text-blue-700 ml-1">
-                                            Selecciona el tipo de cuerpo de agua para ver los rangos aplicables
+                                        <strong class="text-blue-800"
+                                            >Información importante:</strong
+                                        >
+                                        <span
+                                            id="tipoAguaInfo"
+                                            class="text-blue-700 ml-1"
+                                        >
+                                            Selecciona el tipo de cuerpo de agua
+                                            para ver los rangos aplicables
                                         </span>
                                     </div>
                                 </div>
@@ -213,31 +364,74 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                                 <!-- Mediciones se agregarán aquí dinámicamente -->
                             </div>
 
-                            <button type="button" 
-                                    onclick="agregarMedicion()"
-                                    class="mt-4 px-6 py-3 border-2 border-blue-500 text-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-200 font-semibold flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <button
+                                type="button"
+                                onclick="agregarMedicion()"
+                                class="mt-4 px-6 py-3 border-2 border-blue-500 text-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-200 font-semibold flex items-center gap-2"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Agregar otra medición
                             </button>
 
                             <!-- Previsualización del Semáforo -->
                             <div id="semaforoPreview" class="mt-8 hidden">
-                                <h4 class="text-lg font-semibold text-gray-800 mb-4">Previsualización del Semáforo</h4>
-                                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                                <h4
+                                    class="text-lg font-semibold text-gray-800 mb-4"
+                                >
+                                    Previsualización del Semáforo
+                                </h4>
+                                <div
+                                    class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+                                >
                                     <div class="flex items-center gap-6">
-                                        <div id="semaforoColor" class="flex-shrink-0">
-                                            <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                                <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd"></path>
+                                        <div
+                                            id="semaforoColor"
+                                            class="flex-shrink-0"
+                                        >
+                                            <div
+                                                class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center"
+                                            >
+                                                <svg
+                                                    class="w-8 h-8 text-gray-400"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path
+                                                        fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16z"
+                                                        clip-rule="evenodd"
+                                                    ></path>
                                                 </svg>
                                             </div>
                                         </div>
                                         <div class="flex-1">
-                                            <h5 id="semaforoTexto" class="text-lg font-semibold text-gray-800">Color del semáforo</h5>
-                                            <p id="semaforoRazon" class="text-gray-600 mb-2"></p>
-                                            <p id="semaforoContaminantes" class="text-sm text-gray-500"></p>
+                                            <h5
+                                                id="semaforoTexto"
+                                                class="text-lg font-semibold text-gray-800"
+                                            >
+                                                Color del semáforo
+                                            </h5>
+                                            <p
+                                                id="semaforoRazon"
+                                                class="text-gray-600 mb-2"
+                                            >
+                                            </p>
+                                            <p
+                                                id="semaforoContaminantes"
+                                                class="text-sm text-gray-500"
+                                            >
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -247,53 +441,103 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                         <!-- Información Adicional -->
                         <div class="pb-8">
                             <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                <div
+                                    class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-cyan-600"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
+                                        ></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-2xl font-bold text-gray-800">Información Adicional</h3>
+                                <h3 class="text-2xl font-bold text-gray-800">
+                                    Información Adicional
+                                </h3>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="id_cuenca" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="id_cuenca"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Cuenca Hidrológica
                                     </label>
-                                    <select id="id_cuenca" 
-                                            name="id_cuenca"
-                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
-                                        <option value="">Selecciona una cuenca</option>
+                                    <select
+                                        id="id_cuenca"
+                                        name="id_cuenca"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                                    >
+                                        <option value=""
+                                            >Selecciona una cuenca</option
+                                        >
                                     </select>
                                 </div>
-                                
+
                                 <div class="md:col-span-2">
-                                    <label for="observaciones" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label
+                                        for="observaciones"
+                                        class="block text-sm font-semibold text-gray-700 mb-2"
+                                    >
                                         Observaciones
                                     </label>
-                                    <textarea id="observaciones" 
-                                              name="observaciones" 
-                                              rows="4"
-                                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 resize-none"
-                                              placeholder="Información adicional sobre el cuerpo de agua..."></textarea>
+                                    <textarea
+                                        id="observaciones"
+                                        name="observaciones"
+                                        rows="4"
+                                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 resize-none"
+                                        placeholder="Información adicional sobre el cuerpo de agua..."
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Botones de acción -->
-                        <div class="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
-                            <button type="button" 
-                                    onclick="window.location.href='/admin/estaciones/verEstaciones'"
-                                    class="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold flex items-center gap-2 justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        <div
+                            class="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200"
+                        >
+                            <button
+                                type="button"
+                                onclick="window.location.href='/admin/estaciones/verEstaciones'"
+                                class="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold flex items-center gap-2 justify-center"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                                 </svg>
                                 Cancelar
                             </button>
-                            <button type="submit" 
-                                    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-semibold flex items-center gap-2 justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            <button
+                                type="submit"
+                                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-semibold flex items-center gap-2 justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
                                 </svg>
                                 Registrar Estación
                             </button>
@@ -309,268 +553,298 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-    // Variables globales
-    let map;
-    let marker;
-    let userData = null;
-    let contadorMediciones = 0;
-    let parametrosData = [];
-    let tipoCuerpoAgua = '';
 
-    // Inicialización
-    document.addEventListener('DOMContentLoaded', function() {
-        verificarAutenticacion();
-        inicializarMapa();
-        cargarSelects();
-        inicializarFormulario();
-        inicializarEventListeners();
-        agregarMedicion(); // Agregar primera medición por defecto
-    });
+    <script define:vars={{ API_URL }} is:inline>
+        // Variables globales
+        let map;
+        let marker;
+        let userData = null;
+        let contadorMediciones = 0;
+        let parametrosData = [];
+        let tipoCuerpoAgua = "";
 
-    function verificarAutenticacion() {
-        const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-        const storedUserData = localStorage.getItem("userData") || sessionStorage.getItem("userData");
-        
-        if (!authToken || !storedUserData) {
-            window.location.href = '/auth/login?redirect=/admin/formularios/formularioAgregarEstacion';
-            return;
-        }
-
-        try {
-            userData = JSON.parse(storedUserData);
-        } catch (error) {
-            console.error('Error al parsear userData:', error);
-            window.location.href = '/auth/login?redirect=/admin/formularios/formularioAgregarEstacion';
-        }
-    }
-
-    function inicializarMapa() {
-        map = L.map('mapaSeleccion').setView([23.6345, -102.5528], 5);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        map.on('click', function(e) {
-            const { lat, lng } = e.latlng;
-            
-            document.getElementById('latitud').value = lat.toFixed(6);
-            document.getElementById('longitud').value = lng.toFixed(6);
-            
-            if (marker) {
-                map.removeLayer(marker);
-            }
-            
-            marker = L.marker([lat, lng]).addTo(map)
-                .bindPopup('Ubicación seleccionada')
-                .openPopup();
+        // Inicialización
+        document.addEventListener("DOMContentLoaded", function () {
+            verificarAutenticacion();
+            inicializarMapa();
+            cargarSelects();
+            inicializarFormulario();
+            inicializarEventListeners();
+            agregarMedicion(); // Agregar primera medición por defecto
         });
-    }
 
-    async function cargarSelects() {
-        try {
-            // Cargar tipos
-            const tiposResponse = await fetch('http://localhost:8000/api/tipos');
-            const tipos = await tiposResponse.json();
-            const tipoSelect = document.getElementById('id_tipo');
-            
-            tipos.forEach(tipo => {
-                const option = document.createElement('option');
-                option.value = tipo.id_tipo;
-                option.textContent = tipo.nombre;
-                tipoSelect.appendChild(option);
-            });
+        function verificarAutenticacion() {
+            const authToken =
+                localStorage.getItem("authToken") ||
+                sessionStorage.getItem("authToken");
+            const storedUserData =
+                localStorage.getItem("userData") ||
+                sessionStorage.getItem("userData");
 
-            // Cargar subtipos
-            const subtiposResponse = await fetch('http://localhost:8000/api/subtipos');
-            const subtipos = await subtiposResponse.json();
-            const subtipoSelect = document.getElementById('id_subtipo');
-            
-            subtipos.forEach(subtipo => {
-                const option = document.createElement('option');
-                option.value = subtipo.id_subtipo;
-                option.textContent = subtipo.nombre;
-                subtipoSelect.appendChild(option);
-            });
-
-            // Cargar estados
-            const estadosResponse = await fetch('http://localhost:8000/api/estados');
-            const estados = await estadosResponse.json();
-            const estadoSelect = document.getElementById('id_estado');
-            
-            estados.forEach(estado => {
-                const option = document.createElement('option');
-                option.value = estado.id_estado;
-                option.textContent = estado.nombre;
-                estadoSelect.appendChild(option);
-            });
-
-            // Cargar cuencas
-            const cuencasResponse = await fetch('http://localhost:8000/api/cuencas');
-            const cuencas = await cuencasResponse.json();
-            const cuencaSelect = document.getElementById('id_cuenca');
-            
-            cuencas.forEach(cuenca => {
-                const option = document.createElement('option');
-                option.value = cuenca.id_cuenca;
-                option.textContent = cuenca.nombre;
-                cuencaSelect.appendChild(option);
-            });
-
-            await cargarParametros();
-
-        } catch (error) {
-            console.error('Error cargando datos:', error);
-            mostrarMensaje('Error al cargar los datos necesarios', 'error');
-        }
-    }
-
-    async function cargarParametros() {
-        try {
-            const response = await fetch('http://localhost:8000/api/parametros');
-            parametrosData = await response.json();
-            
-            // Actualizar todos los selects de parámetros
-            document.querySelectorAll('.parametro-select').forEach(select => {
-                cargarParametrosEnSelect(select);
-            });
-        } catch (error) {
-            console.error('Error cargando parámetros:', error);
-        }
-    }
-
-    // Cargar municipios cuando se selecciona un estado
-    document.getElementById('id_estado').addEventListener('change', async function() {
-        const estadoId = this.value;
-        const municipioSelect = document.getElementById('id_municipio');
-        
-        if (!estadoId) {
-            municipioSelect.innerHTML = '<option value="">Primero selecciona un estado</option>';
-            municipioSelect.disabled = true;
-            municipioSelect.classList.add('bg-gray-50');
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:8000/api/municipios/estado/${estadoId}`);
-            const municipios = await response.json();
-            
-            municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
-            municipios.forEach(municipio => {
-                const option = document.createElement('option');
-                option.value = municipio.id_municipio;
-                option.textContent = municipio.nombre;
-                municipioSelect.appendChild(option);
-            });
-            
-            municipioSelect.disabled = false;
-            municipioSelect.classList.remove('bg-gray-50');
-        } catch (error) {
-            console.error('Error cargando municipios:', error);
-            mostrarMensaje('Error al cargar los municipios', 'error');
-        }
-    });
-
-    function inicializarFormulario() {
-        const form = document.getElementById('estacionForm');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!validarFormulario()) {
+            if (!authToken || !storedUserData) {
+                window.location.href =
+                    "/auth/login?redirect=/admin/formularios/formularioAgregarEstacion";
                 return;
             }
 
-            await enviarFormulario();
-        });
-    }
-
-    function validarFormulario() {
-        let isValid = true;
-        
-        // Validar campos requeridos
-        const requiredFields = [
-            { id: 'nombre', errorId: 'nombreError' },
-            { id: 'id_tipo', errorId: 'tipoError' },
-            { id: 'id_estado', errorId: 'estadoError' },
-            { id: 'id_municipio', errorId: 'municipioError' },
-            { id: 'latitud', errorId: 'latitudError' },
-            { id: 'longitud', errorId: 'longitudError' }
-        ];
-
-        requiredFields.forEach(field => {
-            const element = document.getElementById(field.id);
-            const errorElement = document.getElementById(field.errorId);
-            
-            if (!element.value) {
-                element.classList.add('border-red-500');
-                errorElement.classList.remove('hidden');
-                isValid = false;
-            } else {
-                element.classList.remove('border-red-500');
-                errorElement.classList.add('hidden');
+            try {
+                userData = JSON.parse(storedUserData);
+            } catch (error) {
+                console.error("Error al parsear userData:", error);
+                window.location.href =
+                    "/auth/login?redirect=/admin/formularios/formularioAgregarEstacion";
             }
-        });
-
-        // Validar mediciones
-        const mediciones = document.querySelectorAll('.medicion-item');
-        let hasValidMediciones = false;
-        
-        mediciones.forEach(medicion => {
-            const parametro = medicion.querySelector('.parametro-select').value;
-            const valor = medicion.querySelector('.valor-input').value;
-            const fecha = medicion.querySelector('input[type="date"]').value;
-            
-            if (parametro && valor && fecha) {
-                hasValidMediciones = true;
-            }
-        });
-
-        if (!hasValidMediciones) {
-            mostrarMensaje('Debe agregar al menos una medición válida', 'error');
-            isValid = false;
         }
 
-        return isValid;
-    }
+        function inicializarMapa() {
+            map = L.map("mapaSeleccion").setView([23.6345, -102.5528], 5);
 
-    function inicializarEventListeners() {
-        document.getElementById('id_tipo').addEventListener('change', function() {
-            const tipoSelect = this;
-            const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
-            tipoCuerpoAgua = selectedOption.text.toLowerCase();
-            
-            const infoElement = document.getElementById('tipoAguaInfo');
-            if (tipoCuerpoAgua.includes('lótico')) {
-                infoElement.textContent = 'Cuerpo de agua LÓTICO (ríos, arroyos). Se aplicarán rangos para agua corriente.';
-            } else if (tipoCuerpoAgua.includes('léntico')) {
-                infoElement.textContent = 'Cuerpo de agua LÉNTICO (lagos, presas). Se aplicarán rangos para agua estancada.';
-            } else if (tipoCuerpoAgua.includes('costero')) {
-                infoElement.textContent = 'Agua COSTERA (mares, bahías). Se aplicarán rangos más estrictos para agua marina.';
-            } else {
-                infoElement.textContent = 'Selecciona el tipo de cuerpo de agua para ver los rangos aplicables';
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap contributors",
+            }).addTo(map);
+
+            map.on("click", function (e) {
+                const { lat, lng } = e.latlng;
+
+                document.getElementById("latitud").value = lat.toFixed(6);
+                document.getElementById("longitud").value = lng.toFixed(6);
+
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                marker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup("Ubicación seleccionada")
+                    .openPopup();
+            });
+        }
+
+        async function cargarSelects() {
+            try {
+                // Cargar tipos
+                const tiposResponse = await fetch(`${API_URL}/api/tipos`);
+                const tipos = await tiposResponse.json();
+                const tipoSelect = document.getElementById("id_tipo");
+
+                tipos.forEach((tipo) => {
+                    const option = document.createElement("option");
+                    option.value = tipo.id_tipo;
+                    option.textContent = tipo.nombre;
+                    tipoSelect.appendChild(option);
+                });
+
+                // Cargar subtipos
+                const subtiposResponse = await fetch(`${API_URL}/api/subtipos`);
+                const subtipos = await subtiposResponse.json();
+                const subtipoSelect = document.getElementById("id_subtipo");
+
+                subtipos.forEach((subtipo) => {
+                    const option = document.createElement("option");
+                    option.value = subtipo.id_subtipo;
+                    option.textContent = subtipo.nombre;
+                    subtipoSelect.appendChild(option);
+                });
+
+                // Cargar estados
+                const estadosResponse = await fetch(`${API_URL}/api/estados`);
+                const estados = await estadosResponse.json();
+                const estadoSelect = document.getElementById("id_estado");
+
+                estados.forEach((estado) => {
+                    const option = document.createElement("option");
+                    option.value = estado.id_estado;
+                    option.textContent = estado.nombre;
+                    estadoSelect.appendChild(option);
+                });
+
+                // Cargar cuencas
+                const cuencasResponse = await fetch(`${API_URL}/api/cuencas`);
+                const cuencas = await cuencasResponse.json();
+                const cuencaSelect = document.getElementById("id_cuenca");
+
+                cuencas.forEach((cuenca) => {
+                    const option = document.createElement("option");
+                    option.value = cuenca.id_cuenca;
+                    option.textContent = cuenca.nombre;
+                    cuencaSelect.appendChild(option);
+                });
+
+                await cargarParametros();
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+                mostrarMensaje("Error al cargar los datos necesarios", "error");
             }
-            
-            actualizarSemaforoPreview();
-        });
+        }
 
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('parametro-select') || e.target.classList.contains('valor-input')) {
-                const item = e.target.closest('.medicion-item');
-                actualizarInfoParametro(item);
-                actualizarSemaforoPreview();
+        async function cargarParametros() {
+            try {
+                const response = await fetch(`${API_URL}/api/parametros`);
+                parametrosData = await response.json();
+
+                // Actualizar todos los selects de parámetros
+                document
+                    .querySelectorAll(".parametro-select")
+                    .forEach((select) => {
+                        cargarParametrosEnSelect(select);
+                    });
+            } catch (error) {
+                console.error("Error cargando parámetros:", error);
             }
-        });
-    }
+        }
 
-    // Funciones globales para mediciones
-    window.agregarMedicion = function() {
-        const container = document.getElementById('medicionesContainer');
-        const nuevoItem = document.createElement('div');
-        nuevoItem.className = 'bg-gray-50 border border-gray-200 rounded-xl p-6 medicion-item';
-        nuevoItem.innerHTML = `
+        // Cargar municipios cuando se selecciona un estado
+        document
+            .getElementById("id_estado")
+            .addEventListener("change", async function () {
+                const estadoId = this.value;
+                const municipioSelect = document.getElementById("id_municipio");
+
+                if (!estadoId) {
+                    municipioSelect.innerHTML =
+                        '<option value="">Primero selecciona un estado</option>';
+                    municipioSelect.disabled = true;
+                    municipioSelect.classList.add("bg-gray-50");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${API_URL}/api/municipios/estado/${estadoId}`,
+                    );
+                    const municipios = await response.json();
+
+                    municipioSelect.innerHTML =
+                        '<option value="">Selecciona un municipio</option>';
+                    municipios.forEach((municipio) => {
+                        const option = document.createElement("option");
+                        option.value = municipio.id_municipio;
+                        option.textContent = municipio.nombre;
+                        municipioSelect.appendChild(option);
+                    });
+
+                    municipioSelect.disabled = false;
+                    municipioSelect.classList.remove("bg-gray-50");
+                } catch (error) {
+                    console.error("Error cargando municipios:", error);
+                    mostrarMensaje("Error al cargar los municipios", "error");
+                }
+            });
+
+        function inicializarFormulario() {
+            const form = document.getElementById("estacionForm");
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                if (!validarFormulario()) {
+                    return;
+                }
+
+                await enviarFormulario();
+            });
+        }
+
+        function validarFormulario() {
+            let isValid = true;
+
+            // Validar campos requeridos
+            const requiredFields = [
+                { id: "nombre", errorId: "nombreError" },
+                { id: "id_tipo", errorId: "tipoError" },
+                { id: "id_estado", errorId: "estadoError" },
+                { id: "id_municipio", errorId: "municipioError" },
+                { id: "latitud", errorId: "latitudError" },
+                { id: "longitud", errorId: "longitudError" },
+            ];
+
+            requiredFields.forEach((field) => {
+                const element = document.getElementById(field.id);
+                const errorElement = document.getElementById(field.errorId);
+
+                if (!element.value) {
+                    element.classList.add("border-red-500");
+                    errorElement.classList.remove("hidden");
+                    isValid = false;
+                } else {
+                    element.classList.remove("border-red-500");
+                    errorElement.classList.add("hidden");
+                }
+            });
+
+            // Validar mediciones
+            const mediciones = document.querySelectorAll(".medicion-item");
+            let hasValidMediciones = false;
+
+            mediciones.forEach((medicion) => {
+                const parametro =
+                    medicion.querySelector(".parametro-select").value;
+                const valor = medicion.querySelector(".valor-input").value;
+                const fecha =
+                    medicion.querySelector('input[type="date"]').value;
+
+                if (parametro && valor && fecha) {
+                    hasValidMediciones = true;
+                }
+            });
+
+            if (!hasValidMediciones) {
+                mostrarMensaje(
+                    "Debe agregar al menos una medición válida",
+                    "error",
+                );
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function inicializarEventListeners() {
+            document
+                .getElementById("id_tipo")
+                .addEventListener("change", function () {
+                    const tipoSelect = this;
+                    const selectedOption =
+                        tipoSelect.options[tipoSelect.selectedIndex];
+                    tipoCuerpoAgua = selectedOption.text.toLowerCase();
+
+                    const infoElement = document.getElementById("tipoAguaInfo");
+                    if (tipoCuerpoAgua.includes("lótico")) {
+                        infoElement.textContent =
+                            "Cuerpo de agua LÓTICO (ríos, arroyos). Se aplicarán rangos para agua corriente.";
+                    } else if (tipoCuerpoAgua.includes("léntico")) {
+                        infoElement.textContent =
+                            "Cuerpo de agua LÉNTICO (lagos, presas). Se aplicarán rangos para agua estancada.";
+                    } else if (tipoCuerpoAgua.includes("costero")) {
+                        infoElement.textContent =
+                            "Agua COSTERA (mares, bahías). Se aplicarán rangos más estrictos para agua marina.";
+                    } else {
+                        infoElement.textContent =
+                            "Selecciona el tipo de cuerpo de agua para ver los rangos aplicables";
+                    }
+
+                    actualizarSemaforoPreview();
+                });
+
+            document.addEventListener("change", function (e) {
+                if (
+                    e.target.classList.contains("parametro-select") ||
+                    e.target.classList.contains("valor-input")
+                ) {
+                    const item = e.target.closest(".medicion-item");
+                    actualizarInfoParametro(item);
+                    actualizarSemaforoPreview();
+                }
+            });
+        }
+
+        // Funciones globales para mediciones
+        window.agregarMedicion = function () {
+            const container = document.getElementById("medicionesContainer");
+            const nuevoItem = document.createElement("div");
+            nuevoItem.className =
+                "bg-gray-50 border border-gray-200 rounded-xl p-6 medicion-item";
+            nuevoItem.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div class="md:col-span-5">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Parámetro *</label>
@@ -613,50 +887,54 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 </div>
             </div>
         `;
-        
-        container.appendChild(nuevoItem);
-        cargarParametrosEnSelect(nuevoItem.querySelector('.parametro-select'));
-        contadorMediciones++;
-        actualizarSemaforoPreview();
-    }
 
-    window.eliminarMedicion = function(boton) {
-        const item = boton.closest('.medicion-item');
-        if (document.querySelectorAll('.medicion-item').length > 1) {
-            item.remove();
+            container.appendChild(nuevoItem);
+            cargarParametrosEnSelect(
+                nuevoItem.querySelector(".parametro-select"),
+            );
+            contadorMediciones++;
             actualizarSemaforoPreview();
-        } else {
-            mostrarMensaje('Debe haber al menos una medición', 'error');
+        };
+
+        window.eliminarMedicion = function (boton) {
+            const item = boton.closest(".medicion-item");
+            if (document.querySelectorAll(".medicion-item").length > 1) {
+                item.remove();
+                actualizarSemaforoPreview();
+            } else {
+                mostrarMensaje("Debe haber al menos una medición", "error");
+            }
+        };
+
+        function cargarParametrosEnSelect(select) {
+            while (select.children.length > 1) {
+                select.removeChild(select.lastChild);
+            }
+
+            parametrosData.forEach((parametro) => {
+                const option = document.createElement("option");
+                option.value = parametro.id_parametro;
+                option.textContent = `${parametro.nombre} (${parametro.unidad})`;
+                option.setAttribute("data-descripcion", parametro.descripcion);
+                option.setAttribute("data-unidad", parametro.unidad);
+                select.appendChild(option);
+            });
         }
-    }
 
-    function cargarParametrosEnSelect(select) {
-        while (select.children.length > 1) {
-            select.removeChild(select.lastChild);
-        }
-        
-        parametrosData.forEach(parametro => {
-            const option = document.createElement('option');
-            option.value = parametro.id_parametro;
-            option.textContent = `${parametro.nombre} (${parametro.unidad})`;
-            option.setAttribute('data-descripcion', parametro.descripcion);
-            option.setAttribute('data-unidad', parametro.unidad);
-            select.appendChild(option);
-        });
-    }
+        function actualizarInfoParametro(item) {
+            const select = item.querySelector(".parametro-select");
+            const valorInput = item.querySelector(".valor-input");
+            const infoDiv = item.querySelector(".parametro-info");
+            const resultadoDiv = item.querySelector(".clasificacion-resultado");
 
-function actualizarInfoParametro(item) {
-    const select = item.querySelector('.parametro-select');
-    const valorInput = item.querySelector('.valor-input');
-    const infoDiv = item.querySelector('.parametro-info');
-    const resultadoDiv = item.querySelector('.clasificacion-resultado');
-    
-    if (select.value && valorInput.value) {
-        const parametro = parametrosData.find(p => p.id_parametro == select.value);
-        if (parametro) {
-            // Mostrar información completa del parámetro
+            if (select.value && valorInput.value) {
+                const parametro = parametrosData.find(
+                    (p) => p.id_parametro == select.value,
+                );
+                if (parametro) {
+                    // Mostrar información completa del parámetro
 
-            const infoHTML = `
+                    const infoHTML = `
                 <div class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
                     <div class="flex items-start gap-3">
                         <div class="flex-1">
@@ -678,258 +956,366 @@ function actualizarInfoParametro(item) {
                     </div>
                 </div>
             `;
-            infoDiv.innerHTML = infoHTML;
-            infoDiv.classList.remove('hidden');
-            
-            // Calcular y mostrar clasificación (existente)
-            const clasificacion = simularClasificacion(parseFloat(valorInput.value), parametro.nombre, tipoCuerpoAgua);
-            const badge = resultadoDiv.querySelector('.clasificacion-badge');
-            badge.textContent = clasificacion;
-            badge.className = 'clasificacion-badge px-2 py-1 rounded-full text-xs font-semibold ' + obtenerClaseBadge(clasificacion);
-            resultadoDiv.classList.remove('hidden');
-        }
-    } else {
-        infoDiv.classList.add('hidden');
-        resultadoDiv.classList.add('hidden');
-    }
-}
+                    infoDiv.innerHTML = infoHTML;
+                    infoDiv.classList.remove("hidden");
 
-    function simularClasificacion(valor, parametroNombre, tipoAgua) {
-        const rangos = {
-            'DBO': {
-                'lótico': { excelente: 3, buena: 5, aceptable: 8, contaminada: 15 },
-                'léntico': { excelente: 2, buena: 4, aceptable: 6, contaminada: 12 },
-                'costero': { excelente: 1, buena: 2, aceptable: 3, contaminada: 6 }
-            },
-            'DQO': {
-                'lótico': { excelente: 10, buena: 20, aceptable: 30, contaminada: 50 },
-                'léntico': { excelente: 8, buena: 15, aceptable: 25, contaminada: 40 },
-                'costero': { excelente: 5, buena: 10, aceptable: 15, contaminada: 25 }
-            },
-            'SST': {
-                'lótico': { excelente: 20, buena: 40, aceptable: 60, contaminada: 100 },
-                'léntico': { excelente: 15, buena: 30, aceptable: 45, contaminada: 80 },
-                'costero': { excelente: 10, buena: 20, aceptable: 30, contaminada: 50 }
-            },
-            'OD': {
-                'lótico': { excelente: 7, buena: 5, aceptable: 4, contaminada: 2 },
-                'léntico': { excelente: 8, buena: 6, aceptable: 4, contaminada: 2 },
-                'costero': { excelente: 6, buena: 4, aceptable: 3, contaminada: 1 }
-            },
-            'Coliformes': {
-                'lótico': { excelente: 100, buena: 500, aceptable: 1000, contaminada: 5000 },
-                'léntico': { excelente: 50, buena: 200, aceptable: 500, contaminada: 2000 },
-                'costero': { excelente: 10, buena: 50, aceptable: 100, contaminada: 500 }
+                    // Calcular y mostrar clasificación (existente)
+                    const clasificacion = simularClasificacion(
+                        parseFloat(valorInput.value),
+                        parametro.nombre,
+                        tipoCuerpoAgua,
+                    );
+                    const badge = resultadoDiv.querySelector(
+                        ".clasificacion-badge",
+                    );
+                    badge.textContent = clasificacion;
+                    badge.className =
+                        "clasificacion-badge px-2 py-1 rounded-full text-xs font-semibold " +
+                        obtenerClaseBadge(clasificacion);
+                    resultadoDiv.classList.remove("hidden");
+                }
+            } else {
+                infoDiv.classList.add("hidden");
+                resultadoDiv.classList.add("hidden");
             }
-        };
-
-        let tipoKey = 'lótico';
-        if (tipoAgua?.includes('léntico')) tipoKey = 'léntico';
-        if (tipoAgua?.includes('costero')) tipoKey = 'costero';
-
-        let parametroKey = Object.keys(rangos).find(key => 
-            parametroNombre.toLowerCase().includes(key.toLowerCase())
-        );
-
-        if (!parametroKey) return 'Sin datos';
-
-        const rango = rangos[parametroKey][tipoKey];
-
-        if (parametroKey === 'OD') {
-            if (valor >= rango.excelente) return 'Excelente';
-            if (valor >= rango.buena) return 'Buena calidad';
-            if (valor >= rango.aceptable) return 'Aceptable';
-            if (valor >= rango.contaminada) return 'Contaminada';
-            return 'Fuertemente contaminada';
         }
 
-        if (valor <= rango.excelente) return 'Excelente';
-        if (valor <= rango.buena) return 'Buena calidad';
-        if (valor <= rango.aceptable) return 'Aceptable';
-        if (valor <= rango.contaminada) return 'Contaminada';
-        return 'Fuertemente contaminada';
-    }
+        function simularClasificacion(valor, parametroNombre, tipoAgua) {
+            const rangos = {
+                DBO: {
+                    lótico: {
+                        excelente: 3,
+                        buena: 5,
+                        aceptable: 8,
+                        contaminada: 15,
+                    },
+                    léntico: {
+                        excelente: 2,
+                        buena: 4,
+                        aceptable: 6,
+                        contaminada: 12,
+                    },
+                    costero: {
+                        excelente: 1,
+                        buena: 2,
+                        aceptable: 3,
+                        contaminada: 6,
+                    },
+                },
+                DQO: {
+                    lótico: {
+                        excelente: 10,
+                        buena: 20,
+                        aceptable: 30,
+                        contaminada: 50,
+                    },
+                    léntico: {
+                        excelente: 8,
+                        buena: 15,
+                        aceptable: 25,
+                        contaminada: 40,
+                    },
+                    costero: {
+                        excelente: 5,
+                        buena: 10,
+                        aceptable: 15,
+                        contaminada: 25,
+                    },
+                },
+                SST: {
+                    lótico: {
+                        excelente: 20,
+                        buena: 40,
+                        aceptable: 60,
+                        contaminada: 100,
+                    },
+                    léntico: {
+                        excelente: 15,
+                        buena: 30,
+                        aceptable: 45,
+                        contaminada: 80,
+                    },
+                    costero: {
+                        excelente: 10,
+                        buena: 20,
+                        aceptable: 30,
+                        contaminada: 50,
+                    },
+                },
+                OD: {
+                    lótico: {
+                        excelente: 7,
+                        buena: 5,
+                        aceptable: 4,
+                        contaminada: 2,
+                    },
+                    léntico: {
+                        excelente: 8,
+                        buena: 6,
+                        aceptable: 4,
+                        contaminada: 2,
+                    },
+                    costero: {
+                        excelente: 6,
+                        buena: 4,
+                        aceptable: 3,
+                        contaminada: 1,
+                    },
+                },
+                Coliformes: {
+                    lótico: {
+                        excelente: 100,
+                        buena: 500,
+                        aceptable: 1000,
+                        contaminada: 5000,
+                    },
+                    léntico: {
+                        excelente: 50,
+                        buena: 200,
+                        aceptable: 500,
+                        contaminada: 2000,
+                    },
+                    costero: {
+                        excelente: 10,
+                        buena: 50,
+                        aceptable: 100,
+                        contaminada: 500,
+                    },
+                },
+            };
 
-    function obtenerClaseBadge(clasificacion) {
-        const clases = {
-            'Excelente': 'bg-green-100 text-green-800',
-            'Buena calidad': 'bg-blue-100 text-blue-800',
-            'Aceptable': 'bg-yellow-100 text-yellow-800',
-            'Contaminada': 'bg-orange-100 text-orange-800',
-            'Fuertemente contaminada': 'bg-red-100 text-red-800',
-            'Sin datos': 'bg-gray-100 text-gray-800'
-        };
-        return clases[clasificacion] || 'bg-gray-100 text-gray-800';
-    }
+            let tipoKey = "lótico";
+            if (tipoAgua?.includes("léntico")) tipoKey = "léntico";
+            if (tipoAgua?.includes("costero")) tipoKey = "costero";
 
-    function actualizarSemaforoPreview() {
-        const preview = document.getElementById('semaforoPreview');
-        const mediciones = document.querySelectorAll('.medicion-item');
-        const clasificaciones = [];
-        
-        mediciones.forEach(medicion => {
-            const select = medicion.querySelector('.parametro-select');
-            const valor = medicion.querySelector('.valor-input').value;
-            const resultadoDiv = medicion.querySelector('.clasificacion-resultado');
-            
-            if (select.value && valor && !resultadoDiv.classList.contains('hidden')) {
-                const clasificacion = resultadoDiv.querySelector('.clasificacion-badge').textContent;
-                clasificaciones.push(clasificacion);
+            let parametroKey = Object.keys(rangos).find((key) =>
+                parametroNombre.toLowerCase().includes(key.toLowerCase()),
+            );
+
+            if (!parametroKey) return "Sin datos";
+
+            const rango = rangos[parametroKey][tipoKey];
+
+            if (parametroKey === "OD") {
+                if (valor >= rango.excelente) return "Excelente";
+                if (valor >= rango.buena) return "Buena calidad";
+                if (valor >= rango.aceptable) return "Aceptable";
+                if (valor >= rango.contaminada) return "Contaminada";
+                return "Fuertemente contaminada";
             }
-        });
-        
-        if (clasificaciones.length > 0 && tipoCuerpoAgua) {
-            preview.classList.remove('hidden');
-            
-            let color = 'VERDE';
-            let razon = 'Todos los parámetros en niveles excelentes o de buena calidad';
-            let contaminantes = [];
-            
-            if (clasificaciones.includes('Fuertemente contaminada')) {
-                color = 'ROJO';
-                razon = 'Presencia de parámetros fuertemente contaminados';
-                contaminantes = ['Parámetros críticos detectados'];
-            } else if (clasificaciones.includes('Contaminada')) {
-                color = 'ROJO';
-                razon = 'Presencia de parámetros contaminados';
-                contaminantes = ['Parámetros en nivel contaminado'];
-            } else if (clasificaciones.includes('Aceptable')) {
-                color = 'AMARILLO';
-                razon = 'Algunos parámetros requieren atención';
-                contaminantes = ['Parámetros en nivel aceptable'];
-            }
-            
-            const semaforoColor = document.getElementById('semaforoColor');
-            const semaforoTexto = document.getElementById('semaforoTexto');
-            const semaforoRazon = document.getElementById('semaforoRazon');
-            const semaforoContaminantes = document.getElementById('semaforoContaminantes');
-            
-            // Actualizar color
-            semaforoColor.innerHTML = `
-                <div class="w-16 h-16 rounded-full ${color === 'VERDE' ? 'bg-green-500' : color === 'AMARILLO' ? 'bg-yellow-500' : 'bg-red-500'} flex items-center justify-center">
+
+            if (valor <= rango.excelente) return "Excelente";
+            if (valor <= rango.buena) return "Buena calidad";
+            if (valor <= rango.aceptable) return "Aceptable";
+            if (valor <= rango.contaminada) return "Contaminada";
+            return "Fuertemente contaminada";
+        }
+
+        function obtenerClaseBadge(clasificacion) {
+            const clases = {
+                Excelente: "bg-green-100 text-green-800",
+                "Buena calidad": "bg-blue-100 text-blue-800",
+                Aceptable: "bg-yellow-100 text-yellow-800",
+                Contaminada: "bg-orange-100 text-orange-800",
+                "Fuertemente contaminada": "bg-red-100 text-red-800",
+                "Sin datos": "bg-gray-100 text-gray-800",
+            };
+            return clases[clasificacion] || "bg-gray-100 text-gray-800";
+        }
+
+        function actualizarSemaforoPreview() {
+            const preview = document.getElementById("semaforoPreview");
+            const mediciones = document.querySelectorAll(".medicion-item");
+            const clasificaciones = [];
+
+            mediciones.forEach((medicion) => {
+                const select = medicion.querySelector(".parametro-select");
+                const valor = medicion.querySelector(".valor-input").value;
+                const resultadoDiv = medicion.querySelector(
+                    ".clasificacion-resultado",
+                );
+
+                if (
+                    select.value &&
+                    valor &&
+                    !resultadoDiv.classList.contains("hidden")
+                ) {
+                    const clasificacion = resultadoDiv.querySelector(
+                        ".clasificacion-badge",
+                    ).textContent;
+                    clasificaciones.push(clasificacion);
+                }
+            });
+
+            if (clasificaciones.length > 0 && tipoCuerpoAgua) {
+                preview.classList.remove("hidden");
+
+                let color = "VERDE";
+                let razon =
+                    "Todos los parámetros en niveles excelentes o de buena calidad";
+                let contaminantes = [];
+
+                if (clasificaciones.includes("Fuertemente contaminada")) {
+                    color = "ROJO";
+                    razon = "Presencia de parámetros fuertemente contaminados";
+                    contaminantes = ["Parámetros críticos detectados"];
+                } else if (clasificaciones.includes("Contaminada")) {
+                    color = "ROJO";
+                    razon = "Presencia de parámetros contaminados";
+                    contaminantes = ["Parámetros en nivel contaminado"];
+                } else if (clasificaciones.includes("Aceptable")) {
+                    color = "AMARILLO";
+                    razon = "Algunos parámetros requieren atención";
+                    contaminantes = ["Parámetros en nivel aceptable"];
+                }
+
+                const semaforoColor = document.getElementById("semaforoColor");
+                const semaforoTexto = document.getElementById("semaforoTexto");
+                const semaforoRazon = document.getElementById("semaforoRazon");
+                const semaforoContaminantes = document.getElementById(
+                    "semaforoContaminantes",
+                );
+
+                // Actualizar color
+                semaforoColor.innerHTML = `
+                <div class="w-16 h-16 rounded-full ${color === "VERDE" ? "bg-green-500" : color === "AMARILLO" ? "bg-yellow-500" : "bg-red-500"} flex items-center justify-center">
                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd"></path>
                     </svg>
                 </div>
             `;
-            
-            // Actualizar textos
-            semaforoTexto.textContent = `Semáforo: ${color}`;
-            semaforoTexto.className = `text-lg font-semibold ${color === 'VERDE' ? 'text-green-600' : color === 'AMARILLO' ? 'text-yellow-600' : 'text-red-600'}`;
-            semaforoRazon.textContent = razon;
-            semaforoContaminantes.textContent = contaminantes.length > 0 ? `Parámetros a revisar: ${contaminantes.join(', ')}` : '';
-            
-        } else {
-            preview.classList.add('hidden');
-        }
-    }
 
-    async function enviarFormulario() {
-        const formData = new FormData(document.getElementById('estacionForm'));
-        
-        const data = {
-            nombre: formData.get('nombre'),
-            clave_sitio: formData.get('clave_sitio'),
-            latitud: parseFloat(formData.get('latitud')),
-            longitud: parseFloat(formData.get('longitud')),
-            activo: "false",
-            id_tipo: parseInt(formData.get('id_tipo')),
-            id_municipio: parseInt(formData.get('id_municipio')),
-            id_usuario: userData.id_usuario
-        };
-
-        // Campos opcionales
-        if (formData.get('id_subtipo')) data.id_subtipo = parseInt(formData.get('id_subtipo'));
-        if (formData.get('id_cuenca')) data.id_cuenca = parseInt(formData.get('id_cuenca'));
-        if (formData.get('observaciones')) data.observaciones = formData.get('observaciones');
-
-        // Procesar mediciones
-        const mediciones = [];
-        const medicionItems = document.querySelectorAll('.medicion-item');
-        
-        medicionItems.forEach((item, index) => {
-            const idParametro = item.querySelector('.parametro-select').value;
-            const valor = item.querySelector('.valor-input').value;
-            const fecha = item.querySelector('input[type="date"]').value;
-            
-            if (idParametro && valor && fecha) {
-                mediciones.push({
-                    id_parametro: parseInt(idParametro),
-                    valor: parseFloat(valor),
-                    fecha_medicion: fecha
-                });
+                // Actualizar textos
+                semaforoTexto.textContent = `Semáforo: ${color}`;
+                semaforoTexto.className = `text-lg font-semibold ${color === "VERDE" ? "text-green-600" : color === "AMARILLO" ? "text-yellow-600" : "text-red-600"}`;
+                semaforoRazon.textContent = razon;
+                semaforoContaminantes.textContent =
+                    contaminantes.length > 0
+                        ? `Parámetros a revisar: ${contaminantes.join(", ")}`
+                        : "";
+            } else {
+                preview.classList.add("hidden");
             }
-        });
-
-        if (mediciones.length > 0) {
-            data.mediciones = mediciones;
         }
 
-        const submitBtn = document.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Mostrar loading
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
+        async function enviarFormulario() {
+            const formData = new FormData(
+                document.getElementById("estacionForm"),
+            );
+
+            const data = {
+                nombre: formData.get("nombre"),
+                clave_sitio: formData.get("clave_sitio"),
+                latitud: parseFloat(formData.get("latitud")),
+                longitud: parseFloat(formData.get("longitud")),
+                activo: "false",
+                id_tipo: parseInt(formData.get("id_tipo")),
+                id_municipio: parseInt(formData.get("id_municipio")),
+                id_usuario: userData.id_usuario,
+            };
+
+            // Campos opcionales
+            if (formData.get("id_subtipo"))
+                data.id_subtipo = parseInt(formData.get("id_subtipo"));
+            if (formData.get("id_cuenca"))
+                data.id_cuenca = parseInt(formData.get("id_cuenca"));
+            if (formData.get("observaciones"))
+                data.observaciones = formData.get("observaciones");
+
+            // Procesar mediciones
+            const mediciones = [];
+            const medicionItems = document.querySelectorAll(".medicion-item");
+
+            medicionItems.forEach((item, index) => {
+                const idParametro =
+                    item.querySelector(".parametro-select").value;
+                const valor = item.querySelector(".valor-input").value;
+                const fecha = item.querySelector('input[type="date"]').value;
+
+                if (idParametro && valor && fecha) {
+                    mediciones.push({
+                        id_parametro: parseInt(idParametro),
+                        valor: parseFloat(valor),
+                        fecha_medicion: fecha,
+                    });
+                }
+            });
+
+            if (mediciones.length > 0) {
+                data.mediciones = mediciones;
+            }
+
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
             <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
             </svg>
             Registrando...
         `;
 
-        try {
-            const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-            
-            const response = await fetch('http://localhost:8000/api/mapa', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            try {
+                const authToken =
+                    localStorage.getItem("authToken") ||
+                    sessionStorage.getItem("authToken");
 
-            const result = await response.json();
+                const response = await fetch(`${API_URL}/api/mapa`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${authToken}`,
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
 
-            if (response.ok) {
-                mostrarMensaje('¡Estación registrada exitosamente! Redirigiendo...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = '/admin/estaciones/verEstaciones';
-                }, 2000);
-            } else {
-                let errorMessage = 'Error al registrar la estación: ';
-                if (result.errors) {
-                    const errors = Object.values(result.errors).flat();
-                    errorMessage += errors.join(', ');
-                } else if (result.message) {
-                    errorMessage += result.message;
+                const result = await response.json();
+
+                if (response.ok) {
+                    mostrarMensaje(
+                        "¡Estación registrada exitosamente! Redirigiendo...",
+                        "success",
+                    );
+
+                    setTimeout(() => {
+                        window.location.href =
+                            "/admin/estaciones/verEstaciones";
+                    }, 2000);
+                } else {
+                    let errorMessage = "Error al registrar la estación: ";
+                    if (result.errors) {
+                        const errors = Object.values(result.errors).flat();
+                        errorMessage += errors.join(", ");
+                    } else if (result.message) {
+                        errorMessage += result.message;
+                    }
+                    mostrarMensaje(errorMessage, "error");
                 }
-                mostrarMensaje(errorMessage, 'error');
+            } catch (error) {
+                console.error("Error:", error);
+                mostrarMensaje("Error de conexión con el servidor", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarMensaje('Error de conexión con el servidor', 'error');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
         }
-    }
 
-    function mostrarMensaje(mensaje, tipo) {
-        const messageDiv = document.getElementById('responseMessage');
-        messageDiv.textContent = mensaje;
-        messageDiv.className = `p-4 rounded-xl ${
-            tipo === 'success' 
-                ? 'bg-green-100 border border-green-400 text-green-700' 
-                : 'bg-red-100 border border-red-400 text-red-700'
-        }`;
-        messageDiv.classList.remove('hidden');
-        
-        setTimeout(() => {
-            messageDiv.classList.add('hidden');
-        }, 5000);
-    }
+        function mostrarMensaje(mensaje, tipo) {
+            const messageDiv = document.getElementById("responseMessage");
+            messageDiv.textContent = mensaje;
+            messageDiv.className = `p-4 rounded-xl ${
+                tipo === "success"
+                    ? "bg-green-100 border border-green-400 text-green-700"
+                    : "bg-red-100 border border-red-400 text-red-700"
+            }`;
+            messageDiv.classList.remove("hidden");
+
+            setTimeout(() => {
+                messageDiv.classList.add("hidden");
+            }, 5000);
+        }
     </script>
 </AdminLayout>

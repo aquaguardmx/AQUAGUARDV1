@@ -3,6 +3,8 @@
 import Header from "../../components/aquaguard-components/Header.astro";
 import Footer from "../../components/aquaguard-components/Footer.astro";
 import "../../styles/estilos.css";
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
 ---
 
 <!doctype html>
@@ -482,7 +484,7 @@ import "../../styles/estilos.css";
         ></script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <script>
+        <script define:vars={{ API_URL }} is:inline>
             // Variables globales
             let map;
             let marker;
@@ -558,9 +560,7 @@ import "../../styles/estilos.css";
             async function cargarSelects() {
                 try {
                     // Cargar tipos
-                    const tiposResponse = await fetch(
-                        "http://localhost:8000/api/tipos",
-                    );
+                    const tiposResponse = await fetch(`${API_URL}/api/tipos`);
                     const tipos = await tiposResponse.json();
                     const tipoSelect = document.getElementById("id_tipo");
 
@@ -573,7 +573,7 @@ import "../../styles/estilos.css";
 
                     // Cargar subtipos
                     const subtiposResponse = await fetch(
-                        "http://localhost:8000/api/subtipos",
+                        `${API_URL}/api/subtipos`,
                     );
                     const subtipos = await subtiposResponse.json();
                     const subtipoSelect = document.getElementById("id_subtipo");
@@ -587,7 +587,7 @@ import "../../styles/estilos.css";
 
                     // Cargar estados
                     const estadosResponse = await fetch(
-                        "http://localhost:8000/api/estados",
+                        `${API_URL}/api/estados`,
                     );
                     const estados = await estadosResponse.json();
                     const estadoSelect = document.getElementById("id_estado");
@@ -601,7 +601,7 @@ import "../../styles/estilos.css";
 
                     // Cargar cuencas
                     const cuencasResponse = await fetch(
-                        "http://localhost:8000/api/cuencas",
+                        `${API_URL}/api/cuencas`,
                     );
                     const cuencas = await cuencasResponse.json();
                     const cuencaSelect = document.getElementById("id_cuenca");
@@ -627,9 +627,7 @@ import "../../styles/estilos.css";
             // Función para cargar parámetros
             async function cargarParametros() {
                 try {
-                    const response = await fetch(
-                        "http://localhost:8000/api/parametros",
-                    );
+                    const response = await fetch(`${API_URL}/api/parametros`);
                     parametrosData = await response.json();
 
                     const parametroSelects =
@@ -677,7 +675,7 @@ import "../../styles/estilos.css";
 
                     try {
                         const response = await fetch(
-                            `http://localhost:8000/api/municipios/estado/${estadoId}`,
+                            `${API_URL}/api/municipios/estado/${estadoId}`,
                         );
                         const municipios = await response.json();
 
@@ -1176,18 +1174,15 @@ import "../../styles/estilos.css";
                         localStorage.getItem("authToken") ||
                         sessionStorage.getItem("authToken");
 
-                    const response = await fetch(
-                        "http://localhost:8000/api/estaciones",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${authToken}`,
-                                Accept: "application/json",
-                            },
-                            body: JSON.stringify(data),
+                    const response = await fetch(`${API_URL}/api/estaciones`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                            Accept: "application/json",
                         },
-                    );
+                        body: JSON.stringify(data),
+                    });
 
                     const result = await response.json();
 
