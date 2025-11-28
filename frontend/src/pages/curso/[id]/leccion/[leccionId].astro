@@ -6,13 +6,15 @@ import Footer from "../../../../components/aquaguard-components/FooterE-Learning
 import NavegacionLecciones from "../../../../components/aquaguard-components/NavegacionEntreLecciones.astro";
 import ContenidoLeccion from "../../../../components/aquaguard-components/ContenidoLeccion.astro";
 
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // Obtener parámetros de la ruta
 const { id: cursoId, leccionId } = Astro.params;
 
 // Función para cargar datos de la lección actual desde la API
 async function cargarLeccionActual(leccionId: string) {
   try {
-    const apiUrl = `http://localhost:8000/api/lecciones/${leccionId}/`;
+    const apiUrl = `${API_URL}/api/lecciones/${leccionId}/`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
@@ -56,7 +58,7 @@ async function cargarLeccionActual(leccionId: string) {
 // Función para cargar información del curso
 async function cargarInfoCurso(cursoId: string) {
   try {
-    const apiUrl = `http://localhost:8000/api/cursos/${cursoId}`;
+    const apiUrl = `${API_URL}/api/cursos/${cursoId}`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
@@ -402,7 +404,7 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
     async function verificarProgreso() {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/progreso-lecciones/usuario/${userId}/leccion/${leccionActual.id_leccion}`,
+          `${API_URL}/api/progreso-lecciones/usuario/${userId}/leccion/${leccionActual.id_leccion}`,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -442,25 +444,22 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
           btnCompletar.textContent = "Guardando...";
           btnCompletar.disabled = true;
 
-          const response = await fetch(
-            "http://localhost:8000/api/progreso-lecciones",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${authToken}`,
-                Accept: "application/json",
-              },
-              body: JSON.stringify({
-                usuario_id: userId,
-                leccion_id: leccionActual.id_leccion,
-                fecha_completado: new Date()
-                  .toISOString()
-                  .slice(0, 19)
-                  .replace("T", " "),
-              }),
+          const response = await fetch(`${API_URL}/api/progreso-lecciones`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+              Accept: "application/json",
             },
-          );
+            body: JSON.stringify({
+              usuario_id: userId,
+              leccion_id: leccionActual.id_leccion,
+              fecha_completado: new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace("T", " "),
+            }),
+          });
 
           if (response.ok) {
             marcarBotonComoCompletado();
