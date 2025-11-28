@@ -7,7 +7,8 @@ import Footer from "../../components/aquaguard-components/FooterE-Learning.astro
 
 const { id } = Astro.params;
 
-const apiUrl = `http://localhost:8000/api/cursos/${id}`;
+const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+const apiUrl = `${API_URL}/api/cursos/${id}`;
 
 // 3. Declara variables para los datos y posibles errores
 let curso = null;
@@ -1558,7 +1559,8 @@ try {
     }
 </style>
 
-<script>
+<script lang="ts">
+    const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
     // ==========================================================
     // 1. OBTENER DATOS DE SESIÓN (Tu lógica)
     // ==========================================================
@@ -1579,9 +1581,7 @@ try {
     // 2. ESPERAR A QUE CARGUE EL HTML
     // ==========================================================
     document.addEventListener("DOMContentLoaded", () => {
-        const botonInscribir = document.getElementById(
-            "btn-inscribir",
-        ) as HTMLButtonElement;
+        const botonInscribir = document.getElementById("btn-inscribir");
 
         if (!botonInscribir) {
             console.error(
@@ -1633,7 +1633,7 @@ try {
                 });
 
                 const response = await fetch(
-                    "http://localhost:8000/api/cursos-inscritos/",
+                    `${API_URL}/api/cursos-inscritos/`,
                     {
                         method: "POST",
                         headers: {
@@ -1680,14 +1680,10 @@ try {
         const verificarInscripcion = async () => {
             // ⚡️ SOLUCIÓN 1: Definimos la "forma" del objeto que esperamos.
             // Basado en tu código, necesitas al menos 'id_curso'.
-            interface CursoInscrito {
-                id_curso: string | number;
-                // puedes añadir más propiedades aquí si las necesitas
-            }
 
             try {
                 const response = await fetch(
-                    `http://localhost:8000/api/cursos-por-usuario/${usuarioId}`,
+                    `${API_URL}/api/cursos-por-usuario/${usuarioId}`,
                     {
                         method: "GET",
                         headers: {
@@ -1705,8 +1701,7 @@ try {
 
                 // ⚡️ SOLUCIÓN 2: Le decimos a TypeScript que el resultado de .json()
                 // será un array de 'CursoInscrito'.
-                const cursosInscritos =
-                    (await response.json()) as CursoInscrito[];
+                const cursosInscritos = await response.json();
 
                 // ✅ ¡ARREGLADO! Ahora TypeScript sabe que 'curso' es de tipo 'CursoInscrito'
                 // y que 'curso.id_curso' existe.
