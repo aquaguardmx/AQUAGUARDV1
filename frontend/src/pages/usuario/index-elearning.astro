@@ -33,13 +33,17 @@ export interface Curso {
 }
 
 // 2. OBTENCIÓN DE DATOS
+
 let cursos: Curso[] = [];
 let cursosRecientes: Curso[] = [];
 let fetchError = false;
 let debugInfo: any = null; // Añadir debugInfo
 
+
+console.log(API_URL);
+
 try {
-  const response = await fetch(`${API_URL}api/cursos`);
+  const response = await fetch(`${API_URL}/api/cursos`);
 
   if (response.ok) {
     const data = await response.json();
