@@ -4,6 +4,8 @@ import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
 import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
 
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // 1. DEFINICIÓN DE TIPOS
 export interface Autor {
   id_usuario: number;
@@ -37,11 +39,8 @@ let categorias: Categoria[] = [];
 let fetchError = false;
 let debugInfo: any = null;
 
-// Configuración del backend
-const BACKEND_URL = "http://localhost:8000";
-
 try {
-  const response = await fetch(`${BACKEND_URL}/api/cursos`);
+  const response = await fetch(`${API_URL}/api/cursos`);
   
   if (response.ok) {
     const data = await response.json();
@@ -49,7 +48,7 @@ try {
     
     // Obtener información de debug
     try {
-      const debugResponse = await fetch(`${BACKEND_URL}/debug-cursos`);
+      const debugResponse = await fetch(`${API_URL}/debug-cursos`);
       if (debugResponse.ok) {
         debugInfo = await debugResponse.json();
       }
@@ -275,13 +274,13 @@ try {
                   img.includes(nombreArchivo.split('.')[0]) // Buscar por nombre sin extensión
                 );
                 if (archivoExistente) {
-                  rutaImagen = `${BACKEND_URL}/storage/portadas/${archivoExistente}`;
+                  rutaImagen = `${API_URL}/storage/portadas/${archivoExistente}`;
                 }
               }
               
               // Si no se encuentra, usar el primer archivo disponible como fallback
               if (!rutaImagen && debugInfo && debugInfo.available_images.length > 0) {
-                rutaImagen = `${BACKEND_URL}/storage/portadas/${debugInfo.available_images[0]}`;
+                rutaImagen = `${API_URL}/storage/portadas/${debugInfo.available_images[0]}`;
               }
               
               return (
