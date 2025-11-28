@@ -2,6 +2,9 @@
 // src/pages/admin/estaciones/[id].astro
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 const { id } = Astro.params;
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // Validación de ID
 if (!id) {
     return Astro.redirect("/admin/verEstaciones");
@@ -10,7 +13,7 @@ if (!id) {
 let estacion = null;
 let error = null;
 try {
-    const res = await fetch(`http://localhost:8000/api/admin/estacion/${id}`);
+    const res = await fetch(`${API_URL}/api/admin/estacion/${id}`);
    
     if (!res.ok) {
         throw new Error(`Error ${res.status}: ${res.statusText}`);
@@ -367,7 +370,7 @@ const scriptData = {
         async function cambiarEstadoEstacion(nuevoEstado) {
             try {
                 const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                const response = await fetch(`${API_URL}/api/admin/estacion/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -392,7 +395,7 @@ const scriptData = {
         async function eliminarEstacion() {
             try {
                 const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                const response = await fetch(`${API_URL}/api/admin/estacion/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${authToken}`,

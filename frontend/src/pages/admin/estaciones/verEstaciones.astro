@@ -1,6 +1,9 @@
 ---
 // src/pages/admin/verEstaciones.astro
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+const API_URL = import.meta.env.API_URL;
+
 interface Estacion {
   id_estacion: number;
   clave_sitio: string;
@@ -66,7 +69,7 @@ let totalPages = 1;
 let error = null;
 try {
   const pageParam = `?page=${currentPage}&limit=${PAGE_SIZE}`;
-  const res = await fetch(`http://localhost:8000/api/admin/estaciones${pageParam}`);
+  const res = await fetch(`${API_URL}/api/admin/estaciones${pageParam}`);
  
   if (!res.ok) {
     throw new Error(`Error ${res.status}: ${res.statusText}`);
@@ -247,9 +250,9 @@ const scriptData = {
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition-all duration-200"
                                 onchange="filtrarEstaciones()"
                             >
-                                <option value="all" {Astro.url.searchParams.get('status') === 'all' ? 'selected' : ''}>Todos los estados</option>
-                                <option value="active" {Astro.url.searchParams.get('status') === 'active' ? 'selected' : ''}>Activas</option>
-                                <option value="inactive" {Astro.url.searchParams.get('status') === 'inactive' ? 'selected' : ''}>En espera</option>
+                                <option value="all" selected={Astro.url.searchParams.get('status') === 'all'}>Todos los estados</option>
+                                <option value="active" selected={Astro.url.searchParams.get('status') === 'active'}>Activas</option>
+                                <option value="inactive" selected={Astro.url.searchParams.get('status') === 'inactive'}>En espera</option>
                             </select>
                         </div>
                     </div>
@@ -368,7 +371,7 @@ const scriptData = {
                                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                                     {!estacion.activo && (
                                                         <button
-                                                            onclick="aprobarEstacion(event, {id: {estacion.id_estacion}, nombre: '{escapeQuotes(estacion.nombre)}'})"
+                                                            onclick={`aprobarEstacion(event, {id: ${estacion.id_estacion}, nombre: '${escapeQuotes(estacion.nombre)}'})`}
                                                             class="text-green-600 hover:text-green-900 p-1 rounded transition-colors duration-200"
                                                             title="Aprobar estación"
                                                         >
@@ -387,7 +390,7 @@ const scriptData = {
                                                         </svg>
                                                     </a>
                                                     <button
-                                                        onclick="eliminarEstacion(event, {id: {estacion.id_estacion}, nombre: '{escapeQuotes(estacion.nombre)}'})"
+                                                        onclick={`eliminarEstacion(event, {id: ${estacion.id_estacion}, nombre: '${escapeQuotes(estacion.nombre)}'})`}
                                                         class="text-red-600 hover:text-red-900 p-1 rounded transition-colors duration-200"
                                                         title="Eliminar estación"
                                                     >
@@ -424,9 +427,8 @@ const scriptData = {
                                     <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                             <a
-                                                key={page}
                                                 href={`/admin/estaciones/verEstaciones?page=${page}`}
-                                                aria-current={`${page === currentPage ? 'page' : undefined}`}
+                                                aria-current={page === currentPage ? 'page' : undefined}
                                                 class={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                                     page === currentPage
                                                         ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
@@ -551,7 +553,7 @@ const scriptData = {
         async function ejecutarAprobarEstacion(id) {
             try {
                 const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                const response = await fetch(`${API_URL}/api/admin/estacion/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -587,7 +589,7 @@ const scriptData = {
         async function ejecutarEliminarEstacion(id) {
             try {
                 const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-                const response = await fetch(`http://localhost:8000/api/admin/estacion/${id}`, {
+                const response = await fetch(`${API_URL}/api/admin/estacion/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
