@@ -17,8 +17,6 @@ let error: string | null = null;
 try {
     const response = await fetch("http://localhost:8000/api/cursos/");
 
-    console.log("Respuesta de la API de cursos:", response);
-
     if (!response.ok) {
         throw new Error(`Error al obtener los datos: ${response.statusText}`);
     }
@@ -190,8 +188,6 @@ try {
                                             </span>
                                         )}
                                     </td>
-
-                                    
 
                                     {/* Cambiado de text-right justify-end a justify-center */}
                                     <td class="px-6 py-4 flex justify-center space-x-3">
