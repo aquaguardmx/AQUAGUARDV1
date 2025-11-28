@@ -1,494 +1,778 @@
 ---
 // src/pages/estaciones/nueva.astro
-import Header from '../../components/aquaguard-components/Header.astro';
-import Footer from '../../components/aquaguard-components/Footer.astro';
-import '../../styles/estilos.css';
+import Header from "../../components/aquaguard-components/Header.astro";
+import Footer from "../../components/aquaguard-components/Footer.astro";
+import "../../styles/estilos.css";
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportar Nueva Estación - AquaGuard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>    
-    <div class="wrapper">
-        <Header />
-        
-        <div class="wrapper_inner">
-            <div class="hero_content">
-                <h1>.</h1>
-                <div class="logo-container" style="text-align:center; margin-bottom:20px;">
-                    <a href="/">
-                        <img src="/img/logo.png" alt="AquaGuard Logo" style="height:64px; display:block; margin:0 auto;">
-                    </a>
-                    
-                </div>   
-                <div class="section_title">    
-                    <h2>Reportar Nueva Estación</h2>
-                    <p style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;">
-                        Ayúdanos a expandir nuestro mapa de calidad del agua registrando nuevos cuerpos de agua.
-                    </p>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Reportar Nueva Estación - AquaGuard</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Catamaran:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="wrapper">
+            <Header />
+
+            <div class="wrapper_inner">
+                <div class="hero_content">
+                    <h1>.</h1>
+                    <div
+                        class="logo-container"
+                        style="text-align:center; margin-bottom:20px;"
+                    >
+                        <a href="/">
+                            <img
+                                src="/img/logo.png"
+                                alt="AquaGuard Logo"
+                                style="height:64px; display:block; margin:0 auto;"
+                            />
+                        </a>
+                    </div>
+                    <div class="section_title">
+                        <h2>Reportar Nueva Estación</h2>
+                        <p
+                            style="font-size:1.15rem; color:#333; max-width:700px; margin:0 auto;"
+                        >
+                            Ayúdanos a expandir nuestro mapa de calidad del agua
+                            registrando nuevos cuerpos de agua.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Formulario de Registro de Estación -->
-        <div class="container mt-4 mb-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="estacion-form-card">
-                        <form id="estacionForm" class="needs-validation" novalidate>
-                            <!-- Información Básica -->
-                            <div class="form-section">
-                                <h4 class="section-title">
-                                    <i class="fas fa-info-circle"></i> Información Básica
-                                </h4>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="nombre" class="form-label">Nombre de la Estación *</label>
-                                        <input type="text" class="form-control" id="nombre" name="nombre" required 
-                                               placeholder="Ej: Río Lerma - Tramo Centro">
-                                        <div class="invalid-feedback">Por favor ingresa el nombre de la estación.</div>
-                                    </div>
-                                    
-                                    
-                                </div>
+            <!-- Formulario de Registro de Estación -->
+            <div class="container mt-4 mb-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="estacion-form-card">
+                            <form
+                                id="estacionForm"
+                                class="needs-validation"
+                                novalidate
+                            >
+                                <!-- Información Básica -->
+                                <div class="form-section">
+                                    <h4 class="section-title">
+                                        <i class="fas fa-info-circle"></i> Información
+                                        Básica
+                                    </h4>
 
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_tipo" class="form-label">Tipo de Cuerpo de Agua *</label>
-                                        <select class="form-select" id="id_tipo" name="id_tipo" required>
-                                            <option value="">Selecciona un tipo</option>
-                                        </select>
-                                        <div class="invalid-feedback">Selecciona el tipo de cuerpo de agua.</div>
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_subtipo" class="form-label">Subtipo</label>
-                                        <select class="form-select" id="id_subtipo" name="id_subtipo">
-                                            <option value="">Selecciona un subtipo</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Ubicación -->
-                            <div class="form-section">
-                                <h4 class="section-title">
-                                    <i class="fas fa-map-marker-alt"></i> Ubicación
-                                </h4>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_estado" class="form-label">Estado *</label>
-                                        <select class="form-select" id="id_estado" name="id_estado" required>
-                                            <option value="">Selecciona un estado</option>
-                                        </select>
-                                        <div class="invalid-feedback">Selecciona el estado.</div>
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_municipio" class="form-label">Municipio *</label>
-                                        <select class="form-select" id="id_municipio" name="id_municipio" required disabled>
-                                            <option value="">Primero selecciona un estado</option>
-                                        </select>
-                                        <div class="invalid-feedback">Selecciona el municipio.</div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="latitud" class="form-label">Latitud *</label>
-                                        <input type="number" step="any" class="form-control" id="latitud" name="latitud" required 
-                                               placeholder="Ej: 20.675000">
-                                        <div class="invalid-feedback">La latitud es requerida.</div>
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="longitud" class="form-label">Longitud *</label>
-                                        <input type="number" step="any" class="form-control" id="longitud" name="longitud" required 
-                                               placeholder="Ej: -103.345000">
-                                        <div class="invalid-feedback">La longitud es requerida.</div>
-                                    </div>
-                                </div>
-
-                                <!-- Mapa para seleccionar ubicación -->
-                                <div class="mb-3">
-                                    <label class="form-label">Selecciona la ubicación en el mapa:</label>
-                                    <div id="mapaSeleccion" style="height: 300px; border-radius: 10px; border: 2px solid #e9ecef;"></div>
-                                    <small class="text-muted">Haz clic en el mapa para establecer las coordenadas automáticamente</small>
-                                </div>
-                            </div>
-
-                            <!-- Mediciones de Calidad del Agua -->
-                            <div class="form-section">
-                                <h4 class="section-title">
-                                    <i class="fas fa-flask"></i> Mediciones de Calidad del Agua
-                                </h4>
-                                
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    <strong>Información importante:</strong> 
-                                    <span id="tipoAguaInfo">Selecciona el tipo de cuerpo de agua para ver los rangos aplicables</span>
-                                </div>
-
-                                <div id="medicionesContainer">
-                                    <div class="medicion-item card mb-3">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-5 mb-3">
-                                                    <label class="form-label">Parámetro *</label>
-                                                    <select class="form-select parametro-select" name="mediciones[0][id_parametro]" required>
-                                                        <option value="">Selecciona un parámetro</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Valor *</label>
-                                                    <input type="number" step="any" class="form-control valor-input" 
-                                                           name="mediciones[0][valor]" placeholder="Ej: 5.2" required>
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Fecha *</label>
-                                                    <input type="date" class="form-control" 
-                                                           name="mediciones[0][fecha_medicion]" required>
-                                                </div>
-                                                <div class="col-md-1 mb-3 d-flex align-items-end">
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarMedicion(this)">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="nombre"
+                                                class="form-label"
+                                                >Nombre de la Estación *</label
+                                            >
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="nombre"
+                                                name="nombre"
+                                                required
+                                                placeholder="Ej: Río Lerma - Tramo Centro"
+                                            />
+                                            <div class="invalid-feedback">
+                                                Por favor ingresa el nombre de
+                                                la estación.
                                             </div>
-                                            <div class="parametro-info" style="display: none;">
-                                                <small class="text-muted"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="id_tipo"
+                                                class="form-label"
+                                                >Tipo de Cuerpo de Agua *</label
+                                            >
+                                            <select
+                                                class="form-select"
+                                                id="id_tipo"
+                                                name="id_tipo"
+                                                required
+                                            >
+                                                <option value=""
+                                                    >Selecciona un tipo</option
+                                                >
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Selecciona el tipo de cuerpo de
+                                                agua.
                                             </div>
-                                            <div class="clasificacion-resultado mt-2" style="display: none;">
-                                                <strong>Clasificación estimada: </strong>
-                                                <span class="badge"></span>
-                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="id_subtipo"
+                                                class="form-label"
+                                                >Subtipo</label
+                                            >
+                                            <select
+                                                class="form-select"
+                                                id="id_subtipo"
+                                                name="id_subtipo"
+                                            >
+                                                <option value=""
+                                                    >Selecciona un subtipo</option
+                                                >
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button type="button" class="btn btn-outline-primary" onclick="agregarMedicion()">
-                                    <i class="fas fa-plus"></i> Agregar otra medición
-                                </button>
+                                <!-- Ubicación -->
+                                <div class="form-section">
+                                    <h4 class="section-title">
+                                        <i class="fas fa-map-marker-alt"></i> Ubicación
+                                    </h4>
 
-                                <!-- Previsualización del Semáforo -->
-                                <div class="mt-4" id="semaforoPreview" style="display: none;">
-                                    <h5 class="mb-3">Previsualización del Semáforo</h5>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-2 text-center">
-                                                    <div id="semaforoColor" class="semaforo-indicador">
-                                                        <i class="fas fa-circle" style="font-size: 3rem;"></i>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="id_estado"
+                                                class="form-label"
+                                                >Estado *</label
+                                            >
+                                            <select
+                                                class="form-select"
+                                                id="id_estado"
+                                                name="id_estado"
+                                                required
+                                            >
+                                                <option value=""
+                                                    >Selecciona un estado</option
+                                                >
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Selecciona el estado.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="id_municipio"
+                                                class="form-label"
+                                                >Municipio *</label
+                                            >
+                                            <select
+                                                class="form-select"
+                                                id="id_municipio"
+                                                name="id_municipio"
+                                                required
+                                                disabled
+                                            >
+                                                <option value=""
+                                                    >Primero selecciona un
+                                                    estado</option
+                                                >
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Selecciona el municipio.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="latitud"
+                                                class="form-label"
+                                                >Latitud *</label
+                                            >
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                class="form-control"
+                                                id="latitud"
+                                                name="latitud"
+                                                required
+                                                placeholder="Ej: 20.675000"
+                                            />
+                                            <div class="invalid-feedback">
+                                                La latitud es requerida.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="longitud"
+                                                class="form-label"
+                                                >Longitud *</label
+                                            >
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                class="form-control"
+                                                id="longitud"
+                                                name="longitud"
+                                                required
+                                                placeholder="Ej: -103.345000"
+                                            />
+                                            <div class="invalid-feedback">
+                                                La longitud es requerida.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mapa para seleccionar ubicación -->
+                                    <div class="mb-3">
+                                        <label class="form-label"
+                                            >Selecciona la ubicación en el mapa:</label
+                                        >
+                                        <div
+                                            id="mapaSeleccion"
+                                            style="height: 300px; border-radius: 10px; border: 2px solid #e9ecef;"
+                                        >
+                                        </div>
+                                        <small class="text-muted"
+                                            >Haz clic en el mapa para establecer
+                                            las coordenadas automáticamente</small
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Mediciones de Calidad del Agua -->
+                                <div class="form-section">
+                                    <h4 class="section-title">
+                                        <i class="fas fa-flask"></i> Mediciones de
+                                        Calidad del Agua
+                                    </h4>
+
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Información importante:</strong>
+                                        <span id="tipoAguaInfo"
+                                            >Selecciona el tipo de cuerpo de
+                                            agua para ver los rangos aplicables</span
+                                        >
+                                    </div>
+
+                                    <div id="medicionesContainer">
+                                        <div class="medicion-item card mb-3">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-5 mb-3">
+                                                        <label
+                                                            class="form-label"
+                                                            >Parámetro *</label
+                                                        >
+                                                        <select
+                                                            class="form-select parametro-select"
+                                                            name="mediciones[0][id_parametro]"
+                                                            required
+                                                        >
+                                                            <option value=""
+                                                                >Selecciona un
+                                                                parámetro</option
+                                                            >
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3 mb-3">
+                                                        <label
+                                                            class="form-label"
+                                                            >Valor *</label
+                                                        >
+                                                        <input
+                                                            type="number"
+                                                            step="any"
+                                                            class="form-control valor-input"
+                                                            name="mediciones[0][valor]"
+                                                            placeholder="Ej: 5.2"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div class="col-md-3 mb-3">
+                                                        <label
+                                                            class="form-label"
+                                                            >Fecha *</label
+                                                        >
+                                                        <input
+                                                            type="date"
+                                                            class="form-control"
+                                                            name="mediciones[0][fecha_medicion]"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div
+                                                        class="col-md-1 mb-3 d-flex align-items-end"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-danger btn-sm"
+                                                            onclick="eliminarMedicion(this)"
+                                                        >
+                                                            <i
+                                                                class="fas fa-times"
+                                                            ></i>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-10">
-                                                    <h6 id="semaforoTexto">Color del semáforo</h6>
-                                                    <p id="semaforoRazon" class="mb-0 text-muted"></p>
-                                                    <small id="semaforoContaminantes" class="text-muted"></small>
+                                                <div
+                                                    class="parametro-info"
+                                                    style="display: none;"
+                                                >
+                                                    <small class="text-muted"
+                                                    ></small>
+                                                </div>
+                                                <div
+                                                    class="clasificacion-resultado mt-2"
+                                                    style="display: none;"
+                                                >
+                                                    <strong
+                                                        >Clasificación estimada:
+                                                    </strong>
+                                                    <span class="badge"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary"
+                                        onclick="agregarMedicion()"
+                                    >
+                                        <i class="fas fa-plus"></i> Agregar otra
+                                        medición
+                                    </button>
+
+                                    <!-- Previsualización del Semáforo -->
+                                    <div
+                                        class="mt-4"
+                                        id="semaforoPreview"
+                                        style="display: none;"
+                                    >
+                                        <h5 class="mb-3">
+                                            Previsualización del Semáforo
+                                        </h5>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div
+                                                    class="row align-items-center"
+                                                >
+                                                    <div
+                                                        class="col-md-2 text-center"
+                                                    >
+                                                        <div
+                                                            id="semaforoColor"
+                                                            class="semaforo-indicador"
+                                                        >
+                                                            <i
+                                                                class="fas fa-circle"
+                                                                style="font-size: 3rem;"
+                                                            ></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <h6 id="semaforoTexto">
+                                                            Color del semáforo
+                                                        </h6>
+                                                        <p
+                                                            id="semaforoRazon"
+                                                            class="mb-0 text-muted"
+                                                        >
+                                                        </p>
+                                                        <small
+                                                            id="semaforoContaminantes"
+                                                            class="text-muted"
+                                                        ></small>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Información Adicional -->
-                            <div class="form-section">
-                                <h4 class="section-title">
-                                    <i class="fas fa-water"></i> Información Adicional
-                                </h4>
-                                
-                                <div class="mb-3">
-                                    <label for="id_cuenca" class="form-label">Cuenca Hidrológica</label>
-                                    <select class="form-select" id="id_cuenca" name="id_cuenca">
-                                        <option value="">Selecciona una cuenca</option>
-                                    </select>
+                                <!-- Información Adicional -->
+                                <div class="form-section">
+                                    <h4 class="section-title">
+                                        <i class="fas fa-water"></i> Información
+                                        Adicional
+                                    </h4>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="id_cuenca"
+                                            class="form-label"
+                                            >Cuenca Hidrológica</label
+                                        >
+                                        <select
+                                            class="form-select"
+                                            id="id_cuenca"
+                                            name="id_cuenca"
+                                        >
+                                            <option value=""
+                                                >Selecciona una cuenca</option
+                                            >
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="observaciones"
+                                            class="form-label"
+                                            >Observaciones</label
+                                        >
+                                        <textarea
+                                            class="form-control"
+                                            id="observaciones"
+                                            name="observaciones"
+                                            rows="3"
+                                            placeholder="Información adicional sobre el cuerpo de agua..."
+                                        ></textarea>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="observaciones" class="form-label">Observaciones</label>
-                                    <textarea class="form-control" id="observaciones" name="observaciones" 
-                                              rows="3" placeholder="Información adicional sobre el cuerpo de agua..."></textarea>
+                                <!-- Botones de acción -->
+                                <div class="form-actions">
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        onclick="window.location.href='/'"
+                                    >
+                                        <i class="fas fa-arrow-left"></i> Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        <i class="fas fa-save"></i> Registrar Estación
+                                    </button>
                                 </div>
-                            </div>
+                            </form>
+                        </div>
 
-                            <!-- Botones de acción -->
-                            <div class="form-actions">
-                                <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">
-                                    <i class="fas fa-arrow-left"></i> Cancelar
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Registrar Estación
-                                </button>
-                            </div>
-                        </form>
+                        <!-- Mensaje de respuesta -->
+                        <div
+                            id="responseMessage"
+                            class="mt-3"
+                            style="display: none;"
+                        >
+                        </div>
                     </div>
-
-                    <!-- Mensaje de respuesta -->
-                    <div id="responseMessage" class="mt-3" style="display: none;"></div>
                 </div>
             </div>
+
+            <Footer />
         </div>
 
-        <Footer />
-    </div>
+        <!-- Scripts -->
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        ></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script>
-    // Variables globales
-    let map;
-    let marker;
-    let userData = null;
-    let contadorMediciones = 1;
-    let parametrosData = [];
-    let tipoCuerpoAgua = '';
+        <script>
+            // Variables globales
+            let map;
+            let marker;
+            let userData = null;
+            let contadorMediciones = 1;
+            let parametrosData = [];
+            let tipoCuerpoAgua = "";
 
-    // Verificar autenticación al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        verificarAutenticacion();
-        inicializarMapa();
-        cargarSelects();
-        inicializarFormulario();
-        inicializarEventListeners();
-    });
-
-    function verificarAutenticacion() {
-        const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-        const storedUserData = localStorage.getItem("userData") || sessionStorage.getItem("userData");
-        
-        if (!authToken || !storedUserData) {
-            window.location.href = '/auth/login?redirect=/usuario/registrarEstacion';
-            return;
-        }
-
-        try {
-            userData = JSON.parse(storedUserData);
-            console.log('Usuario autenticado:', userData);
-        } catch (error) {
-            console.error('Error al parsear userData:', error);
-            window.location.href = '/auth/login?redirect=/usuario/registrarEstacion';
-        }
-    }
-
-    function inicializarMapa() {
-        // Mapa centrado en México
-        map = L.map('mapaSeleccion').setView([23.6345, -102.5528], 5);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Evento para colocar marcador al hacer clic
-        map.on('click', function(e) {
-            const { lat, lng } = e.latlng;
-            
-            // Actualizar inputs
-            document.getElementById('latitud').value = lat.toFixed(6);
-            document.getElementById('longitud').value = lng.toFixed(6);
-            
-            // Actualizar marcador
-            if (marker) {
-                map.removeLayer(marker);
-            }
-            
-            marker = L.marker([lat, lng]).addTo(map)
-                .bindPopup('Ubicación seleccionada')
-                .openPopup();
-        });
-    }
-
-    async function cargarSelects() {
-        try {
-            // Cargar tipos
-            const tiposResponse = await fetch('http://localhost:8000/api/tipos');
-            const tipos = await tiposResponse.json();
-            const tipoSelect = document.getElementById('id_tipo');
-            
-            tipos.forEach(tipo => {
-                const option = document.createElement('option');
-                option.value = tipo.id_tipo;
-                option.textContent = tipo.nombre;
-                tipoSelect.appendChild(option);
+            // Verificar autenticación al cargar la página
+            document.addEventListener("DOMContentLoaded", function () {
+                verificarAutenticacion();
+                inicializarMapa();
+                cargarSelects();
+                inicializarFormulario();
+                inicializarEventListeners();
             });
 
-            // Cargar subtipos
-            const subtiposResponse = await fetch('http://localhost:8000/api/subtipos');
-            const subtipos = await subtiposResponse.json();
-            const subtipoSelect = document.getElementById('id_subtipo');
-            
-            subtipos.forEach(subtipo => {
-                const option = document.createElement('option');
-                option.value = subtipo.id_subtipo;
-                option.textContent = subtipo.nombre;
-                subtipoSelect.appendChild(option);
-            });
+            function verificarAutenticacion() {
+                const authToken =
+                    localStorage.getItem("authToken") ||
+                    sessionStorage.getItem("authToken");
+                const storedUserData =
+                    localStorage.getItem("userData") ||
+                    sessionStorage.getItem("userData");
 
-            // Cargar estados
-            const estadosResponse = await fetch('http://localhost:8000/api/estados');
-            const estados = await estadosResponse.json();
-            const estadoSelect = document.getElementById('id_estado');
-            
-            estados.forEach(estado => {
-                const option = document.createElement('option');
-                option.value = estado.id_estado;
-                option.textContent = estado.nombre;
-                estadoSelect.appendChild(option);
-            });
-
-            // Cargar cuencas
-            const cuencasResponse = await fetch('http://localhost:8000/api/cuencas');
-            const cuencas = await cuencasResponse.json();
-            const cuencaSelect = document.getElementById('id_cuenca');
-            
-            cuencas.forEach(cuenca => {
-                const option = document.createElement('option');
-                option.value = cuenca.id_cuenca;
-                option.textContent = cuenca.nombre;
-                cuencaSelect.appendChild(option);
-            });
-
-            // Cargar parámetros
-            await cargarParametros();
-
-        } catch (error) {
-            console.error('Error cargando datos:', error);
-            mostrarMensaje('Error al cargar los datos necesarios', 'error');
-        }
-    }
-
-    // Función para cargar parámetros
-    async function cargarParametros() {
-        try {
-            const response = await fetch('http://localhost:8000/api/parametros');
-            parametrosData = await response.json();
-            
-            const parametroSelects = document.querySelectorAll('.parametro-select');
-            parametroSelects.forEach(select => {
-                // Limpiar opciones existentes excepto la primera
-                while (select.children.length > 1) {
-                    select.removeChild(select.lastChild);
+                if (!authToken || !storedUserData) {
+                    window.location.href =
+                        "/auth/login?redirect=/usuario/registrarEstacion";
+                    return;
                 }
-                
-                parametrosData.forEach(parametro => {
-                    const option = document.createElement('option');
-                    option.value = parametro.id_parametro;
-                    option.textContent = `${parametro.nombre} (${parametro.unidad})`;
-                    option.setAttribute('data-descripcion', parametro.descripcion);
-                    option.setAttribute('data-unidad', parametro.unidad);
-                    select.appendChild(option);
+
+                try {
+                    userData = JSON.parse(storedUserData);
+                    console.log("Usuario autenticado:", userData);
+                } catch (error) {
+                    console.error("Error al parsear userData:", error);
+                    window.location.href =
+                        "/auth/login?redirect=/usuario/registrarEstacion";
+                }
+            }
+
+            function inicializarMapa() {
+                // Mapa centrado en México
+                map = L.map("mapaSeleccion").setView([23.6345, -102.5528], 5);
+
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    {
+                        attribution: "&copy; OpenStreetMap contributors",
+                    },
+                ).addTo(map);
+
+                // Evento para colocar marcador al hacer clic
+                map.on("click", function (e) {
+                    const { lat, lng } = e.latlng;
+
+                    // Actualizar inputs
+                    document.getElementById("latitud").value = lat.toFixed(6);
+                    document.getElementById("longitud").value = lng.toFixed(6);
+
+                    // Actualizar marcador
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    marker = L.marker([lat, lng])
+                        .addTo(map)
+                        .bindPopup("Ubicación seleccionada")
+                        .openPopup();
                 });
-            });
-        } catch (error) {
-            console.error('Error cargando parámetros:', error);
-        }
-    }
-
-    // Cargar municipios cuando se selecciona un estado
-    document.getElementById('id_estado').addEventListener('change', async function() {
-        const estadoId = this.value;
-        const municipioSelect = document.getElementById('id_municipio');
-        
-        if (!estadoId) {
-            municipioSelect.innerHTML = '<option value="">Primero selecciona un estado</option>';
-            municipioSelect.disabled = true;
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:8000/api/municipios/estado/${estadoId}`);
-            const municipios = await response.json();
-            
-            municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
-            municipios.forEach(municipio => {
-                const option = document.createElement('option');
-                option.value = municipio.id_municipio;
-                option.textContent = municipio.nombre;
-                municipioSelect.appendChild(option);
-            });
-            
-            municipioSelect.disabled = false;
-        } catch (error) {
-            console.error('Error cargando municipios:', error);
-            mostrarMensaje('Error al cargar los municipios', 'error');
-        }
-    });
-
-    function inicializarFormulario() {
-        const form = document.getElementById('estacionForm');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!form.checkValidity()) {
-                e.stopPropagation();
-                form.classList.add('was-validated');
-                return;
             }
 
-            await enviarFormulario();
-        });
-    }
+            async function cargarSelects() {
+                try {
+                    // Cargar tipos
+                    const tiposResponse = await fetch(
+                        "http://localhost:8000/api/tipos",
+                    );
+                    const tipos = await tiposResponse.json();
+                    const tipoSelect = document.getElementById("id_tipo");
 
-    function inicializarEventListeners() {
-        // Event listener para cambio de tipo de cuerpo de agua
-        document.getElementById('id_tipo').addEventListener('change', function() {
-            const tipoId = this.value;
-            const tipoSelect = this;
-            const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
-            tipoCuerpoAgua = selectedOption.text.toLowerCase();
-            
-            // Actualizar mensaje informativo
-            const infoElement = document.getElementById('tipoAguaInfo');
-            if (tipoCuerpoAgua.includes('lótico')) {
-                infoElement.textContent = 'Cuerpo de agua LÓTICO (ríos, arroyos). Se aplicarán rangos para agua corriente.';
-            } else if (tipoCuerpoAgua.includes('léntico')) {
-                infoElement.textContent = 'Cuerpo de agua LÉNTICO (lagos, presas). Se aplicarán rangos para agua estancada.';
-            } else if (tipoCuerpoAgua.includes('costero')) {
-                infoElement.textContent = 'Agua COSTERA (mares, bahías). Se aplicarán rangos más estrictos para agua marina.';
-            } else {
-                infoElement.textContent = 'Selecciona el tipo de cuerpo de agua para ver los rangos aplicables';
+                    tipos.forEach((tipo) => {
+                        const option = document.createElement("option");
+                        option.value = tipo.id_tipo;
+                        option.textContent = tipo.nombre;
+                        tipoSelect.appendChild(option);
+                    });
+
+                    // Cargar subtipos
+                    const subtiposResponse = await fetch(
+                        "http://localhost:8000/api/subtipos",
+                    );
+                    const subtipos = await subtiposResponse.json();
+                    const subtipoSelect = document.getElementById("id_subtipo");
+
+                    subtipos.forEach((subtipo) => {
+                        const option = document.createElement("option");
+                        option.value = subtipo.id_subtipo;
+                        option.textContent = subtipo.nombre;
+                        subtipoSelect.appendChild(option);
+                    });
+
+                    // Cargar estados
+                    const estadosResponse = await fetch(
+                        "http://localhost:8000/api/estados",
+                    );
+                    const estados = await estadosResponse.json();
+                    const estadoSelect = document.getElementById("id_estado");
+
+                    estados.forEach((estado) => {
+                        const option = document.createElement("option");
+                        option.value = estado.id_estado;
+                        option.textContent = estado.nombre;
+                        estadoSelect.appendChild(option);
+                    });
+
+                    // Cargar cuencas
+                    const cuencasResponse = await fetch(
+                        "http://localhost:8000/api/cuencas",
+                    );
+                    const cuencas = await cuencasResponse.json();
+                    const cuencaSelect = document.getElementById("id_cuenca");
+
+                    cuencas.forEach((cuenca) => {
+                        const option = document.createElement("option");
+                        option.value = cuenca.id_cuenca;
+                        option.textContent = cuenca.nombre;
+                        cuencaSelect.appendChild(option);
+                    });
+
+                    // Cargar parámetros
+                    await cargarParametros();
+                } catch (error) {
+                    console.error("Error cargando datos:", error);
+                    mostrarMensaje(
+                        "Error al cargar los datos necesarios",
+                        "error",
+                    );
+                }
             }
-            
-            actualizarSemaforoPreview();
-        });
 
-        // Delegación de eventos para cambios en parámetros y valores (funciona para elementos dinámicos)
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('parametro-select')) {
-                const item = e.target.closest('.medicion-item');
-                actualizarInfoParametro(item);
-                actualizarSemaforoPreview();
+            // Función para cargar parámetros
+            async function cargarParametros() {
+                try {
+                    const response = await fetch(
+                        "http://localhost:8000/api/parametros",
+                    );
+                    parametrosData = await response.json();
+
+                    const parametroSelects =
+                        document.querySelectorAll(".parametro-select");
+                    parametroSelects.forEach((select) => {
+                        // Limpiar opciones existentes excepto la primera
+                        while (select.children.length > 1) {
+                            select.removeChild(select.lastChild);
+                        }
+
+                        parametrosData.forEach((parametro) => {
+                            const option = document.createElement("option");
+                            option.value = parametro.id_parametro;
+                            option.textContent = `${parametro.nombre} (${parametro.unidad})`;
+                            option.setAttribute(
+                                "data-descripcion",
+                                parametro.descripcion,
+                            );
+                            option.setAttribute(
+                                "data-unidad",
+                                parametro.unidad,
+                            );
+                            select.appendChild(option);
+                        });
+                    });
+                } catch (error) {
+                    console.error("Error cargando parámetros:", error);
+                }
             }
-        });
 
-        document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('valor-input')) {
-                const item = e.target.closest('.medicion-item');
-                actualizarInfoParametro(item);
-                actualizarSemaforoPreview();
+            // Cargar municipios cuando se selecciona un estado
+            document
+                .getElementById("id_estado")
+                .addEventListener("change", async function () {
+                    const estadoId = this.value;
+                    const municipioSelect =
+                        document.getElementById("id_municipio");
+
+                    if (!estadoId) {
+                        municipioSelect.innerHTML =
+                            '<option value="">Primero selecciona un estado</option>';
+                        municipioSelect.disabled = true;
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(
+                            `http://localhost:8000/api/municipios/estado/${estadoId}`,
+                        );
+                        const municipios = await response.json();
+
+                        municipioSelect.innerHTML =
+                            '<option value="">Selecciona un municipio</option>';
+                        municipios.forEach((municipio) => {
+                            const option = document.createElement("option");
+                            option.value = municipio.id_municipio;
+                            option.textContent = municipio.nombre;
+                            municipioSelect.appendChild(option);
+                        });
+
+                        municipioSelect.disabled = false;
+                    } catch (error) {
+                        console.error("Error cargando municipios:", error);
+                        mostrarMensaje(
+                            "Error al cargar los municipios",
+                            "error",
+                        );
+                    }
+                });
+
+            function inicializarFormulario() {
+                const form = document.getElementById("estacionForm");
+
+                form.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    if (!form.checkValidity()) {
+                        e.stopPropagation();
+                        form.classList.add("was-validated");
+                        return;
+                    }
+
+                    await enviarFormulario();
+                });
             }
-        });
-    }
 
-    // Función para agregar medición - HACERLA GLOBAL
-    window.agregarMedicion = function() {
-        const container = document.getElementById('medicionesContainer');
-        const nuevoItem = document.createElement('div');
-        nuevoItem.className = 'medicion-item card mb-3';
-        nuevoItem.innerHTML = `
+            function inicializarEventListeners() {
+                // Event listener para cambio de tipo de cuerpo de agua
+                document
+                    .getElementById("id_tipo")
+                    .addEventListener("change", function () {
+                        const tipoId = this.value;
+                        const tipoSelect = this;
+                        const selectedOption =
+                            tipoSelect.options[tipoSelect.selectedIndex];
+                        tipoCuerpoAgua = selectedOption.text.toLowerCase();
+
+                        // Actualizar mensaje informativo
+                        const infoElement =
+                            document.getElementById("tipoAguaInfo");
+                        if (tipoCuerpoAgua.includes("lótico")) {
+                            infoElement.textContent =
+                                "Cuerpo de agua LÓTICO (ríos, arroyos). Se aplicarán rangos para agua corriente.";
+                        } else if (tipoCuerpoAgua.includes("léntico")) {
+                            infoElement.textContent =
+                                "Cuerpo de agua LÉNTICO (lagos, presas). Se aplicarán rangos para agua estancada.";
+                        } else if (tipoCuerpoAgua.includes("costero")) {
+                            infoElement.textContent =
+                                "Agua COSTERA (mares, bahías). Se aplicarán rangos más estrictos para agua marina.";
+                        } else {
+                            infoElement.textContent =
+                                "Selecciona el tipo de cuerpo de agua para ver los rangos aplicables";
+                        }
+
+                        actualizarSemaforoPreview();
+                    });
+
+                // Delegación de eventos para cambios en parámetros y valores (funciona para elementos dinámicos)
+                document.addEventListener("change", function (e) {
+                    if (e.target.classList.contains("parametro-select")) {
+                        const item = e.target.closest(".medicion-item");
+                        actualizarInfoParametro(item);
+                        actualizarSemaforoPreview();
+                    }
+                });
+
+                document.addEventListener("input", function (e) {
+                    if (e.target.classList.contains("valor-input")) {
+                        const item = e.target.closest(".medicion-item");
+                        actualizarInfoParametro(item);
+                        actualizarSemaforoPreview();
+                    }
+                });
+            }
+
+            // Función para agregar medición - HACERLA GLOBAL
+            window.agregarMedicion = function () {
+                const container = document.getElementById(
+                    "medicionesContainer",
+                );
+                const nuevoItem = document.createElement("div");
+                nuevoItem.className = "medicion-item card mb-3";
+                nuevoItem.innerHTML = `
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-5 mb-3">
@@ -522,409 +806,544 @@ import '../../styles/estilos.css';
                 </div>
             </div>
         `;
-        
-        container.appendChild(nuevoItem);
-        cargarParametrosEnSelect(nuevoItem.querySelector('.parametro-select'));
-        contadorMediciones++;
-        
-        // Actualizar previsualización después de agregar
-        actualizarSemaforoPreview();
-    }
 
-    // Función para eliminar medición - HACERLA GLOBAL
-    window.eliminarMedicion = function(boton) {
-        const item = boton.closest('.medicion-item');
-        if (document.querySelectorAll('.medicion-item').length > 1) {
-            item.remove();
-            actualizarSemaforoPreview();
-        } else {
-            mostrarMensaje('Debe haber al menos una medición', 'error');
-        }
-    }
+                container.appendChild(nuevoItem);
+                cargarParametrosEnSelect(
+                    nuevoItem.querySelector(".parametro-select"),
+                );
+                contadorMediciones++;
 
-    // Función para cargar parámetros en un select específico
-    function cargarParametrosEnSelect(select) {
-        // Limpiar opciones existentes excepto la primera
-        while (select.children.length > 1) {
-            select.removeChild(select.lastChild);
-        }
-        
-        parametrosData.forEach(parametro => {
-            const option = document.createElement('option');
-            option.value = parametro.id_parametro;
-            option.textContent = `${parametro.nombre} (${parametro.unidad})`;
-            option.setAttribute('data-descripcion', parametro.descripcion);
-            option.setAttribute('data-unidad', parametro.unidad);
-            select.appendChild(option);
-        });
-    }
+                // Actualizar previsualización después de agregar
+                actualizarSemaforoPreview();
+            };
 
-    // Función para actualizar información del parámetro
-    function actualizarInfoParametro(item) {
-        const select = item.querySelector('.parametro-select');
-        const valorInput = item.querySelector('.valor-input');
-        const infoDiv = item.querySelector('.parametro-info');
-        const resultadoDiv = item.querySelector('.clasificacion-resultado');
-        
-        if (select.value && valorInput.value) {
-            const parametro = parametrosData.find(p => p.id_parametro == select.value);
-            if (parametro) {
-                // Mostrar descripción del parámetro
-                infoDiv.querySelector('small').textContent = parametro.descripcion;
-                infoDiv.style.display = 'block';
-                
-                // Calcular y mostrar clasificación
-                const clasificacion = simularClasificacion(parseFloat(valorInput.value), parametro.nombre, tipoCuerpoAgua);
-                const badge = resultadoDiv.querySelector('.badge');
-                badge.textContent = clasificacion;
-                badge.className = 'badge ' + obtenerClaseBadge(clasificacion);
-                resultadoDiv.style.display = 'block';
-            }
-        } else {
-            infoDiv.style.display = 'none';
-            resultadoDiv.style.display = 'none';
-        }
-    }
+            // Función para eliminar medición - HACERLA GLOBAL
+            window.eliminarMedicion = function (boton) {
+                const item = boton.closest(".medicion-item");
+                if (document.querySelectorAll(".medicion-item").length > 1) {
+                    item.remove();
+                    actualizarSemaforoPreview();
+                } else {
+                    mostrarMensaje("Debe haber al menos una medición", "error");
+                }
+            };
 
-    // Función para simular clasificación (mejorada)
-    function simularClasificacion(valor, parametroNombre, tipoAgua) {
-        // Rangos mejorados según el tipo de agua
-        const rangos = {
-            'DBO': {
-                'lótico': { excelente: 3, buena: 5, aceptable: 8, contaminada: 15 },
-                'léntico': { excelente: 2, buena: 4, aceptable: 6, contaminada: 12 },
-                'costero': { excelente: 1, buena: 2, aceptable: 3, contaminada: 6 }
-            },
-            'DQO': {
-                'lótico': { excelente: 10, buena: 20, aceptable: 30, contaminada: 50 },
-                'léntico': { excelente: 8, buena: 15, aceptable: 25, contaminada: 40 },
-                'costero': { excelente: 5, buena: 10, aceptable: 15, contaminada: 25 }
-            },
-            'SST': {
-                'lótico': { excelente: 20, buena: 40, aceptable: 60, contaminada: 100 },
-                'léntico': { excelente: 15, buena: 30, aceptable: 45, contaminada: 80 },
-                'costero': { excelente: 10, buena: 20, aceptable: 30, contaminada: 50 }
-            },
-            'OD': { // Oxígeno Disuelto (mayor es mejor)
-                'lótico': { excelente: 7, buena: 5, aceptable: 4, contaminada: 2 },
-                'léntico': { excelente: 8, buena: 6, aceptable: 4, contaminada: 2 },
-                'costero': { excelente: 6, buena: 4, aceptable: 3, contaminada: 1 }
-            },
-            'Coliformes': {
-                'lótico': { excelente: 100, buena: 500, aceptable: 1000, contaminada: 5000 },
-                'léntico': { excelente: 50, buena: 200, aceptable: 500, contaminada: 2000 },
-                'costero': { excelente: 10, buena: 50, aceptable: 100, contaminada: 500 }
-            }
-        };
+            // Función para cargar parámetros en un select específico
+            function cargarParametrosEnSelect(select) {
+                // Limpiar opciones existentes excepto la primera
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
 
-        // Determinar el tipo de agua para usar los rangos
-        let tipoKey = 'lótico'; // default
-        if (tipoAgua?.includes('léntico')) tipoKey = 'léntico';
-        if (tipoAgua?.includes('costero')) tipoKey = 'costero';
-
-        // Encontrar el parámetro
-        let parametroKey = Object.keys(rangos).find(key => 
-            parametroNombre.toLowerCase().includes(key.toLowerCase())
-        );
-
-        if (!parametroKey) return 'Sin datos';
-
-        const rango = rangos[parametroKey][tipoKey];
-
-        // Para OD (mayor es mejor), la lógica es inversa
-        if (parametroKey === 'OD') {
-            if (valor >= rango.excelente) return 'Excelente';
-            if (valor >= rango.buena) return 'Buena calidad';
-            if (valor >= rango.aceptable) return 'Aceptable';
-            if (valor >= rango.contaminada) return 'Contaminada';
-            return 'Fuertemente contaminada';
-        }
-
-        // Para otros parámetros (menor es mejor)
-        if (valor <= rango.excelente) return 'Excelente';
-        if (valor <= rango.buena) return 'Buena calidad';
-        if (valor <= rango.aceptable) return 'Aceptable';
-        if (valor <= rango.contaminada) return 'Contaminada';
-        return 'Fuertemente contaminada';
-    }
-
-    function obtenerClaseBadge(clasificacion) {
-        const clases = {
-            'Excelente': 'bg-success',
-            'Buena calidad': 'bg-primary',
-            'Aceptable': 'bg-warning',
-            'Contaminada': 'bg-danger',
-            'Fuertemente contaminada': 'bg-dark',
-            'Sin datos': 'bg-secondary'
-        };
-        return clases[clasificacion] || 'bg-secondary';
-    }
-
-    // Función para actualizar previsualización del semáforo (mejorada)
-    function actualizarSemaforoPreview() {
-        const preview = document.getElementById('semaforoPreview');
-        const mediciones = document.querySelectorAll('.medicion-item');
-        const clasificaciones = [];
-        
-        // Recolectar todas las clasificaciones
-        mediciones.forEach(medicion => {
-            const select = medicion.querySelector('.parametro-select');
-            const valor = medicion.querySelector('.valor-input').value;
-            const resultadoDiv = medicion.querySelector('.clasificacion-resultado');
-            
-            if (select.value && valor && resultadoDiv.style.display !== 'none') {
-                const clasificacion = resultadoDiv.querySelector('.badge').textContent;
-                clasificaciones.push(clasificacion);
-            }
-        });
-        
-        if (clasificaciones.length > 0 && tipoCuerpoAgua) {
-            preview.style.display = 'block';
-            
-            // Determinar color del semáforo basado en las clasificaciones
-            let color = 'VERDE';
-            let razon = 'Todos los parámetros en niveles excelentes o de buena calidad';
-            let contaminantes = [];
-            
-            if (clasificaciones.includes('Fuertemente contaminada')) {
-                color = 'ROJO';
-                razon = 'Presencia de parámetros fuertemente contaminados';
-                contaminantes = ['Parámetros críticos detectados'];
-            } else if (clasificaciones.includes('Contaminada')) {
-                color = 'ROJO';
-                razon = 'Presencia de parámetros contaminados';
-                contaminantes = ['Parámetros en nivel contaminado'];
-            } else if (clasificaciones.includes('Aceptable')) {
-                color = 'AMARILLO';
-                razon = 'Algunos parámetros requieren atención';
-                contaminantes = ['Parámetros en nivel aceptable'];
-            }
-            
-            // Actualizar la vista previa
-            const semaforoColor = document.getElementById('semaforoColor');
-            const semaforoTexto = document.getElementById('semaforoTexto');
-            const semaforoRazon = document.getElementById('semaforoRazon');
-            const semaforoContaminantes = document.getElementById('semaforoContaminantes');
-            
-            // Actualizar colores
-            semaforoColor.className = 'semaforo-indicador';
-            semaforoColor.querySelector('i').className = `fas fa-circle text-${color === 'VERDE' ? 'success' : color === 'AMARILLO' ? 'warning' : 'danger'}`;
-            
-            // Actualizar textos
-            semaforoTexto.textContent = `Semáforo: ${color}`;
-            semaforoTexto.className = `text-${color === 'VERDE' ? 'success' : color === 'AMARILLO' ? 'warning' : 'danger'} fw-bold`;
-            semaforoRazon.textContent = razon;
-            semaforoContaminantes.textContent = contaminantes.length > 0 ? `Parámetros a revisar: ${contaminantes.join(', ')}` : '';
-            
-        } else {
-            preview.style.display = 'none';
-        }
-    }
-
-    async function enviarFormulario() {
-        const form = document.getElementById('estacionForm');
-        const formData = new FormData(form);
-        
-        // Construir objeto data manualmente para incluir arrays
-        const data = {
-            nombre: formData.get('nombre'),
-            latitud: parseFloat(formData.get('latitud')),
-            longitud: parseFloat(formData.get('longitud')),
-            activo: "false",
-            id_tipo: parseInt(formData.get('id_tipo')),
-            id_municipio: parseInt(formData.get('id_municipio')),
-            id_usuario: userData.id_usuario
-        };
-
-        // Agregar campos opcionales
-        if (formData.get('id_subtipo')) data.id_subtipo = parseInt(formData.get('id_subtipo'));
-        if (formData.get('id_cuenca')) data.id_cuenca = parseInt(formData.get('id_cuenca'));
-        if (formData.get('observaciones')) data.observaciones = formData.get('observaciones');
-
-        // Procesar mediciones
-        const mediciones = [];
-        const medicionItems = document.querySelectorAll('.medicion-item');
-        
-        medicionItems.forEach((item, index) => {
-            const idParametro = item.querySelector('.parametro-select').value;
-            const valor = item.querySelector('.valor-input').value;
-            const fecha = item.querySelector('input[type="date"]').value;
-            
-            if (idParametro && valor && fecha) {
-                mediciones.push({
-                    id_parametro: parseInt(idParametro),
-                    valor: parseFloat(valor),
-                    fecha_medicion: fecha
+                parametrosData.forEach((parametro) => {
+                    const option = document.createElement("option");
+                    option.value = parametro.id_parametro;
+                    option.textContent = `${parametro.nombre} (${parametro.unidad})`;
+                    option.setAttribute(
+                        "data-descripcion",
+                        parametro.descripcion,
+                    );
+                    option.setAttribute("data-unidad", parametro.unidad);
+                    select.appendChild(option);
                 });
             }
-        });
 
-        if (mediciones.length > 0) {
-            data.mediciones = mediciones;
-        }
+            // Función para actualizar información del parámetro
+            function actualizarInfoParametro(item) {
+                const select = item.querySelector(".parametro-select");
+                const valorInput = item.querySelector(".valor-input");
+                const infoDiv = item.querySelector(".parametro-info");
+                const resultadoDiv = item.querySelector(
+                    ".clasificacion-resultado",
+                );
 
-        console.log('Datos a enviar:', data);
+                if (select.value && valorInput.value) {
+                    const parametro = parametrosData.find(
+                        (p) => p.id_parametro == select.value,
+                    );
+                    if (parametro) {
+                        // Mostrar descripción del parámetro
+                        infoDiv.querySelector("small").textContent =
+                            parametro.descripcion;
+                        infoDiv.style.display = "block";
 
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Mostrar loading
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
-
-        try {
-            const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-            
-            const response = await fetch('http://localhost:8000/api/estaciones', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                mostrarMensaje('¡Estación registrada exitosamente!', 'success');
-                form.reset();
-                form.classList.remove('was-validated');
-                
-                // Redirigir después de 2 segundos
-                setTimeout(() => {
-                    window.location.href = '/aquaguard/mapaContaminacion';
-                }, 2000);
-            } else {
-                let errorMessage = 'Error al registrar la estación: ';
-                if (result.errors) {
-                    const errors = Object.values(result.errors).flat();
-                    errorMessage += errors.join(', ');
-                } else if (result.message) {
-                    errorMessage += result.message;
+                        // Calcular y mostrar clasificación
+                        const clasificacion = simularClasificacion(
+                            parseFloat(valorInput.value),
+                            parametro.nombre,
+                            tipoCuerpoAgua,
+                        );
+                        const badge = resultadoDiv.querySelector(".badge");
+                        badge.textContent = clasificacion;
+                        badge.className =
+                            "badge " + obtenerClaseBadge(clasificacion);
+                        resultadoDiv.style.display = "block";
+                    }
+                } else {
+                    infoDiv.style.display = "none";
+                    resultadoDiv.style.display = "none";
                 }
-                mostrarMensaje(errorMessage, 'error');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarMensaje('Error de conexión con el servidor', 'error');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
-    }
 
-    function mostrarMensaje(mensaje, tipo) {
-        const messageDiv = document.getElementById('responseMessage');
-        messageDiv.textContent = mensaje;
-        messageDiv.style.display = 'block';
-        
-        if (tipo === 'success') {
-            messageDiv.className = 'alert alert-success';
-        } else {
-            messageDiv.className = 'alert alert-danger';
-        }
-        
-        // Auto-ocultar después de 5 segundos
-        setTimeout(() => {
-            messageDiv.style.display = 'none';
-        }, 5000);
-    }
-</script>
+            // Función para simular clasificación (mejorada)
+            function simularClasificacion(valor, parametroNombre, tipoAgua) {
+                // Rangos mejorados según el tipo de agua
+                const rangos = {
+                    DBO: {
+                        lótico: {
+                            excelente: 3,
+                            buena: 5,
+                            aceptable: 8,
+                            contaminada: 15,
+                        },
+                        léntico: {
+                            excelente: 2,
+                            buena: 4,
+                            aceptable: 6,
+                            contaminada: 12,
+                        },
+                        costero: {
+                            excelente: 1,
+                            buena: 2,
+                            aceptable: 3,
+                            contaminada: 6,
+                        },
+                    },
+                    DQO: {
+                        lótico: {
+                            excelente: 10,
+                            buena: 20,
+                            aceptable: 30,
+                            contaminada: 50,
+                        },
+                        léntico: {
+                            excelente: 8,
+                            buena: 15,
+                            aceptable: 25,
+                            contaminada: 40,
+                        },
+                        costero: {
+                            excelente: 5,
+                            buena: 10,
+                            aceptable: 15,
+                            contaminada: 25,
+                        },
+                    },
+                    SST: {
+                        lótico: {
+                            excelente: 20,
+                            buena: 40,
+                            aceptable: 60,
+                            contaminada: 100,
+                        },
+                        léntico: {
+                            excelente: 15,
+                            buena: 30,
+                            aceptable: 45,
+                            contaminada: 80,
+                        },
+                        costero: {
+                            excelente: 10,
+                            buena: 20,
+                            aceptable: 30,
+                            contaminada: 50,
+                        },
+                    },
+                    OD: {
+                        // Oxígeno Disuelto (mayor es mejor)
+                        lótico: {
+                            excelente: 7,
+                            buena: 5,
+                            aceptable: 4,
+                            contaminada: 2,
+                        },
+                        léntico: {
+                            excelente: 8,
+                            buena: 6,
+                            aceptable: 4,
+                            contaminada: 2,
+                        },
+                        costero: {
+                            excelente: 6,
+                            buena: 4,
+                            aceptable: 3,
+                            contaminada: 1,
+                        },
+                    },
+                    Coliformes: {
+                        lótico: {
+                            excelente: 100,
+                            buena: 500,
+                            aceptable: 1000,
+                            contaminada: 5000,
+                        },
+                        léntico: {
+                            excelente: 50,
+                            buena: 200,
+                            aceptable: 500,
+                            contaminada: 2000,
+                        },
+                        costero: {
+                            excelente: 10,
+                            buena: 50,
+                            aceptable: 100,
+                            contaminada: 500,
+                        },
+                    },
+                };
 
-    <style>
-        .estacion-form-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid #0077b6;
-        }
+                // Determinar el tipo de agua para usar los rangos
+                let tipoKey = "lótico"; // default
+                if (tipoAgua?.includes("léntico")) tipoKey = "léntico";
+                if (tipoAgua?.includes("costero")) tipoKey = "costero";
 
-        .form-section {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e9ecef;
-        }
+                // Encontrar el parámetro
+                let parametroKey = Object.keys(rangos).find((key) =>
+                    parametroNombre.toLowerCase().includes(key.toLowerCase()),
+                );
 
-        .section-title {
-            color: #0077b6;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+                if (!parametroKey) return "Sin datos";
 
-        .section-title i {
-            margin-right: 10px;
-        }
+                const rango = rangos[parametroKey][tipoKey];
 
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 30px;
-        }
+                // Para OD (mayor es mejor), la lógica es inversa
+                if (parametroKey === "OD") {
+                    if (valor >= rango.excelente) return "Excelente";
+                    if (valor >= rango.buena) return "Buena calidad";
+                    if (valor >= rango.aceptable) return "Aceptable";
+                    if (valor >= rango.contaminada) return "Contaminada";
+                    return "Fuertemente contaminada";
+                }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #0077b6, #00b4d8);
-            border: none;
-            padding: 10px 25px;
-        }
+                // Para otros parámetros (menor es mejor)
+                if (valor <= rango.excelente) return "Excelente";
+                if (valor <= rango.buena) return "Buena calidad";
+                if (valor <= rango.aceptable) return "Aceptable";
+                if (valor <= rango.contaminada) return "Contaminada";
+                return "Fuertemente contaminada";
+            }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #005b8a, #0096c7);
-            transform: translateY(-2px);
-        }
+            function obtenerClaseBadge(clasificacion) {
+                const clases = {
+                    Excelente: "bg-success",
+                    "Buena calidad": "bg-primary",
+                    Aceptable: "bg-warning",
+                    Contaminada: "bg-danger",
+                    "Fuertemente contaminada": "bg-dark",
+                    "Sin datos": "bg-secondary",
+                };
+                return clases[clasificacion] || "bg-secondary";
+            }
 
-        .form-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
+            // Función para actualizar previsualización del semáforo (mejorada)
+            function actualizarSemaforoPreview() {
+                const preview = document.getElementById("semaforoPreview");
+                const mediciones = document.querySelectorAll(".medicion-item");
+                const clasificaciones = [];
 
-        .form-control, .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 10px 15px;
-        }
+                // Recolectar todas las clasificaciones
+                mediciones.forEach((medicion) => {
+                    const select = medicion.querySelector(".parametro-select");
+                    const valor = medicion.querySelector(".valor-input").value;
+                    const resultadoDiv = medicion.querySelector(
+                        ".clasificacion-resultado",
+                    );
 
-        .form-control:focus, .form-select:focus {
-            border-color: #0077b6;
-            box-shadow: 0 0 0 0.2rem rgba(0, 119, 182, 0.25);
-        }
+                    if (
+                        select.value &&
+                        valor &&
+                        resultadoDiv.style.display !== "none"
+                    ) {
+                        const clasificacion =
+                            resultadoDiv.querySelector(".badge").textContent;
+                        clasificaciones.push(clasificacion);
+                    }
+                });
 
-        .semaforo-indicador .fa-circle {
-            transition: color 0.3s ease;
-        }
+                if (clasificaciones.length > 0 && tipoCuerpoAgua) {
+                    preview.style.display = "block";
 
-        .semaforo-verde { color: #28a745; }
-        .semaforo-amarillo { color: #ffc107; }
-        .semaforo-rojo { color: #dc3545; }
+                    // Determinar color del semáforo basado en las clasificaciones
+                    let color = "VERDE";
+                    let razon =
+                        "Todos los parámetros en niveles excelentes o de buena calidad";
+                    let contaminantes = [];
 
-        .parametro-info {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 3px solid #0077b6;
-        }
+                    if (clasificaciones.includes("Fuertemente contaminada")) {
+                        color = "ROJO";
+                        razon =
+                            "Presencia de parámetros fuertemente contaminados";
+                        contaminantes = ["Parámetros críticos detectados"];
+                    } else if (clasificaciones.includes("Contaminada")) {
+                        color = "ROJO";
+                        razon = "Presencia de parámetros contaminados";
+                        contaminantes = ["Parámetros en nivel contaminado"];
+                    } else if (clasificaciones.includes("Aceptable")) {
+                        color = "AMARILLO";
+                        razon = "Algunos parámetros requieren atención";
+                        contaminantes = ["Parámetros en nivel aceptable"];
+                    }
 
-        .medicion-item {
-            border-left: 4px solid #0077b6;
-        }
+                    // Actualizar la vista previa
+                    const semaforoColor =
+                        document.getElementById("semaforoColor");
+                    const semaforoTexto =
+                        document.getElementById("semaforoTexto");
+                    const semaforoRazon =
+                        document.getElementById("semaforoRazon");
+                    const semaforoContaminantes = document.getElementById(
+                        "semaforoContaminantes",
+                    );
 
-        @media (max-width: 768px) {
+                    // Actualizar colores
+                    semaforoColor.className = "semaforo-indicador";
+                    semaforoColor.querySelector("i").className =
+                        `fas fa-circle text-${color === "VERDE" ? "success" : color === "AMARILLO" ? "warning" : "danger"}`;
+
+                    // Actualizar textos
+                    semaforoTexto.textContent = `Semáforo: ${color}`;
+                    semaforoTexto.className = `text-${color === "VERDE" ? "success" : color === "AMARILLO" ? "warning" : "danger"} fw-bold`;
+                    semaforoRazon.textContent = razon;
+                    semaforoContaminantes.textContent =
+                        contaminantes.length > 0
+                            ? `Parámetros a revisar: ${contaminantes.join(", ")}`
+                            : "";
+                } else {
+                    preview.style.display = "none";
+                }
+            }
+
+            async function enviarFormulario() {
+                const form = document.getElementById("estacionForm");
+                const formData = new FormData(form);
+
+                // Construir objeto data manualmente para incluir arrays
+                const data = {
+                    nombre: formData.get("nombre"),
+                    latitud: parseFloat(formData.get("latitud")),
+                    longitud: parseFloat(formData.get("longitud")),
+                    activo: "false",
+                    id_tipo: parseInt(formData.get("id_tipo")),
+                    id_municipio: parseInt(formData.get("id_municipio")),
+                    id_usuario: userData.id_usuario,
+                };
+
+                // Agregar campos opcionales
+                if (formData.get("id_subtipo"))
+                    data.id_subtipo = parseInt(formData.get("id_subtipo"));
+                if (formData.get("id_cuenca"))
+                    data.id_cuenca = parseInt(formData.get("id_cuenca"));
+                if (formData.get("observaciones"))
+                    data.observaciones = formData.get("observaciones");
+
+                // Procesar mediciones
+                const mediciones = [];
+                const medicionItems =
+                    document.querySelectorAll(".medicion-item");
+
+                medicionItems.forEach((item, index) => {
+                    const idParametro =
+                        item.querySelector(".parametro-select").value;
+                    const valor = item.querySelector(".valor-input").value;
+                    const fecha =
+                        item.querySelector('input[type="date"]').value;
+
+                    if (idParametro && valor && fecha) {
+                        mediciones.push({
+                            id_parametro: parseInt(idParametro),
+                            valor: parseFloat(valor),
+                            fecha_medicion: fecha,
+                        });
+                    }
+                });
+
+                if (mediciones.length > 0) {
+                    data.mediciones = mediciones;
+                }
+
+                console.log("Datos a enviar:", data);
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
+                // Mostrar loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML =
+                    '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+                try {
+                    const authToken =
+                        localStorage.getItem("authToken") ||
+                        sessionStorage.getItem("authToken");
+
+                    const response = await fetch(
+                        "http://localhost:8000/api/estaciones",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${authToken}`,
+                                Accept: "application/json",
+                            },
+                            body: JSON.stringify(data),
+                        },
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        mostrarMensaje(
+                            "¡Estación registrada exitosamente!",
+                            "success",
+                        );
+                        form.reset();
+                        form.classList.remove("was-validated");
+
+                        // Redirigir después de 2 segundos
+                        setTimeout(() => {
+                            window.location.href =
+                                "/aquaguard/mapaContaminacion";
+                        }, 2000);
+                    } else {
+                        let errorMessage = "Error al registrar la estación: ";
+                        if (result.errors) {
+                            const errors = Object.values(result.errors).flat();
+                            errorMessage += errors.join(", ");
+                        } else if (result.message) {
+                            errorMessage += result.message;
+                        }
+                        mostrarMensaje(errorMessage, "error");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    mostrarMensaje(
+                        "Error de conexión con el servidor",
+                        "error",
+                    );
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            }
+
+            function mostrarMensaje(mensaje, tipo) {
+                const messageDiv = document.getElementById("responseMessage");
+                messageDiv.textContent = mensaje;
+                messageDiv.style.display = "block";
+
+                if (tipo === "success") {
+                    messageDiv.className = "alert alert-success";
+                } else {
+                    messageDiv.className = "alert alert-danger";
+                }
+
+                // Auto-ocultar después de 5 segundos
+                setTimeout(() => {
+                    messageDiv.style.display = "none";
+                }, 5000);
+            }
+        </script>
+
+        <style>
             .estacion-form-card {
-                padding: 20px;
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #0077b6;
             }
-            
+
+            .form-section {
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .section-title {
+                color: #0077b6;
+                margin-bottom: 20px;
+                font-weight: 600;
+            }
+
+            .section-title i {
+                margin-right: 10px;
+            }
+
             .form-actions {
-                flex-direction: column;
+                display: flex;
+                gap: 15px;
+                justify-content: flex-end;
+                margin-top: 30px;
             }
-            
-            .btn {
-                width: 100%;
+
+            .btn-primary {
+                background: linear-gradient(135deg, #0077b6, #00b4d8);
+                border: none;
+                padding: 10px 25px;
             }
-        }
-    </style>
-</body>
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #005b8a, #0096c7);
+                transform: translateY(-2px);
+            }
+
+            .form-label {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 8px;
+            }
+
+            .form-control,
+            .form-select {
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                padding: 10px 15px;
+            }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #0077b6;
+                box-shadow: 0 0 0 0.2rem rgba(0, 119, 182, 0.25);
+            }
+
+            .semaforo-indicador .fa-circle {
+                transition: color 0.3s ease;
+            }
+
+            .semaforo-verde {
+                color: #28a745;
+            }
+            .semaforo-amarillo {
+                color: #ffc107;
+            }
+            .semaforo-rojo {
+                color: #dc3545;
+            }
+
+            .parametro-info {
+                background: #f8f9fa;
+                padding: 10px;
+                border-radius: 5px;
+                border-left: 3px solid #0077b6;
+            }
+
+            .medicion-item {
+                border-left: 4px solid #0077b6;
+            }
+
+            @media (max-width: 768px) {
+                .estacion-form-card {
+                    padding: 20px;
+                }
+
+                .form-actions {
+                    flex-direction: column;
+                }
+
+                .btn {
+                    width: 100%;
+                }
+            }
+        </style>
+    </body>
 </html>

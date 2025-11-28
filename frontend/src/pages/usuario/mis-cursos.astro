@@ -81,7 +81,7 @@ async function fetchCursosInscritos() {
         id_curso: curso.id_curso,
         titulo: curso.titulo,
         descripcion: curso.descripcion,
-        portada_url: curso.portada_url ? `http://localhost:8000/storage/${curso.portada_url}` : null,
+        portada_url: curso.portada_url ? `${API_URL}/storage/${curso.portada_url}` : null,
         tiempo_estimado_min: curso.tiempo_estimado_min,
         progreso: curso.progreso || 0,
         ultima_leccion: curso.ultima_leccion || "Introducción al curso",

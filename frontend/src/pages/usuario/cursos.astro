@@ -6,6 +6,8 @@ import Footer from "../../components/aquaguard-components/FooterE-Learning.astro
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
+console.log("Api",API_URL);
+
 // 1. DEFINICIÓN DE TIPOS
 export interface Autor {
   id_usuario: number;
@@ -46,16 +48,6 @@ try {
     const data = await response.json();
     cursos = data.filter((curso: Curso) => curso.publicado);
     
-    // Obtener información de debug
-    try {
-      const debugResponse = await fetch(`${API_URL}/debug-cursos`);
-      if (debugResponse.ok) {
-        debugInfo = await debugResponse.json();
-      }
-    } catch (e) {
-      // Ignorar errores de debug
-    }
-    
     // Extraer categorías únicas
     const categoriasUnicas = new Map();
     cursos.forEach((curso: Curso) => {
@@ -73,15 +65,11 @@ try {
 ---
 
 <Layout title="Catálogo de Cursos - AquaGuard">
-  <!-- Header -->
   <Header />
 
-  <!-- Hero Section para Cursos -->
   <section class="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-900 via-blue-700 to-teal-600 overflow-hidden">
-    <!-- Elementos de fondo -->
     <div class="absolute inset-0 bg-black/20"></div>
     
-    <!-- Ondas -->
     <div class="absolute bottom-0 left-0 right-0">
       <svg class="w-full h-20 md:h-28 text-blue-800/30" viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor"></path>
