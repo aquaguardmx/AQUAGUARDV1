@@ -799,7 +799,7 @@ function getUserFullName() {
     <Footer />
 
     <!-- El script permanece igual, solo se actualizaron los estilos -->
-    <script define:vars={{ API_URL }} is:inline>
+    <script define:vars={{ API_URL }}>
         document.addEventListener("DOMContentLoaded", async function () {
             const profileForm = document.getElementById("profileForm");
             const saveButton = document.getElementById("saveButton");
@@ -998,10 +998,6 @@ function getUserFullName() {
                         `;
 
                     console.log("User ID antes de fetch:", user.id_usuario);
-                    console.log(
-                        "URL generada:",
-                        `/api/usuarios/${user.id_usuario}`,
-                    );
 
                     const response = await fetch(
                         `${API_URL}/usuarios/${user.id_usuario}`,
