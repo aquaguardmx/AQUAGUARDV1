@@ -1633,7 +1633,7 @@ try {
                 });
 
                 const response = await fetch(
-                    `${API_URL}/api/cursos-inscritos/`,
+                    `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}`,
                     {
                         method: "POST",
                         headers: {
