@@ -4,6 +4,8 @@ import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/aquaguard-components/HeaderE-Learnig.astro";
 import Footer from "../../components/aquaguard-components/FooterE-Learning.astro";
 
+const API_URL = import.meta.env.PUBLIC_API_URL;
+
 // 1. Definimos la interfaz para la estructura de los datos de la API
 interface Category {
     id: string | number; // Usamos 'string | number' para flexibilidad con IDs
@@ -12,15 +14,12 @@ interface Category {
     // slug?: string;
 }
 
-// Configuración de la API
-const API_URL = "http://192.168.1.163:8000/api/categorias/";
-
 // 2. Tipamos 'cats' como un array de la interfaz 'Category'
 let cats: Category[] = [];
 
 try {
     // 1. Realiza la petición y espera la respuesta (fetch)
-    const response = await fetch(API_URL);
+    const response = await fetch(API_URL + "/api/categorias/");
 
     if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
@@ -634,7 +633,7 @@ try {
 
     <script>
         // Configuración de la API (Asegúrate de que la URL base sea correcta)
-        const API_URL_CREATE = "http://localhost:8000/api/cursos";
+        const API_URL_CREATE = import.meta.env.PUBLIC_API_URL + "/api/cursos";
 
         // ** NUEVA CONSTANTE PARA LA REDIRECCIÓN **
         const EDIT_URL_BASE = "/curso/editar-curso/";
