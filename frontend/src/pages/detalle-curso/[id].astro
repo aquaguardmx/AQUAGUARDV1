@@ -1553,7 +1553,7 @@ try {
     }
 </style>
 
-<script>
+<script is:inline>
     const API_URL = import.meta.env.PUBLIC_API_URL;
 
     console.log("API_URL", API_URL);
@@ -1674,7 +1674,7 @@ try {
             try {
                 // PRIMERO: Verificar directamente si este curso está inscrito
                 const responseDirecta = await fetch(
-                    `${API_URL}/api/cursos-inscritos/verificar/${usuarioId}/${cursoId}`,
+                    `https://aquaguardv1.onrender.com/api/cursos-inscritos/usuario/${usuarioId}/curso/${cursoId}`,
                     {
                         method: "GET",
                         headers: {

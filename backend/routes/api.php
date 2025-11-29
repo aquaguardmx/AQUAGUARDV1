@@ -24,7 +24,6 @@ use App\Http\Controllers\Api\SubtiposController;
 use App\Http\Controllers\Api\ParametrosController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\ProgresoLeccionController;
-
 use App\Http\Controllers\Api\EstacionesController;
 /*
 |--------------------------------------------------------------------------
@@ -149,7 +148,7 @@ Route::get('/modulos/{moduloId}/lecciones', [ModuleController::class, 'getPorMod
 
 // API PARA PROGRESO DE LECCIONES
 Route::post('/progreso-lecciones', [ProgresoLeccionController::class, 'store']);
-Route::get('/progreso-lecciones/usuario/{usuario_id}', [ProgresoLeccionController::class, 'index']);
+Route::get('/progreso-lecciones/usuario/{usuario_id}/curso/{curso_id}', [ProgresoLeccionController::class, 'index']);
 Route::get('/progreso-lecciones/usuario/{usuario_id}/leccion/{leccion_id}', [ProgresoLeccionController::class, 'show']);
 
 Route::get('/quizzes', [QuizController::class, 'index']);
