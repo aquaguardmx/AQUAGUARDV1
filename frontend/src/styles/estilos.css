@@ -90,7 +90,8 @@
 .card-content p {
     margin-bottom: 20px;
     color: #555;
-    ;
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 .read-more {
@@ -200,6 +201,21 @@
     --text-color: #333333;
     --light-text: #f8f9fa;
     --border-color: #dee2e6;
+    /* espacio reservado para el header fijo; se actualizará por JS si es necesario */
+    --header-offset: 100px;
+}
+
+/* Asegura que cuando navegues a un ancla, el contenido quede visible debajo del header fijo */
+html {
+    scroll-padding-top: var(--header-offset);
+}
+
+/* Alternativa por si el navegador no soporta scroll-padding-top para elementos anclados */
+.content-article h2,
+.content-article h3,
+.content-article h4,
+.content-section h2 {
+    scroll-margin-top: calc(var(--header-offset) + 12px);
 }
 
 * {
@@ -799,6 +815,8 @@ header.transparent {
 .content-section p {
     margin-bottom: 20px;
     line-height: 1.8;
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 /* Lista de contaminantes de el apartado educativo  */
@@ -1688,5 +1706,209 @@ button:hover {
 
     .content-section h2 {
         font-size: 22px;
+    }
+}
+
+/* ==========================
+   Estilos específicos para páginas de curso / artículos largos
+   ========================== */
+
+.content-article {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfeff 100%);
+    padding: 36px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(3, 37, 76, 0.06);
+    line-height: 1.8;
+    color: var(--text-color);
+    margin: 30px 0 60px;
+    overflow: hidden;
+}
+
+.content-article .lead {
+    font-size: 1.15rem;
+    color: #444f5a;
+    margin-bottom: 18px;
+}
+
+.content-article h2 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-top: 28px;
+    margin-bottom: 12px;
+}
+
+.content-article h3 {
+    font-size: 1.25rem;
+    color: var(--dark-blue);
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.content-article p {
+    font-size: 1rem;
+    color: #394149;
+    margin-bottom: 16px;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+.content-article img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(3, 37, 76, 0.06);
+    margin: 18px auto;
+}
+
+.content-article .figure {
+    text-align: center;
+    margin: 18px 0;
+}
+
+.content-article .figcaption {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 8px;
+}
+
+.pull-quote {
+    border-left: 4px solid var(--secondary-color);
+    background: linear-gradient(90deg, rgba(144, 224, 239, 0.06), rgba(0, 180, 216, 0.02));
+    padding: 16px 20px;
+    font-style: italic;
+    color: #135c75;
+    margin: 22px 0;
+    border-radius: 8px;
+}
+
+.content-article ul,
+.content-article ol {
+    margin-left: 1.05rem;
+    margin-bottom: 16px;
+}
+
+.tag-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.tag-badges .tag {
+    background: linear-gradient(90deg, rgba(0, 180, 216, 0.08), rgba(0, 119, 182, 0.03));
+    color: var(--primary-color);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid rgba(0, 180, 216, 0.09);
+}
+
+/* Tabla de contenidos lateral (si se usa) */
+.toc-wrapper {
+    position: sticky;
+    top: 100px;
+    padding: 18px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(3, 37, 76, 0.06);
+    border: 1px solid var(--border-color);
+}
+
+.toc-wrapper ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.toc-wrapper a {
+    display: block;
+    padding: 8px 6px;
+    color: #335a66;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.18s, color 0.18s;
+}
+
+.toc-wrapper a:hover {
+    background: rgba(0, 180, 216, 0.06);
+    color: var(--primary-color);
+}
+
+/* Responsive adjustments for article layout */
+@media (min-width: 1000px) {
+    .article-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 30px;
+        align-items: start;
+    }
+}
+
+@media (max-width: 999px) {
+    .toc-wrapper {
+        position: relative;
+        top: 0;
+        margin-bottom: 18px;
+    }
+
+    .content-article {
+        padding: 24px;
+    }
+}
+
+/* Small helpers */
+.caption {
+    font-size: 0.9rem;
+    color: #6b7880;
+}
+
+.article-meta {
+    font-size: 0.95rem;
+    color: #6b7780;
+    margin-bottom: 10px;
+}
+
+/* Estilos para título principal del artículo y botón 'volver' */
+.article-title {
+    font-size: 2.2rem;
+    color: var(--dark-blue);
+    margin-bottom: 12px;
+    letter-spacing: -0.4px;
+    line-height: 1.08;
+}
+
+.back-wrap {
+    margin-top: 20px;
+}
+
+.btn-back {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(0, 119, 182, 0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 119, 182, 0.18);
+}
+
+.btn-back:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 700px) {
+    .article-title {
+        font-size: 1.6rem;
+    }
+
+    .btn-back {
+        padding: 8px 14px;
     }
 }
