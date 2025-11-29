@@ -152,6 +152,10 @@ Route::get('/progreso-lecciones/usuario/{usuario_id}/curso/{curso_id}', [Progres
 Route::get('/progreso-lecciones/usuario/{usuario_id}/leccion/{leccion_id}', [ProgresoLeccionController::class, 'show']);
 
 Route::get('/quizzes', [QuizController::class, 'index']);
+Route::post('/quizzes', [QuizController::class, 'store']);
+Route::get('/quizzes/{id}', [QuizController::class, 'show']);
+Route::put('/quizzes/{id}', [QuizController::class, 'update']);
+Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']);
 
 // API PARA ESCUELAS
 Route::get('/escuelas', [SchoolController::class, 'index']);

@@ -79,9 +79,41 @@ async function cargarInfoCurso(cursoId: string) {
   }
 }
 
+// Función para obtener las lecciones del curso y determinar navegación
+async function cargarLeccionesCurso(cursoId: string) {
+  try {
+    const apiUrl = `${API_URL}/api/cursos/${cursoId}/lecciones`;
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar lecciones: ${response.status}`);
+    }
+
+    const lecciones = await response.json();
+    return lecciones;
+  } catch (error) {
+    console.error("Error cargando lecciones del curso:", error);
+    return [];
+  }
+}
+
+// Función para verificar si hay quiz disponible
+async function verificarQuizDisponible(cursoId: string) {
+  try {
+    const apiUrl = `${API_URL}/api/cursos/${cursoId}/quiz`;
+    const response = await fetch(apiUrl);
+    return response.ok; // Si existe un quiz para este curso
+  } catch (error) {
+    console.error("Error verificando quiz:", error);
+    return false;
+  }
+}
+
 // Cargar datos
 let leccionActual = await cargarLeccionActual(leccionId!);
 let infoCurso = await cargarInfoCurso(cursoId!);
+let leccionesCurso = await cargarLeccionesCurso(cursoId!);
+let hayQuizDisponible = await verificarQuizDisponible(cursoId!);
 
 // Datos para la navegación
 const curso = {
@@ -89,15 +121,35 @@ const curso = {
   titulo: infoCurso.titulo,
 };
 
-// Definir interfaz para navegación
-interface LeccionNavegacion {
-  id_leccion: string;
-  titulo?: string;
-}
-
-// Encontrar lección anterior y siguiente (esto necesitaría una API adicional o lógica más compleja)
+// Encontrar lección anterior y siguiente
 let leccionAnterior: any = null;
 let leccionSiguiente: any = null;
+let esUltimaLeccion = false;
+
+if (leccionesCurso.length > 0) {
+  // Ordenar lecciones por algún criterio (posición, orden, etc.)
+  const leccionesOrdenadas = leccionesCurso.sort(
+    (a: any, b: any) => (a.orden || 0) - (b.orden || 0),
+  );
+
+  const indiceActual = leccionesOrdenadas.findIndex(
+    (leccion: any) => leccion.id_leccion === leccionId,
+  );
+
+  if (indiceActual !== -1) {
+    // Lección anterior
+    if (indiceActual > 0) {
+      leccionAnterior = leccionesOrdenadas[indiceActual - 1];
+    }
+
+    // Lección siguiente
+    if (indiceActual < leccionesOrdenadas.length - 1) {
+      leccionSiguiente = leccionesOrdenadas[indiceActual + 1];
+    } else {
+      esUltimaLeccion = true;
+    }
+  }
+}
 
 // Función para extraer ID de YouTube
 function extractYouTubeId(url: string | null): string {
@@ -365,7 +417,9 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
                         id="btn-completar"
                         class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        Completar Lección
+                        {esUltimaLeccion && hayQuizDisponible
+                          ? "Ir al Quiz"
+                          : "Completar Lección"}
                       </button>
                     )
                   }
@@ -381,10 +435,19 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
   <Footer />
 </Layout>
 
-<script define:vars={{ leccionActual, cursoId }}>
+<script
+  define:vars={{
+    leccionActual,
+    cursoId,
+    API_URL,
+    esUltimaLeccion,
+    hayQuizDisponible,
+    leccionSiguiente,
+  }}
+>
   document.addEventListener("DOMContentLoaded", async () => {
     const btnCompletar = document.getElementById("btn-completar");
-    const messageDiv = document.getElementById("message-container"); // Asegúrate de tener un contenedor para mensajes si lo deseas
+    const messageDiv = document.getElementById("message-container");
 
     // Obtener token y usuario
     const authToken =
@@ -392,12 +455,26 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
     const userDataRaw =
       localStorage.getItem("userData") || sessionStorage.getItem("userData");
     const userData = userDataRaw ? JSON.parse(userDataRaw) : null;
-    const userId = userData?.id || userData?.id_usuario; // Ajustar según tu estructura de usuario
+    const userId = userData?.id || userData?.id_usuario;
 
     if (!authToken || !userId) {
       console.warn("Usuario no autenticado");
       if (btnCompletar) btnCompletar.style.display = "none";
       return;
+    }
+
+    // Función para redirigir después de completar
+    function redirigirDespuesDeCompletar() {
+      if (esUltimaLeccion && hayQuizDisponible) {
+        // Si es la última lección y hay quiz, ir al quiz
+        window.location.href = `/frontend/src/pages/curso/${cursoId}/quiz`;
+      } else if (leccionSiguiente) {
+        // Si hay siguiente lección, ir a ella
+        window.location.href = `/curso/${cursoId}/leccion/${leccionSiguiente.id_leccion}`;
+      } else {
+        // Si no hay siguiente lección ni quiz, volver al curso
+        window.location.href = `/curso/${cursoId}`;
+      }
     }
 
     // Función para verificar si la lección ya está completada
@@ -426,10 +503,21 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
 
     function marcarBotonComoCompletado() {
       if (!btnCompletar) return;
-      btnCompletar.textContent = "Lección Completada";
-      btnCompletar.classList.remove("bg-green-600", "hover:bg-green-700");
-      btnCompletar.classList.add("bg-gray-400", "cursor-not-allowed");
-      btnCompletar.disabled = true;
+
+      if (esUltimaLeccion && hayQuizDisponible) {
+        btnCompletar.textContent = "Ir al Quiz";
+        btnCompletar.classList.remove("bg-green-600", "hover:bg-green-700");
+        btnCompletar.classList.add("bg-blue-600", "hover:bg-blue-700");
+      } else if (leccionSiguiente) {
+        btnCompletar.textContent = "Siguiente Lección";
+        btnCompletar.classList.remove("bg-green-600", "hover:bg-green-700");
+        btnCompletar.classList.add("bg-blue-600", "hover:bg-blue-700");
+      } else {
+        btnCompletar.textContent = "Lección Completada";
+        btnCompletar.classList.remove("bg-green-600", "hover:bg-green-700");
+        btnCompletar.classList.add("bg-gray-400", "cursor-not-allowed");
+        btnCompletar.disabled = true;
+      }
     }
 
     // Verificar progreso al cargar
@@ -454,17 +542,17 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
             body: JSON.stringify({
               usuario_id: userId,
               leccion_id: leccionActual.id_leccion,
-              fecha_completado: new Date()
-                .toISOString()
-                .slice(0, 19)
-                .replace("T", " "),
             }),
           });
 
           if (response.ok) {
-            marcarBotonComoCompletado();
-            // Opcional: Mostrar notificación de éxito
+            // Mostrar mensaje de éxito
             alert("¡Lección completada con éxito!");
+
+            // Redirigir después de un breve delay
+            setTimeout(() => {
+              redirigirDespuesDeCompletar();
+            }, 1000);
           } else {
             const errorData = await response.text();
             console.error("Error response:", errorData);
@@ -475,7 +563,7 @@ const youtubeId = extractYouTubeId(leccionActual.url_contenido);
         } catch (error) {
           console.error("Error completo:", error);
           alert(`Hubo un error al guardar el progreso: ${error.message}`);
-          btnCompletar.textContent = "Completar Lección";
+          btnCompletar.textContent = originalText;
           btnCompletar.disabled = false;
         }
       });

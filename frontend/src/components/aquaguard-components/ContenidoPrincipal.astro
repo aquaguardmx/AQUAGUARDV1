@@ -3,13 +3,15 @@
 
 const { id } = Astro.params;
 
-
 interface Leccion {
+  id_leccion: number;
   tipo: string;
   completado?: boolean;
+  bloqueado?: boolean;
 }
 
 interface Modulo {
+  id_modulo: number;
   completado: boolean;
   lecciones: Leccion[];
 }
@@ -18,6 +20,24 @@ interface Curso {
   id_curso: string;
   descripcion: string;
   modulos: Modulo[];
+  progreso_total?: number;
+  estadisticas?: {
+    leccionesCompletadas: number;
+    tieneProgreso: boolean;
+    leccionesRestantes: number;
+  };
+  navegacion?: {
+    siguienteLeccion?: {
+      id_leccion: number;
+      id_modulo: number;
+      titulo: string;
+    };
+    primeraLeccion?: {
+      id_leccion: number;
+      id_modulo: number;
+      titulo: string;
+    };
+  };
 }
 
 const { curso }: { curso?: Curso } = Astro.props;
@@ -36,6 +56,33 @@ const quiz = modulosValidos.length >= 4
 const totalLecciones = modulosValidos.flatMap((m: Modulo) => m.lecciones || []);
 const leccionesNormales = totalLecciones.filter((l: Leccion) => l.tipo !== 'quiz');
 const totalQuizzes = totalLecciones.filter((l: Leccion) => l.tipo === 'quiz');
+
+// Lógica para determinar el botón de inicio
+const tieneProgreso = curso?.estadisticas?.tieneProgreso || false;
+const cursoCompletado = curso?.estadisticas?.leccionesRestantes === 0;
+const siguienteLeccion = curso?.navegacion?.siguienteLeccion;
+const primeraLeccion = curso?.navegacion?.primeraLeccion;
+
+// Determinar la lección a la que debe redirigir el botón
+let leccionDestino = primeraLeccion?.id_leccion || 1;
+let textoBoton = "Comenzar Curso";
+let estiloBoton = "bg-white text-blue-600 hover:bg-blue-50 border border-blue-200";
+let mostrarIconoPlay = true;
+let mostrarIconoFlecha = false;
+let mostrarIconoCheck = false;
+
+if (cursoCompletado) {
+  textoBoton = "¡Curso Completado!";
+  estiloBoton = "bg-green-500 text-white hover:bg-green-600 cursor-default";
+  mostrarIconoPlay = false;
+  mostrarIconoCheck = true;
+} else if (tieneProgreso) {
+  textoBoton = "Continuar Curso";
+  estiloBoton = "bg-blue-600 text-white hover:bg-blue-700";
+  mostrarIconoPlay = false;
+  mostrarIconoFlecha = true;
+  leccionDestino = siguienteLeccion?.id_leccion || primeraLeccion?.id_leccion || 1;
+}
 ---
 
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
@@ -48,7 +95,7 @@ const totalQuizzes = totalLecciones.filter((l: Leccion) => l.tipo === 'quiz');
     </div>
     
     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-      Bienvenido al curso
+      {cursoCompletado ? '¡Curso Completado!' : 'Bienvenido al curso'}
     </h2>
     
     <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -77,6 +124,31 @@ const totalQuizzes = totalLecciones.filter((l: Leccion) => l.tipo === 'quiz');
         <div class="text-gray-600 dark:text-gray-300 font-medium">Evaluaciones</div>
       </div>
     </div>
+
+    <!-- Estado del Progreso -->
+    {curso?.estadisticas && (
+      <div class="p-6 bg-gray-50 dark:bg-gray-700/20 rounded-2xl border border-gray-200 dark:border-gray-600 mb-6 max-w-2xl mx-auto">
+        <div class="flex items-center justify-between">
+          <div class="text-left">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Tu Progreso
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              {curso.estadisticas.leccionesCompletadas} de {leccionesNormales.length} lecciones completadas
+              {curso.estadisticas.leccionesRestantes > 0 && 
+                ` - ${curso.estadisticas.leccionesRestantes} restantes`
+              }
+            </p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {curso.progreso_total || 0}%
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Completado</div>
+          </div>
+        </div>
+      </div>
+    )}
 
     <!-- Estado del Quiz -->
     {quiz && (
@@ -123,18 +195,40 @@ const totalQuizzes = totalLecciones.filter((l: Leccion) => l.tipo === 'quiz');
       </div>
     )}
 
-    <!-- Botón de inicio -->
+    <!-- Botones de acción -->
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a 
-        href={`/curso/${id}/leccion/1`}
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-        </svg>
-        Comenzar Curso
-      </a>
+      {cursoCompletado ? (
+        <!-- Botón cuando el curso está completado -->
+        <button class={`${estiloBoton} font-semibold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center`}>
+          {mostrarIconoCheck && (
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          )}
+          {textoBoton}
+        </button>
+      ) : (
+        <!-- Botón principal de acción -->
+        <a 
+          href={`/curso/${id}/leccion/${leccionDestino}`}
+          class={`${estiloBoton} font-semibold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center`}
+        >
+          {mostrarIconoPlay && (
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          )}
+          {mostrarIconoFlecha && (
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          )}
+          {textoBoton}
+        </a>
+      )}
       
+      <!-- Botón secundario (siempre disponible) -->
       <button class="border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-blue-500 hover:text-blue-500 font-semibold py-4 px-8 rounded-xl transition-all flex items-center gap-2 justify-center">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"/>
