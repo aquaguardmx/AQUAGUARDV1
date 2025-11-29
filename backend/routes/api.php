@@ -126,6 +126,7 @@ Route::put('/cursos/{id}', [CourseController::class, 'update']);
 // API PARA CURSOS INSCRITOS
 Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
 Route::get('/cursos-inscritos/usuario/{usuarioId}', [CursoInscritoUsuarioController::class, 'getCursosPorUsuario']);
+Route::get('/cursos-inscritos/usuario/{usuarioId}/curso/{cursoId}', [CursoInscritoUsuarioController::class, 'verificarInscripcion']);
 Route::post('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'store']);
 
 Route::post('/modulos', [ModuleController::class, 'store']);

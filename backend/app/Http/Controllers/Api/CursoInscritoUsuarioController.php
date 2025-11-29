@@ -114,4 +114,15 @@ class CursoInscritoUsuarioController extends Controller
 
         return response()->json($inscripciones, 200);
     }
+
+    public function verificarInscripcion($usuarioId, $cursoId)
+    {
+        $inscripcion = CursoInscritoUsuario::where('usuario_id', $usuarioId)
+            ->where('curso_id', $cursoId)
+            ->exists();
+
+        return response()->json([
+            'inscrito' => $inscripcion,
+        ]);
+    }
 }
