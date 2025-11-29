@@ -123,7 +123,7 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
-// API PARA CURSOS INSCRITOS
+// API PARA CURSOS ISCRITOS
 Route::get('/cursos-inscritos', [CursoInscritoUsuarioController::class, 'index']);
 Route::get('/cursos-inscritos/usuario/{usuarioId}', [CursoInscritoUsuarioController::class, 'getCursosPorUsuario']);
 Route::get('/cursos-inscritos/usuario/{usuarioId}/curso/{cursoId}', [CursoInscritoUsuarioController::class, 'verificarInscripcion']);

@@ -10,23 +10,17 @@ const { id } = Astro.params;
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
 const apiUrl = `${API_URL}/api/cursos/${id}`;
 
-// 3. Declara variables para los datos y posibles errores
 let curso = null;
 let error = null;
 
 try {
     const response = await fetch(apiUrl);
-
-    // Si la respuesta no es OK (ej. error 404 o 500), lanza un error
     if (!response.ok) {
         throw new Error(
             `Error ${response.status}: No se pudo encontrar el curso.`,
         );
     }
-
-    // Convierte la respuesta a JSON
     curso = await response.json();
-
     console.log(curso.categoria.nombre);
 } catch (e) {
     console.error(e);
@@ -1401,7 +1395,7 @@ try {
             <div class="text-center mt-12">
                 <p class="text-gray-600 text-lg mb-4">¿Tienes más preguntas?</p>
                 <button
-                    class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                    class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-md"
                 >
                     <i class="fas fa-envelope mr-2"></i>
                     Contáctanos
@@ -1559,10 +1553,13 @@ try {
     }
 </style>
 
-<script lang="ts">
-    const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+<script>
+    const API_URL = import.meta.env.PUBLIC_API_URL;
+
+    console.log("API_URL", API_URL);
+
     // ==========================================================
-    // 1. OBTENER DATOS DE SESIÓN (Tu lógica)
+    // 1. OBTENER DATOS DE SESIÓN
     // ==========================================================
     const userDataRaw =
         localStorage.getItem("userData") || sessionStorage.getItem("userData");
@@ -1590,21 +1587,18 @@ try {
             return;
         }
 
-        const { cursoId } = botonInscribir.dataset;
+        const cursoId = botonInscribir.dataset.cursoId;
 
         // ==========================================================
         // 3. COMPROBAR SI EL USUARIO ESTÁ LOGUEADO
         // ==========================================================
         if (!user || !authToken) {
-            // Caso 1: Usuario NO logueado
             console.log("Usuario no logueado.");
             botonInscribir.innerHTML =
                 '<i class="fas fa-sign-in-alt mr-2"></i> Inicia sesión para inscribirte';
             botonInscribir.disabled = true;
-            return; // Detenemos la ejecución
+            return;
         }
-
-        // --- Si llegamos aquí, el usuario SÍ está logueado ---
 
         const usuarioId = user.id_usuario;
 
@@ -1621,7 +1615,6 @@ try {
         // FUNCIÓN A: Lógica para INSCRIBIR (POST)
         // ==========================================================
         const inscribirUsuario = async () => {
-            // ... (Tu función 'inscribirUsuario' está perfecta, no necesita cambios)
             botonInscribir.disabled = true;
             botonInscribir.innerHTML =
                 '<i class="fas fa-spinner fa-spin mr-2"></i> Inscribiendo...';
@@ -1675,14 +1668,34 @@ try {
         };
 
         // ==========================================================
-        // FUNCIÓN B: Lógica para VERIFICAR (GET) *** CORREGIDA ***
+        // FUNCIÓN B: Lógica para VERIFICAR INSCRIPCIÓN - CORREGIDA
         // ==========================================================
         const verificarInscripcion = async () => {
-            // ⚡️ SOLUCIÓN 1: Definimos la "forma" del objeto que esperamos.
-            // Basado en tu código, necesitas al menos 'id_curso'.
-
             try {
-                const response = await fetch(
+                // PRIMERO: Verificar directamente si este curso está inscrito
+                const responseDirecta = await fetch(
+                    `${API_URL}/api/cursos-inscritos/verificar/${usuarioId}/${cursoId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    },
+                );
+
+                if (responseDirecta.ok) {
+                    const data = await responseDirecta.json();
+                    console.log("Verificación directa:", data);
+                    return data.inscrito === true;
+                }
+
+                // SEGUNDO: Si la verificación directa falla, intentar con la lista de cursos
+                console.log(
+                    "Verificación directa falló, intentando con lista de cursos...",
+                );
+
+                const responseLista = await fetch(
                     `${API_URL}/api/cursos-por-usuario/${usuarioId}`,
                     {
                         method: "GET",
@@ -1693,25 +1706,57 @@ try {
                     },
                 );
 
-                if (!response.ok) {
+                if (!responseLista.ok) {
                     throw new Error(
                         "No se pudo verificar el estado de inscripción",
                     );
                 }
 
-                // ⚡️ SOLUCIÓN 2: Le decimos a TypeScript que el resultado de .json()
-                // será un array de 'CursoInscrito'.
-                const cursosInscritos = await response.json();
+                const cursosInscritos = await responseLista.json();
+                console.log("Cursos inscritos del usuario:", cursosInscritos);
 
-                // ✅ ¡ARREGLADO! Ahora TypeScript sabe que 'curso' es de tipo 'CursoInscrito'
-                // y que 'curso.id_curso' existe.
+                // Buscar si el curso actual está en la lista
                 const estaInscrito = cursosInscritos.some(
-                    (curso) => String(curso.id_curso) === cursoId,
+                    (curso) => String(curso.id_curso) === String(cursoId),
                 );
 
+                console.log(
+                    `¿Está inscrito en curso ${cursoId}?`,
+                    estaInscrito,
+                );
                 return estaInscrito;
             } catch (error) {
                 console.error("Error al verificar inscripción:", error);
+
+                // TERCERO: Como último recurso, intentar con una API alternativa
+                try {
+                    console.log("Intentando verificación alternativa...");
+                    const responseAlt = await fetch(
+                        `${API_URL}/api/usuarios/${usuarioId}/cursos-inscritos`,
+                        {
+                            method: "GET",
+                            headers: {
+                                Accept: "application/json",
+                                Authorization: `Bearer ${authToken}`,
+                            },
+                        },
+                    );
+
+                    if (responseAlt.ok) {
+                        const cursosAlt = await responseAlt.json();
+                        const estaInscritoAlt = cursosAlt.some(
+                            (curso) =>
+                                String(curso.id_curso) === String(cursoId),
+                        );
+                        return estaInscritoAlt;
+                    }
+                } catch (altError) {
+                    console.error(
+                        "Error en verificación alternativa:",
+                        altError,
+                    );
+                }
+
                 return false;
             }
         };
@@ -1720,7 +1765,6 @@ try {
         // FUNCIÓN C: Mostrar botón "Entrar al curso"
         // ==========================================================
         const mostrarBotonEntrarAlCurso = () => {
-            // ... (Tu función 'mostrarBotonEntrarAlCurso' está perfecta)
             botonInscribir.innerHTML =
                 '<i class="fas fa-play-circle mr-2"></i> Entrar al curso';
             botonInscribir.classList.remove(
@@ -1734,6 +1778,7 @@ try {
                 "hover:bg-green-700",
             );
 
+            // Cambiar el comportamiento del botón para redirigir al curso
             botonInscribir.onclick = () => {
                 window.location.href = `/curso/${cursoId}`;
             };
@@ -1745,24 +1790,32 @@ try {
         // FUNCIÓN D: EJECUCIÓN PRINCIPAL (Inicializar el botón)
         // ==========================================================
         const inicializarBoton = async () => {
-            // ... (Tu función 'inicializarBoton' está perfecta)
             botonInscribir.disabled = true;
             botonInscribir.innerHTML =
                 '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
 
-            const estaInscrito = await verificarInscripcion();
+            try {
+                const estaInscrito = await verificarInscripcion();
+                console.log("Resultado de verificación:", estaInscrito);
 
-            if (estaInscrito) {
-                mostrarBotonEntrarAlCurso();
-            } else {
+                if (estaInscrito) {
+                    mostrarBotonEntrarAlCurso();
+                } else {
+                    botonInscribir.disabled = false;
+                    botonInscribir.innerHTML =
+                        '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
+                    botonInscribir.classList.add(
+                        "bg-white",
+                        "text-blue-600",
+                        "hover:bg-gray-50",
+                    );
+                    botonInscribir.addEventListener("click", inscribirUsuario);
+                }
+            } catch (error) {
+                console.error("Error en inicialización:", error);
                 botonInscribir.disabled = false;
                 botonInscribir.innerHTML =
                     '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
-                botonInscribir.classList.add(
-                    "bg-white",
-                    "text-blue-600",
-                    "hover:bg-gray-50",
-                );
                 botonInscribir.addEventListener("click", inscribirUsuario);
             }
         };
