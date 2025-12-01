@@ -1406,87 +1406,229 @@ try {
 
     <Footer />
 
-    <script is:inline>
-        function setupPageInteractions() {
-            console.log("--- ✅ [Astro] setupPageInteractions() EJECUTADO ---");
+    <script>
+        const API_URL = import.meta.env.PUBLIC_API_URL;
 
-            // Lógica de Pestañas
-            const tabButtons = document.querySelectorAll(".tab-button");
-            const tabContents = document.querySelectorAll(".tab-content");
+        // ==========================================================
+        // 1. OBTENER DATOS DE SESIÓN
+        // ==========================================================
+        const userDataRaw =
+            localStorage.getItem("userData") ||
+            sessionStorage.getItem("userData");
+        const authToken =
+            localStorage.getItem("authToken") ||
+            sessionStorage.getItem("authToken");
 
-            if (tabButtons.length > 0 && tabContents.length > 0) {
-                const switchTab = (tabId) => {
-                    console.log(`[Tabs] Cambiando a pestaña: ${tabId}`);
-
-                    // Remover clase activa de todos
-                    tabButtons.forEach((button) => {
-                        button.classList.remove(
-                            "border-blue-600",
-                            "text-blue-600",
-                            "bg-blue-50",
-                        );
-                        button.classList.add(
-                            "text-gray-500",
-                            "hover:text-gray-700",
-                        );
-                    });
-                    tabContents.forEach((content) => {
-                        content.classList.remove("active");
-                    });
-
-                    // Activar la pestaña seleccionada
-                    const activeButton = document.getElementById(
-                        `tab-${tabId}`,
-                    );
-                    const activeContent = document.getElementById(
-                        `content-${tabId}`,
-                    );
-
-                    if (activeButton && activeContent) {
-                        activeButton.classList.remove(
-                            "text-gray-500",
-                            "hover:text-gray-700",
-                        );
-                        activeButton.classList.add(
-                            "border-blue-600",
-                            "text-blue-600",
-                            "bg-blue-50",
-                        );
-                        activeContent.classList.add("active");
-                    }
-                };
-
-                tabButtons.forEach((button) => {
-                    button.addEventListener("click", function () {
-                        const tabId = this.id.replace("tab-", "");
-                        switchTab(tabId);
-                    });
-                });
-            }
-
-            // Lógica de Preguntas Frecuentes
-            const faqQuestions = document.querySelectorAll(".faq-question");
-
-            if (faqQuestions.length > 0) {
-                faqQuestions.forEach((question) => {
-                    question.addEventListener("click", function () {
-                        const answer = this.nextElementSibling;
-                        const icon = this.querySelector("i");
-
-                        if (answer && answer.classList.contains("hidden")) {
-                            answer.classList.remove("hidden");
-                            if (icon) icon.classList.add("rotate-180");
-                        } else if (answer) {
-                            answer.classList.add("hidden");
-                            if (icon) icon.classList.remove("rotate-180");
-                        }
-                    });
-                });
-            }
+        let user = null;
+        try {
+            user = userDataRaw ? JSON.parse(userDataRaw) : null;
+        } catch (err) {
+            console.error("Error parseando userData:", err);
         }
 
-        // Escuchamos el evento 'astro:page-load'
-        document.addEventListener("astro:page-load", setupPageInteractions);
+        // ==========================================================
+        // 2. ESPERAR A QUE CARGUE EL HTML
+        // ==========================================================
+        document.addEventListener("DOMContentLoaded", () => {
+            const botonInscribir = document.getElementById("btn-inscribir");
+
+            if (!botonInscribir) {
+                console.error(
+                    "Error: No se pudo encontrar el botón #btn-inscribir",
+                );
+                return;
+            }
+
+            const cursoId = botonInscribir.dataset.cursoId;
+
+            // ==========================================================
+            // 3. COMPROBAR SI EL USUARIO ESTÁ LOGUEADO
+            // ==========================================================
+            if (!user || !authToken) {
+                console.log("Usuario no logueado.");
+                botonInscribir.innerHTML =
+                    '<i class="fas fa-sign-in-alt mr-2"></i> Inicia sesión para inscribirte';
+                botonInscribir.disabled = true;
+
+                // Opcional: Hacer que el botón redirija al login
+                botonInscribir.addEventListener("click", () => {
+                    window.location.href = "/login";
+                });
+                return;
+            }
+
+            const usuarioId = user.id_usuario;
+
+            if (!usuarioId) {
+                console.error(
+                    "No se pudo encontrar 'id_usuario' en el objeto 'user' del localStorage.",
+                );
+                botonInscribir.textContent = "Error de sesión";
+                botonInscribir.disabled = true;
+                return;
+            }
+
+            // ==========================================================
+            // FUNCIÓN A: Inscribir usuario (POST)
+            // ==========================================================
+            const inscribirUsuario = async () => {
+                botonInscribir.disabled = true;
+                botonInscribir.innerHTML =
+                    '<i class="fas fa-spinner fa-spin mr-2"></i> Inscribiendo...';
+
+                try {
+                    const response = await fetch(
+                        `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}/inscribir/${cursoId}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
+                                Authorization: `Bearer ${authToken}`,
+                            },
+                        },
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        if (data.inscrito) {
+                            // Ya está inscrito
+                            mostrarBotonEntrarAlCurso();
+                            return;
+                        }
+                        throw new Error(
+                            data.message || `Error ${response.status}`,
+                        );
+                    }
+
+                    console.log("Inscripción exitosa:", data);
+
+                    if (data.inscrito) {
+                        mostrarBotonEntrarAlCurso();
+                    }
+                } catch (error) {
+                    console.error("Error en la inscripción:", error);
+                    alert(`Hubo un error: ${error.message || error}`);
+
+                    // Revertir el botón
+                    botonInscribir.disabled = false;
+                    botonInscribir.innerHTML =
+                        '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
+                }
+            };
+
+            // ==========================================================
+            // FUNCIÓN B: Verificar inscripción (GET)
+            // ==========================================================
+            const verificarInscripcion = async () => {
+                try {
+                    const response = await fetch(
+                        `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}/curso/${cursoId}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                Accept: "application/json",
+                                Authorization: `Bearer ${authToken}`,
+                            },
+                        },
+                    );
+
+                    if (response.status === 404) {
+                        return false;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Error ${response.status}: ${response.statusText}`,
+                        );
+                    }
+
+                    const data = await response.json();
+                    return data.inscrito === true;
+                } catch (error) {
+                    console.error("Error al verificar inscripción:", error);
+                    return false;
+                }
+            };
+
+            // ==========================================================
+            // FUNCIÓN C: Mostrar botón "Entrar al curso"
+            // ==========================================================
+            const mostrarBotonEntrarAlCurso = () => {
+                botonInscribir.innerHTML =
+                    '<i class="fas fa-play-circle mr-2"></i> Entrar al curso';
+                botonInscribir.classList.remove(
+                    "bg-white",
+                    "text-blue-600",
+                    "hover:bg-gray-50",
+                );
+                botonInscribir.classList.add(
+                    "bg-green-600",
+                    "text-white",
+                    "hover:bg-green-700",
+                );
+
+                // Cambiar comportamiento para redirigir al curso
+                botonInscribir.onclick = () => {
+                    window.location.href = `/curso/${cursoId}`;
+                };
+
+                botonInscribir.disabled = false;
+            };
+
+            // ==========================================================
+            // FUNCIÓN D: Mostrar botón "Inscribirse"
+            // ==========================================================
+            const mostrarBotonInscribirse = () => {
+                botonInscribir.innerHTML =
+                    '<i class="fas fa-shopping-cart mr-2"></i> Inscribirse ahora';
+                botonInscribir.classList.remove(
+                    "bg-green-600",
+                    "text-white",
+                    "hover:bg-green-700",
+                );
+                botonInscribir.classList.add(
+                    "bg-white",
+                    "text-blue-600",
+                    "hover:bg-gray-50",
+                );
+
+                botonInscribir.onclick = inscribirUsuario;
+                botonInscribir.disabled = false;
+            };
+
+            // ==========================================================
+            // FUNCIÓN E: Inicializar el botón
+            // ==========================================================
+            const inicializarBoton = async () => {
+                botonInscribir.disabled = true;
+                botonInscribir.innerHTML =
+                    '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+
+                try {
+                    const estaInscrito = await verificarInscripcion();
+                    console.log(
+                        `Usuario ${usuarioId} inscrito en curso ${cursoId}:`,
+                        estaInscrito,
+                    );
+
+                    if (estaInscrito) {
+                        mostrarBotonEntrarAlCurso();
+                    } else {
+                        mostrarBotonInscribirse();
+                    }
+                } catch (error) {
+                    console.error("Error en inicialización:", error);
+                    mostrarBotonInscribirse();
+                }
+            };
+
+            // ==========================================================
+            // 4. EJECUTAR LA INICIALIZACIÓN
+            // ==========================================================
+            inicializarBoton();
+        });
     </script>
 </Layout>
 
@@ -1552,275 +1694,3 @@ try {
         -webkit-text-fill-color: transparent;
     }
 </style>
-
-<script is:inline>
-    const API_URL = import.meta.env.PUBLIC_API_URL;
-
-    console.log("API_URL", API_URL);
-
-    // ==========================================================
-    // 1. OBTENER DATOS DE SESIÓN
-    // ==========================================================
-    const userDataRaw =
-        localStorage.getItem("userData") || sessionStorage.getItem("userData");
-    const authToken =
-        localStorage.getItem("authToken") ||
-        sessionStorage.getItem("authToken");
-
-    let user = null;
-    try {
-        user = userDataRaw ? JSON.parse(userDataRaw) : null;
-    } catch (err) {
-        console.error("Error parseando userData:", err);
-    }
-
-    // ==========================================================
-    // 2. ESPERAR A QUE CARGUE EL HTML
-    // ==========================================================
-    document.addEventListener("DOMContentLoaded", () => {
-        const botonInscribir = document.getElementById("btn-inscribir");
-
-        if (!botonInscribir) {
-            console.error(
-                "Error: No se pudo encontrar el botón #btn-inscribir",
-            );
-            return;
-        }
-
-        const cursoId = botonInscribir.dataset.cursoId;
-
-        // ==========================================================
-        // 3. COMPROBAR SI EL USUARIO ESTÁ LOGUEADO
-        // ==========================================================
-        if (!user || !authToken) {
-            console.log("Usuario no logueado.");
-            botonInscribir.innerHTML =
-                '<i class="fas fa-sign-in-alt mr-2"></i> Inicia sesión para inscribirte';
-            botonInscribir.disabled = true;
-            return;
-        }
-
-        const usuarioId = user.id_usuario;
-
-        if (!usuarioId) {
-            console.error(
-                "No se pudo encontrar 'id_usuario' en el objeto 'user' del localStorage.",
-            );
-            botonInscribir.textContent = "Error de sesión";
-            botonInscribir.disabled = true;
-            return;
-        }
-
-        // ==========================================================
-        // FUNCIÓN A: Lógica para INSCRIBIR (POST)
-        // ==========================================================
-        const inscribirUsuario = async () => {
-            botonInscribir.disabled = true;
-            botonInscribir.innerHTML =
-                '<i class="fas fa-spinner fa-spin mr-2"></i> Inscribiendo...';
-
-            try {
-                const body = JSON.stringify({
-                    usuario_id: usuarioId,
-                    curso_id: cursoId,
-                });
-
-                const response = await fetch(
-                    `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Accept: "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                        body: body,
-                    },
-                );
-
-                if (!response.ok) {
-                    let errorMessage = `Error ${response.status}: ${response.statusText}`;
-                    try {
-                        const errorData = await response.json();
-                        errorMessage =
-                            errorData.message || JSON.stringify(errorData);
-                    } catch (jsonError) {
-                        try {
-                            errorMessage = await response.text();
-                        } catch (textError) {}
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const data = await response.json();
-                console.log("Inscripción exitosa:", data);
-                alert("¡Inscripción exitosa!");
-
-                mostrarBotonEntrarAlCurso();
-            } catch (error) {
-                console.error("Error en la inscripción:", error);
-                alert(`Hubo un error: ${error}`);
-
-                botonInscribir.disabled = false;
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
-            }
-        };
-
-        // ==========================================================
-        // FUNCIÓN B: Lógica para VERIFICAR INSCRIPCIÓN - CORREGIDA
-        // ==========================================================
-        const verificarInscripcion = async () => {
-            try {
-                // PRIMERO: Verificar directamente si este curso está inscrito
-                const responseDirecta = await fetch(
-                    `https://aquaguardv1.onrender.com/api/cursos-inscritos/usuario/${usuarioId}/curso/${cursoId}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    },
-                );
-
-                if (responseDirecta.ok) {
-                    const data = await responseDirecta.json();
-                    console.log("Verificación directa:", data);
-                    return data.inscrito === true;
-                }
-
-                // SEGUNDO: Si la verificación directa falla, intentar con la lista de cursos
-                console.log(
-                    "Verificación directa falló, intentando con lista de cursos...",
-                );
-
-                const responseLista = await fetch(
-                    `${API_URL}/api/cursos-por-usuario/${usuarioId}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            Authorization: `Bearer ${authToken}`,
-                        },
-                    },
-                );
-
-                if (!responseLista.ok) {
-                    throw new Error(
-                        "No se pudo verificar el estado de inscripción",
-                    );
-                }
-
-                const cursosInscritos = await responseLista.json();
-                console.log("Cursos inscritos del usuario:", cursosInscritos);
-
-                // Buscar si el curso actual está en la lista
-                const estaInscrito = cursosInscritos.some(
-                    (curso) => String(curso.id_curso) === String(cursoId),
-                );
-
-                console.log(
-                    `¿Está inscrito en curso ${cursoId}?`,
-                    estaInscrito,
-                );
-                return estaInscrito;
-            } catch (error) {
-                console.error("Error al verificar inscripción:", error);
-
-                // TERCERO: Como último recurso, intentar con una API alternativa
-                try {
-                    console.log("Intentando verificación alternativa...");
-                    const responseAlt = await fetch(
-                        `${API_URL}/api/usuarios/${usuarioId}/cursos-inscritos`,
-                        {
-                            method: "GET",
-                            headers: {
-                                Accept: "application/json",
-                                Authorization: `Bearer ${authToken}`,
-                            },
-                        },
-                    );
-
-                    if (responseAlt.ok) {
-                        const cursosAlt = await responseAlt.json();
-                        const estaInscritoAlt = cursosAlt.some(
-                            (curso) =>
-                                String(curso.id_curso) === String(cursoId),
-                        );
-                        return estaInscritoAlt;
-                    }
-                } catch (altError) {
-                    console.error(
-                        "Error en verificación alternativa:",
-                        altError,
-                    );
-                }
-
-                return false;
-            }
-        };
-
-        // ==========================================================
-        // FUNCIÓN C: Mostrar botón "Entrar al curso"
-        // ==========================================================
-        const mostrarBotonEntrarAlCurso = () => {
-            botonInscribir.innerHTML =
-                '<i class="fas fa-play-circle mr-2"></i> Entrar al curso';
-            botonInscribir.classList.remove(
-                "bg-white",
-                "text-blue-600",
-                "hover:bg-gray-50",
-            );
-            botonInscribir.classList.add(
-                "bg-green-600",
-                "text-white",
-                "hover:bg-green-700",
-            );
-
-            // Cambiar el comportamiento del botón para redirigir al curso
-            botonInscribir.onclick = () => {
-                window.location.href = `/curso/${cursoId}`;
-            };
-
-            botonInscribir.disabled = false;
-        };
-
-        // ==========================================================
-        // FUNCIÓN D: EJECUCIÓN PRINCIPAL (Inicializar el botón)
-        // ==========================================================
-        const inicializarBoton = async () => {
-            botonInscribir.disabled = true;
-            botonInscribir.innerHTML =
-                '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
-
-            try {
-                const estaInscrito = await verificarInscripcion();
-                console.log("Resultado de verificación:", estaInscrito);
-
-                if (estaInscrito) {
-                    mostrarBotonEntrarAlCurso();
-                } else {
-                    botonInscribir.disabled = false;
-                    botonInscribir.innerHTML =
-                        '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
-                    botonInscribir.classList.add(
-                        "bg-white",
-                        "text-blue-600",
-                        "hover:bg-gray-50",
-                    );
-                    botonInscribir.addEventListener("click", inscribirUsuario);
-                }
-            } catch (error) {
-                console.error("Error en inicialización:", error);
-                botonInscribir.disabled = false;
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
-                botonInscribir.addEventListener("click", inscribirUsuario);
-            }
-        };
-
-        // ¡Ejecutamos la lógica principal!
-        inicializarBoton();
-    });
-</script>
