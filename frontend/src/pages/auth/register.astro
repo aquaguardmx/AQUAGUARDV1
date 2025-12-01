@@ -1,285 +1,275 @@
+---
+import "../../styles/global.css";
+
+const API_URL = import.meta.env.PUBLIC_API_URL;
+---
+
 <!doctype html>
 <html lang="es">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Registro</title>
-        <!-- Importar CSS si es necesario -->
-        <style>
-            :root {
-                --primary-color: #2563eb;
-                --error-color: #dc2626;
-                --success-color: #16a34a;
-            }
-            .rg-spin {
-                animation: rg-spin 1s linear infinite;
-                vertical-align: middle;
-            }
-            @keyframes rg-spin {
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-        </style>
     </head>
     <body
         class="bg-gray-100 min-h-screen flex items-center justify-center px-4"
     >
-        <main class="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
-            <header class="flex items-center justify-center gap-3 mb-4">
-                <h1 class="text-2xl font-semibold text-gray-800">
+        <main
+            class="w-full max-w-md sm:bg-white/90 sm:backdrop-blur-sm sm:shadow-2xl sm:rounded-2xl p-4 sm:p-6 flex flex-col gap-4 sm:gap-3 justify-center"
+        >
+            <header class="flex items-center justify-center gap-3">
+                <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
                     Crear cuenta
                 </h1>
             </header>
 
-            <p class="text-center text-gray-600 mb-6">
+            <p class="text-center text-sm text-gray-500 max-w-[85%] mx-auto">
                 Regístrate para acceder al contenido y llevar un mejor registro
                 de tu progreso.
             </p>
 
-            <form id="registerForm" class="space-y-4">
-                <!-- Nombre -->
-                <div>
+            <form
+                id="registerForm"
+                class="flex flex-col gap-3 sm:gap-2"
+                aria-label="Formulario de registro"
+            >
+                <div class="flex flex-col gap-2 sm:gap-1">
                     <label
-                        for="nombre"
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                        for="first_name"
+                        class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
                     >
-                        Nombre *
+                        <span class="font-medium">Nombre</span>
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            placeholder="Tu nombre"
+                            required
+                            class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+                        />
                     </label>
-                    <input
-                        type="text"
-                        id="nombre"
-                        name="nombre"
-                        required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Tu nombre"
-                    />
-                </div>
-
-                <!-- Apellidos -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2">
                         <label
                             for="ap_paterno"
-                            class="block text-sm font-medium text-gray-700 mb-1"
+                            class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
                         >
-                            Apellido paterno *
+                            <span class="font-medium">Apellido paterno</span>
+                            <input
+                                type="text"
+                                id="ap_paterno"
+                                name="ap_paterno"
+                                placeholder="Apellido paterno"
+                                required
+                                class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+                            />
                         </label>
-                        <input
-                            type="text"
-                            id="ap_paterno"
-                            name="ap_paterno"
-                            required
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Apellido paterno"
-                        />
-                    </div>
-                    <div>
                         <label
                             for="ap_materno"
-                            class="block text-sm font-medium text-gray-700 mb-1"
+                            class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
                         >
-                            Apellido materno
+                            <span class="font-medium">Apellido materno</span>
+                            <input
+                                type="text"
+                                id="ap_materno"
+                                name="ap_materno"
+                                placeholder="Apellido materno"
+                                class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+                            />
                         </label>
-                        <input
-                            type="text"
-                            id="ap_materno"
-                            name="ap_materno"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Apellido materno"
-                        />
                     </div>
                 </div>
-
-                <!-- Correo -->
-                <div>
-                    <label
-                        for="correo_electronico"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Correo electrónico *
-                    </label>
+                <label
+                    for="correo_electronico"
+                    class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
+                >
+                    <span class="font-medium">Correo electrónico</span>
                     <input
                         type="email"
                         id="correo_electronico"
                         name="correo_electronico"
-                        required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="tucorreo@ejemplo.com"
+                        required
+                        class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
                     />
-                </div>
-
-                <!-- Contraseña -->
-                <div>
-                    <label
-                        for="contraseña"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Contraseña *
-                    </label>
+                </label>
+                <label
+                    for="contrasena"
+                    class="flex flex-col gap-2 sm:gap-1 text-sm text-gray-700"
+                >
+                    <span class="font-medium">Contraseña</span>
                     <input
                         type="password"
-                        id="contraseña"
-                        name="contraseña"
+                        id="contrasena"
+                        name="contrasena"
+                        placeholder="Al menos 8 caracteres"
                         required
-                        minlength="8"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Mínimo 8 caracteres"
+                        class="w-full border border-gray-200 rounded-md p-3 sm:p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
                     />
-                </div>
-
-                <!-- Confirmar contraseña -->
-                <div>
-                    <label
-                        for="confirmar_contraseña"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Confirmar contraseña *
-                    </label>
-                    <input
-                        type="password"
-                        id="confirmar_contraseña"
-                        name="confirmar_contraseña"
-                        required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Repite la contraseña"
-                    />
-                </div>
-
-                <!-- Mensaje de error/success -->
-                <div id="message" class="text-center text-sm min-h-6"></div>
-
-                <!-- Botón de registro -->
+                </label>
                 <button
                     type="submit"
-                    id="submitBtn"
-                    class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+                    class="bg-blue-600 text-white py-3 sm:py-1.5 rounded-md hover:bg-blue-700 transition-colors shadow-lg w-full text-sm sm:text-sm font-medium"
                 >
                     Crear cuenta
                 </button>
             </form>
 
-            <div class="my-6 flex items-center gap-3">
-                <hr class="flex-1 border-gray-300" />
-                <span class="text-gray-500 text-sm">o</span>
-                <hr class="flex-1 border-gray-300" />
+            <!-- Elemento para mostrar mensajes de respuesta desde el script -->
+            <div
+                id="responseMessage"
+                aria-live="polite"
+                class="text-center text-sm mt-2"
+            >
             </div>
 
-            <p class="text-center text-gray-600 text-sm">
-                ¿Ya tienes cuenta?
-                <a
-                    href="../auth/login"
-                    class="text-blue-600 hover:underline font-medium"
+            <div class="flex items-center gap-3">
+                <hr class="flex-1 border-t border-gray-200" />
+                <span class="text-gray-400 text-sm">o</span>
+                <hr class="flex-1 border-t border-gray-200" />
+            </div>
+
+            <button
+                type="button"
+                class="flex items-center justify-center gap-3 border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition shadow-sm w-full"
+                aria-label="Continuar con Google"
+            >
+                <svg
+                    class="w-5 h-5"
+                    viewBox="0 0 533.5 544.3"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    focusable="false"
                 >
-                    Inicia sesión
-                </a>
+                    <path
+                        fill="#4285F4"
+                        d="M533.5 278.4c0-17.6-1.6-35-4.8-51.8H272v98h147.1c-6.4 34.8-25.6 64.2-54.6 83.8v69.6h88.3c51.6-47.6 81.7-117.6 81.7-199.6z"
+                    ></path>
+                    <path
+                        fill="#34A853"
+                        d="M272 544.3c73.5 0 135.3-24.2 180.4-65.8l-88.3-69.6c-24.6 16.5-56 26.2-92.1 26.2-70.7 0-130.6-47.6-152-111.6H31.6v70.2C76.7 482.2 167.5 544.3 272 544.3z"
+                    ></path>
+                    <path
+                        fill="#FBBC05"
+                        d="M120 325.1c-9.6-28.8-9.6-59.8 0-88.6V166.3H31.6C11.7 209.9 0 245.4 0 281.6s11.7 71.7 31.6 115.3L120 325.1z"
+                    ></path>
+                    <path
+                        fill="#EA4335"
+                        d="M272 109.5c39.9 0 75.8 13.7 104.1 40.6l78.1-78.1C408.2 19.8 345.4 0 272 0 167.5 0 76.7 62.1 31.6 166.3l88.4 70.2C141.4 157.1 201.3 109.5 272 109.5z"
+                    ></path>
+                </svg>
+                <span class="text-sm text-gray-700 font-medium"
+                    >Continuar con Google</span
+                >
+            </button>
+
+            <p class="text-center text-gray-500 text-sm">
+                ¿Ya tienes cuenta? <a
+                    href="../auth/login"
+                    class="text-blue-600 hover:underline">Inicia sesión</a
+                >
             </p>
         </main>
-
-        <script is:inline>
-            // 1. Configuración de la URL de la API (ajusta según tu entorno)
-            // OPCIÓN A: Si estás usando el mismo dominio
-            const API_URL = window.location.origin;
-
-            // OPCIÓN B: Si tu API está en otro servidor (descomenta y ajusta)
-            // const API_URL = 'http://localhost:8000'; // URL de tu API Laravel
-
-            // OPCIÓN C: Desde variable global (configura en tu index.html principal)
-            // const API_URL = window.API_URL || 'http://tu-api.com';
-
-            // 2. Verificar si ya está autenticado
-            const token =
+        <script>
+            // 1. Busca el token en ambos almacenamientos.
+            const authToken =
                 localStorage.getItem("authToken") ||
                 sessionStorage.getItem("authToken");
-            if (token) {
+
+            // 2. Si el token existe, significa que el usuario ya está logueado.
+            if (authToken) {
+                console.log("Usuario ya autenticado. Redirigiendo a /home...");
+
+                // 3. Redirige inmediatamente al panel principal.
                 window.location.href = "/home";
             }
 
-            // 3. Manejo del formulario
+            // Añadimos una hoja de estilos pequeña para el spinner si no existe
+            if (!document.getElementById("register-spinner-style")) {
+                const style = document.createElement("style");
+                style.id = "register-spinner-style";
+                style.textContent = `
+                .rg-spin { animation: rg-spin 1s linear infinite; vertical-align: middle; }
+                @keyframes rg-spin { to { transform: rotate(360deg); } }
+            `;
+                document.head.appendChild(style);
+            }
+
+            // Espera a que el DOM esté listo para evitar problemas si el script se ejecuta antes
             document.addEventListener("DOMContentLoaded", () => {
-                const form = document.getElementById("registerForm");
-                const messageEl = document.getElementById("message");
-                const submitBtn = document.getElementById("submitBtn");
+                const form =
+                    document.querySelector<HTMLFormElement>("#registerForm");
+                let messageDiv = document.getElementById("responseMessage");
 
-                // Validación de contraseñas
-                function validatePasswords() {
-                    const password =
-                        document.getElementById("contraseña").value;
-                    const confirmPassword = document.getElementById(
-                        "confirmar_contraseña",
-                    ).value;
+                if (!form) {
+                    console.error(
+                        'No se encontró el formulario con id "registerForm". Añade id="registerForm" al <form>.',
+                    );
+                    return;
+                }
 
-                    if (password !== confirmPassword) {
-                        showMessage("Las contraseñas no coinciden", "error");
-                        return false;
-                    }
-
-                    if (password.length < 8) {
-                        showMessage(
-                            "La contraseña debe tener al menos 8 caracteres",
-                            "error",
+                // Si no existe, lo creamos dinámicamente (por seguridad)
+                if (!messageDiv) {
+                    messageDiv = document.createElement("div");
+                    messageDiv.id = "responseMessage";
+                    messageDiv.setAttribute("aria-live", "polite");
+                    if (form.parentNode) {
+                        form.parentNode.insertBefore(
+                            messageDiv,
+                            form.nextSibling,
                         );
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                // Mostrar mensajes
-                function showMessage(text, type = "info") {
-                    messageEl.textContent = text;
-                    messageEl.className = "text-center text-sm min-h-6";
-
-                    if (type === "error") {
-                        messageEl.style.color = "#dc2626";
-                    } else if (type === "success") {
-                        messageEl.style.color = "#16a34a";
-                    } else {
-                        messageEl.style.color = "#4b5563";
                     }
                 }
 
-                // Estado de carga
-                function setLoading(loading) {
-                    submitBtn.disabled = loading;
-                    if (loading) {
-                        submitBtn.innerHTML = `
-                        <span class="rg-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
-                        Registrando...
+                const messageEl = messageDiv as HTMLElement;
+
+                // Botón submit y estado de carga
+                const submitButton = form.querySelector<HTMLButtonElement>(
+                    'button[type="submit"]',
+                );
+                const originalButtonHTML = submitButton
+                    ? submitButton.innerHTML
+                    : "Crear cuenta";
+
+                function setLoading(isLoading: boolean) {
+                    if (!submitButton) return;
+                    if (isLoading) {
+                        submitButton.disabled = true;
+                        submitButton.setAttribute("aria-busy", "true");
+                        submitButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="rg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:6px;">
+                            <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
+                            <path d="M22 12a10 10 0 0 0-10-10" />
+                        </svg>
+                        <span>Creando...</span>
                     `;
-                        submitBtn.classList.add("opacity-70");
+                        submitButton.classList.add(
+                            "opacity-70",
+                            "cursor-not-allowed",
+                        );
                     } else {
-                        submitBtn.innerHTML = "Crear cuenta";
-                        submitBtn.classList.remove("opacity-70");
+                        submitButton.disabled = false;
+                        submitButton.removeAttribute("aria-busy");
+                        submitButton.innerHTML = originalButtonHTML;
+                        submitButton.classList.remove(
+                            "opacity-70",
+                            "cursor-not-allowed",
+                        );
                     }
                 }
 
-                // Envío del formulario
-                form.addEventListener("submit", async (e) => {
-                    e.preventDefault();
+                form.addEventListener("submit", async (event) => {
+                    event.preventDefault();
 
-                    if (!validatePasswords()) {
-                        return;
-                    }
+                    if (submitButton && submitButton.disabled) return;
 
-                    // Recoger datos del formulario
                     const formData = new FormData(form);
-                    const data = {
-                        nombre: formData.get("nombre"),
-                        ap_paterno: formData.get("ap_paterno"),
-                        ap_materno: formData.get("ap_materno") || "",
-                        correo_electronico: formData.get("correo_electronico"),
-                        contraseña: formData.get("contraseña"),
-                        id_rol: 2, // Valor fijo según tu requerimiento
-                        id_escuela: null, // Valor nulo según tu requerimiento
-                    };
+                    const data = Object.fromEntries(formData.entries());
 
                     setLoading(true);
-                    showMessage("");
 
                     try {
                         const response = await fetch(
-                            `${API_URL}/api/register`,
+                            "https://aquaguardv1.onrender.com/api/register",
                             {
                                 method: "POST",
                                 headers: {
@@ -291,54 +281,49 @@
                         );
 
                         const result = await response.json();
+                        console.log(
+                            "Register response",
+                            response.status,
+                            result,
+                        );
 
-                        if (response.ok) {
-                            showMessage(
-                                "¡Registro exitoso! Redirigiendo...",
-                                "success",
-                            );
-
-                            // Guardar token si la API lo devuelve
-                            if (result.token || result.access_token) {
-                                localStorage.setItem(
-                                    "authToken",
-                                    result.token || result.access_token,
-                                );
-                                setTimeout(
-                                    () => (window.location.href = "/home"),
-                                    1500,
-                                );
-                            } else {
-                                setTimeout(
-                                    () =>
-                                        (window.location.href = "/auth/login"),
-                                    1500,
-                                );
+                        if (!response.ok) {
+                            // Si hay errores de validación, los mostramos de forma genérica
+                            let errorMessage = "Error al registrar: ";
+                            // result puede ser un objeto con arrays de errores: { campo: ["mensaje"] }
+                            if (result && typeof result === "object") {
+                                const messages = [];
+                                for (const key in result) {
+                                    if (Array.isArray(result[key])) {
+                                        messages.push(result[key][0]);
+                                    } else if (
+                                        typeof result[key] === "string"
+                                    ) {
+                                        messages.push(result[key]);
+                                    }
+                                }
+                                if (messages.length)
+                                    errorMessage += messages.join(" | ");
+                            } else if (typeof result === "string") {
+                                errorMessage += result;
                             }
 
-                            form.reset();
+                            messageEl.textContent = errorMessage;
+                            messageEl.style.color = "red";
                         } else {
-                            // Manejo de errores de Laravel
-                            if (result.errors) {
-                                const errorMessages = Object.values(
-                                    result.errors,
-                                )
-                                    .flat()
-                                    .join(" ");
-                                showMessage(errorMessages, "error");
-                            } else {
-                                showMessage(
-                                    result.message || "Error en el registro",
-                                    "error",
-                                );
-                            }
+                            messageEl.textContent =
+                                "¡Registro exitoso! Serás redirigido.";
+                            messageEl.style.color = "green";
+                            form.reset(); // Limpia el formulario
+                            setTimeout(() => {
+                                window.location.href = "/login"; // Redirige al login
+                            }, 2000); // Espera 2 segundos antes de redirigir
                         }
                     } catch (error) {
-                        console.error("Error:", error);
-                        showMessage(
-                            "Error de conexión con el servidor",
-                            "error",
-                        );
+                        console.error("Error de conexión:", error);
+                        messageEl.textContent =
+                            "No se pudo conectar con el servidor.";
+                        messageEl.style.color = "red";
                     } finally {
                         setLoading(false);
                     }

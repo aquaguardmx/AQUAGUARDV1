@@ -1,0 +1,343 @@
+---
+// src/pages/admin/escuelas/nueva.astro
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+// Estados disponibles para México
+const estadosMexico = [
+    "Aguascalientes",
+    "Baja California",
+    "Baja California Sur",
+    "Campeche",
+    "Chiapas",
+    "Chihuahua",
+    "Ciudad de México",
+    "Coahuila",
+    "Colima",
+    "Durango",
+    "Estado de México",
+    "Guanajuato",
+    "Guerrero",
+    "Hidalgo",
+    "Jalisco",
+    "Michoacán",
+    "Morelos",
+    "Nayarit",
+    "Nuevo León",
+    "Oaxaca",
+    "Puebla",
+    "Querétaro",
+    "Quintana Roo",
+    "San Luis Potosí",
+    "Sinaloa",
+    "Sonora",
+    "Tabasco",
+    "Tamaulipas",
+    "Tlaxcala",
+    "Veracruz",
+    "Yucatán",
+    "Zacatecas",
+];
+
+// Niveles educativos
+const nivelesEducativos = [
+    "Preescolar",
+    "Primaria",
+    "Secundaria",
+    "Bachillerato",
+    "Licenciatura",
+    "Maestría",
+    "Doctorado",
+    "Técnico",
+    "Otro",
+];
+---
+
+<AdminLayout title="Agregar Escuela">
+    <!-- Header con botón Regresar -->
+    <a href="/admin/dashboardAdmin" class="btn-back">
+        <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Regresar
+    </a>
+
+    <div class="page-header">
+        <div class="text-center flex-1">
+            <h1 class="text-4xl font-bold mb-3">Registrar Nueva Escuela</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Completa la información a continuación para registrar una nueva
+                escuela en el sistema. Todos los campos marcados con * son
+                obligatorios.
+            </p>
+        </div>
+        <div class="w-24"></div>
+        <!-- Espacio para balancear el layout -->
+    </div>
+
+    <form id="addSchool" class="space-y-8">
+        <!-- Información Básica -->
+        <div class="form-section">
+            <h2 class="section-title">Información Básica</h2>
+
+            <!-- Nombre de la Escuela -->
+            <div class="mb-6">
+                <label for="nombre_escuela" class="form-label-flowbite">
+                    Nombre de la Escuela *
+                </label>
+                <input
+                    type="text"
+                    id="nombre_escuela"
+                    name="nombre_escuela"
+                    class="form-input-flowbite"
+                    placeholder="Ej: Colegio México Primaria"
+                    required
+                />
+            </div>
+
+            <div class="form-grid">
+                <!-- Nivel Educativo -->
+                <div>
+                    <label for="nivel_educativo" class="form-label-flowbite">
+                        Nivel Educativo *
+                    </label>
+                    <select
+                        id="nivel_educativo"
+                        name="nivel_educativo"
+                        class="form-input-flowbite"
+                        required
+                    >
+                        <option selected disabled value=""
+                            >Selecciona un nivel</option
+                        >
+                        {
+                            nivelesEducativos.map((nivel) => (
+                                <option value={nivel}>{nivel}</option>
+                            ))
+                        }
+                    </select>
+                </div>
+
+                <!-- Estado -->
+                <div>
+                    <label for="estado" class="form-label-flowbite">
+                        Estado *
+                    </label>
+                    <select
+                        id="estado"
+                        name="estado"
+                        class="form-input-flowbite"
+                        required
+                    >
+                        <option selected disabled value=""
+                            >Selecciona un estado</option
+                        >
+                        {
+                            estadosMexico.map((estado) => (
+                                <option value={estado}>{estado}</option>
+                            ))
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Ciudad -->
+            <div>
+                <label for="ciudad" class="form-label-flowbite">
+                    Ciudad / Municipio *
+                </label>
+                <input
+                    type="text"
+                    id="ciudad"
+                    name="ciudad"
+                    class="form-input-flowbite"
+                    placeholder="Ej: Guadalajara"
+                    required
+                />
+            </div>
+        </div>
+
+        <!-- Configuración de Estado -->
+        <div class="form-section">
+            <h2 class="section-title">Configuración de Estado</h2>
+            <div class="flex items-center mb-2">
+                <label class="toggle-wrapper">
+                    <input
+                        type="checkbox"
+                        name="activa"
+                        value="true"
+                        class="toggle-input"
+                        checked
+                    />
+                    <div class="toggle-slider"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-900">
+                        Escuela activa
+                    </span>
+                </label>
+            </div>
+            <p class="help-text mt-2">
+                Si no seleccionas esta opción, la escuela se registrará como
+                inactiva.
+            </p>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" id="btnLimpiar">
+                Limpiar formulario
+            </button>
+            <button type="submit" class="btn-primary" id="btnSubmit">
+                Registrar Escuela
+            </button>
+        </div>
+    </form>
+
+    <script type="module">
+        document.addEventListener("DOMContentLoaded", () => {
+            const schoolForm = document.getElementById("addSchool");
+            const btnLimpiar = document.getElementById("btnLimpiar");
+            const btnSubmit = document.getElementById("btnSubmit");
+
+            // Obtener datos de usuario del localStorage/sessionStorage
+            const getUserData = () => {
+                try {
+                    const userData =
+                        localStorage.getItem("userData") ||
+                        sessionStorage.getItem("userData");
+                    return userData ? JSON.parse(userData) : null;
+                } catch (error) {
+                    console.error("Error al obtener datos del usuario:", error);
+                    return null;
+                }
+            };
+
+            // Función para limpiar el formulario
+            btnLimpiar.addEventListener("click", () => {
+                if (
+                    confirm(
+                        "¿Estás seguro de que quieres limpiar el formulario?",
+                    )
+                ) {
+                    schoolForm.reset();
+                }
+            });
+
+            // Evento submit del formulario
+            schoolForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const user = getUserData();
+                if (!user || !user.id_usuario) {
+                    alert(
+                        "Error: No se pudo verificar tu sesión. Por favor, inicia sesión nuevamente.",
+                    );
+                    return;
+                }
+
+                const formData = {
+                    nombre_escuela:
+                        document.getElementById("nombre_escuela").value,
+                    nivel_educativo:
+                        document.getElementById("nivel_educativo").value,
+                    estado: document.getElementById("estado").value,
+                    ciudad: document.getElementById("ciudad").value,
+                    activa: document.querySelector('input[name="activa"]')
+                        .checked
+                        ? 1
+                        : 0,
+                    // Agregar información del usuario que crea la escuela si es necesario
+                    creado_por: user.id_usuario,
+                };
+
+                console.log("Enviando datos:", formData);
+
+                // Deshabilitar botón durante el envío
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = "Registrando...";
+
+                try {
+                    const response = await fetch(
+                        "https://aquaguardv1.onrender.com/api/escuelas",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${user.token || ""}`,
+                            },
+                            body: JSON.stringify(formData),
+                        },
+                    );
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert("Escuela registrada exitosamente");
+                        schoolForm.reset();
+                        // Redirigir al dashboard de admin
+                        window.location.href = "/admin/dashboardAdmin";
+                    } else {
+                        const errorData = await response.json();
+                        console.error("Error del servidor:", errorData);
+
+                        if (errorData.errors) {
+                            let errorMsg = "Error de validación:\n";
+                            for (const key in errorData.errors) {
+                                errorMsg += `- ${errorData.errors[key].join(", ")}\n`;
+                            }
+                            alert(errorMsg);
+                        } else {
+                            alert(
+                                `Error: ${errorData.message || "No se pudo registrar la escuela"}`,
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error de red:", error);
+                    alert(
+                        "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
+                    );
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Registrar Escuela";
+                }
+            });
+
+            // Validación en tiempo real
+            const inputs = schoolForm.querySelectorAll(
+                "input[required], select[required]",
+            );
+            inputs.forEach((input) => {
+                input.addEventListener("blur", () => {
+                    if (!input.value) {
+                        input.classList.add("border-red-500");
+                    } else {
+                        input.classList.remove("border-red-500");
+                    }
+                });
+            });
+
+            // Mejorar experiencia de usuario con validación en submit
+            schoolForm.addEventListener("submit", (e) => {
+                let isValid = true;
+                inputs.forEach((input) => {
+                    if (!input.value) {
+                        input.classList.add("border-red-500");
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert("Por favor, completa todos los campos obligatorios.");
+                }
+            });
+        });
+    </script>
+</AdminLayout>
