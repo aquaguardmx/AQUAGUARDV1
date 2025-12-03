@@ -42,7 +42,19 @@
             </nav>
 
             <div class="mobile_menu_button">
-                <i class="fas fa-bars"></i>
+                <svg
+                    class="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
             </div>
         </div>
     </div>
@@ -51,20 +63,20 @@
 <script>
     const menuButton = document.querySelector(".mobile_menu_button");
     const mainMenu = document.querySelector(".main_menu");
-    // Comenta
+
     if (menuButton && mainMenu) {
         menuButton.addEventListener("click", () => {
             mainMenu.classList.toggle("active");
 
-            // Toggle icon
-            const icon = menuButton.querySelector("i");
-            if (icon) {
+            // Toggle icon SVG
+            const svgPath = menuButton.querySelector("path");
+            if (svgPath) {
                 if (mainMenu.classList.contains("active")) {
-                    icon.classList.remove("fa-bars");
-                    icon.classList.add("fa-times");
+                    // X icon
+                    svgPath.setAttribute("d", "M6 18L18 6M6 6l12 12");
                 } else {
-                    icon.classList.remove("fa-times");
-                    icon.classList.add("fa-bars");
+                    // Hamburger icon
+                    svgPath.setAttribute("d", "M4 6h16M4 12h16M4 18h16");
                 }
             }
         });
@@ -77,7 +89,8 @@
         .mobile_menu_button {
             display: block;
             color: var(--primary-color, #0077b6);
-            font-size: 1.8rem;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
             z-index: 1001;
         }

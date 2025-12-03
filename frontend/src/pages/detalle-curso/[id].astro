@@ -1478,7 +1478,7 @@ try {
 
                 try {
                     const response = await fetch(
-                        `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}/inscribir/${cursoId}`,
+                        `http://localhost:8000/api/cursos-inscritos/usuario/${usuarioId}/inscribir/${cursoId}`,
                         {
                             method: "POST",
                             headers: {
