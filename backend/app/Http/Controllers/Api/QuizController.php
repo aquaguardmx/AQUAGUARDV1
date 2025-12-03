@@ -74,6 +74,20 @@ class QuizController extends Controller
         }
     }
 
+    // App/Http/Controllers/QuizController.php
+public function showByCourse($curso_id)
+{
+    $quiz = QuizCurso::with(['preguntas.opciones'])
+        ->where('curso_id', $curso_id)
+        ->get();
+    
+    if ($quiz->isEmpty()) {
+        return response()->json(['message' => 'No se encontró quiz para este curso'], 404);
+    }
+    
+    return response()->json($quiz);
+}
+
     /**
      * Display the specified resource.
      */

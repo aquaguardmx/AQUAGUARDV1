@@ -165,6 +165,9 @@ Route::get('/progreso-lecciones/usuario/{usuario_id}/leccion/{leccion_id}', [Pro
 
 Route::get('/quizzes', [QuizController::class, 'index']);
 Route::post('/quizzes', [QuizController::class, 'store']);
+
+Route::get('/quizzes/curso/{curso_id}', [QuizController::class, 'showByCourse']);
+
 Route::get('/quizzes/{id}', [QuizController::class, 'show']);
 Route::put('/quizzes/{id}', [QuizController::class, 'update']);
 Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']);

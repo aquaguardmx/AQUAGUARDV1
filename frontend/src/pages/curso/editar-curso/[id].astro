@@ -1508,21 +1508,49 @@ async function cargarQuizExistente() {
             const quizData = await response.json();
             console.log('✅ Quiz cargado:', quizData);
             
-            if (quizData && quizData.preguntas && Array.isArray(quizData.preguntas)) {
-                // Convertir el formato de la API al formato interno
+            if (quizData && Array.isArray(quizData)) {
+                // Manejar array de quizzes (posiblemente varios quizzes por curso)
+                if (quizData.length > 0) {
+                    const primerQuiz = quizData[0]; // Tomar el primer quiz
+                    
+                    // Convertir el formato de la API al formato interno
+                    preguntas = primerQuiz.preguntas ? primerQuiz.preguntas.map((pregunta, index) => ({
+                        id: pregunta.id || Date.now() + index,
+                        enunciado: pregunta.texto_pregunta,
+                        tipo: pregunta.tipo_pregunta || 'opcion_multiple',
+                        puntos: 10, // Valor por defecto
+                        opciones: pregunta.opciones ? pregunta.opciones.map(opcion => ({
+                            texto: opcion.texto_opcion,
+                            correcta: opcion.es_correcta || false
+                        })) : [],
+                        orden: index
+                    })) : [];
+                    
+                    // Actualizar configuración si existe
+                    if (primerQuiz.puntaje_minimo) {
+                        document.getElementById('puntaje-minimo').value = primerQuiz.puntaje_minimo;
+                    }
+                    if (primerQuiz.tiempo_limite) {
+                        document.getElementById('tiempo-limite').value = primerQuiz.tiempo_limite;
+                    }
+                    
+                    renderizarPreguntas();
+                    actualizarEstadoQuiz();
+                }
+            } else if (quizData && quizData.preguntas) {
+                // Manejar objeto único de quiz
                 preguntas = quizData.preguntas.map((pregunta, index) => ({
                     id: pregunta.id || Date.now() + index,
                     enunciado: pregunta.texto_pregunta,
-                    tipo: pregunta.tipo_pregunta,
-                    puntos: 10, // Valor por defecto
+                    tipo: pregunta.tipo_pregunta || 'opcion_multiple',
+                    puntos: 10,
                     opciones: pregunta.opciones ? pregunta.opciones.map(opcion => ({
                         texto: opcion.texto_opcion,
-                        correcta: opcion.es_correcta
+                        correcta: opcion.es_correcta || false
                     })) : [],
                     orden: index
                 }));
                 
-                // Actualizar configuración si existe
                 if (quizData.puntaje_minimo) {
                     document.getElementById('puntaje-minimo').value = quizData.puntaje_minimo;
                 }
@@ -1543,19 +1571,26 @@ async function cargarQuizExistente() {
     }
 }
 
-        // Función para actualizar el estado visual del quiz
         function actualizarEstadoQuiz() {
-            const estadoQuiz = document.getElementById('estado-quiz');
-            if (preguntas.length > 0) {
-                estadoQuiz.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''} configurada${preguntas.length !== 1 ? 's' : ''}
-                `;
-                estadoQuiz.className = 'inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-2 rounded-full text-sm font-medium';
-            }
-        }
+    const estadoQuiz = document.getElementById('estado-quiz');
+    if (preguntas.length > 0) {
+        estadoQuiz.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''} • Listo
+        `;
+        estadoQuiz.className = 'inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-4 py-2 rounded-full text-sm font-medium';
+    } else {
+        estadoQuiz.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            No configurado
+        `;
+        estadoQuiz.className = 'inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-full text-sm font-medium';
+    }
+}
 
         // =============================================
         // EVENT LISTENERS PRINCIPALES
@@ -1874,7 +1909,7 @@ async function cargarQuizExistente() {
 
         cancelarQuizBtn.addEventListener('click', ocultarModalQuiz);
 
-// Función alternativa más robusta para guardar quiz
+// Función corregida para guardar quiz
 guardarQuizBtn.addEventListener('click', async function() {
     const puntajeMinimo = document.getElementById('puntaje-minimo').value;
     const tiempoLimite = document.getElementById('tiempo-limite').value;
@@ -1892,23 +1927,24 @@ guardarQuizBtn.addEventListener('click', async function() {
     try {
         mostrarMensaje('Guardando quiz...', 'success');
         
+        // Preparar los datos en el formato que espera la API
         const quizData = {
             curso_id: CURSO_ID,
             titulo: `Quiz Final - ${document.querySelector('h1').textContent.trim()}`,
             preguntas: preguntas.map(pregunta => ({
                 texto_pregunta: pregunta.enunciado,
-                tipo_pregunta: pregunta.tipo,
+                tipo_pregunta: pregunta.tipo || 'opcion_multiple', // Valor por defecto
                 opciones: pregunta.opciones.map(opcion => ({
                     texto_opcion: opcion.texto,
-                    es_correcta: opcion.correcta
+                    es_correcta: opcion.correcta || false
                 }))
             }))
         };
 
-        console.log('📡 Enviando quiz a:', `${API_URL}/quizzes/`);
+        console.log('📡 Enviando quiz a:', `${API_URL}/quizzes`);
         console.log('📦 Datos del quiz:', quizData);
 
-        const response = await fetch(`${API_URL}/quizzes/`, {
+        const response = await fetch(`${API_URL}/quizzes`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1917,7 +1953,7 @@ guardarQuizBtn.addEventListener('click', async function() {
             body: JSON.stringify(quizData)
         });
 
-        // Manejo simplificado de respuesta
+        // Manejo de respuesta
         if (response.ok) {
             const data = await response.json();
             console.log('✅ Quiz guardado exitosamente:', data);
@@ -1925,15 +1961,24 @@ guardarQuizBtn.addEventListener('click', async function() {
             ocultarModalQuiz();
             actualizarEstadoQuiz();
         } else {
-            // Manejo de error simplificado
-            let errorText;
+            // Intentar obtener mensaje de error del servidor
+            let errorMessage = `Error ${response.status}`;
             try {
-                errorText = await response.text();
-                const errorData = JSON.parse(errorText);
-                throw new Error(errorData.message || errorData.error || `Error ${response.status}`);
-            } catch (parseError) {
-                throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
+                const errorData = await response.json();
+                console.error('❌ Error del servidor:', errorData);
+                
+                if (errorData.errors) {
+                    // Si hay errores de validación de Laravel
+                    const errores = Object.values(errorData.errors).flat();
+                    errorMessage = errores.join(', ');
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                const errorText = await response.text();
+                errorMessage = errorText || errorMessage;
             }
+            throw new Error(errorMessage);
         }
 
     } catch (error) {
