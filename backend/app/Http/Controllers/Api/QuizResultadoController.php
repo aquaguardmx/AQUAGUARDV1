@@ -210,4 +210,41 @@ class QuizResultadoController extends Controller
             'data' => $ultimoIntento
         ]);
     }
+
+    /**
+ * Verificar si un usuario ya intentó un quiz
+ */
+public function verificarIntento($usuarioId, $quizId)
+{
+    $existeIntento = QuizResultado::where('usuario_id', $usuarioId)
+        ->where('quiz_id', $quizId)
+        ->exists();
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'usuario_id' => $usuarioId,
+            'quiz_id' => $quizId,
+            'ya_intento' => $existeIntento
+        ]
+    ]);
+
+}
+
+public function getQuizPorCurso($cursoId)
+{
+    $quiz = Quiz::where('curso_id', $cursoId)->first();
+
+    if (!$quiz) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontró un quiz para este curso'
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => $quiz
+    ]);
+}
 }

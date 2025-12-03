@@ -184,7 +184,11 @@ Route::get('quizzes/{quizId}/resultados', [QuizResultadoController::class, 'resu
 Route::get('usuarios/{usuarioId}/estadisticas-quiz', [QuizResultadoController::class, 'estadisticasUsuario']);
 Route::get('usuarios/{usuarioId}/quizzes/{quizId}/ultimo-intento', [QuizResultadoController::class, 'ultimoIntento']);
 
+// En routes/api.php
+Route::get('usuarios/{usuarioId}/quizzes/{quizId}/verificar-intento', [QuizResultadoController::class, 'verificarIntento']);
 
+// En routes/api.php
+Route::get('cursos/{cursoId}/quiz', [QuizController::class, 'getQuizPorCurso']);
 
 // API PARA ESCUELAS
 
