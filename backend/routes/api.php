@@ -122,6 +122,8 @@ Route::get('/cursos/{id}', [CourseController::class, 'show']);
 
 Route::put('/cursos/{id}', [CourseController::class, 'update']);
 
+Route::post('/cursos-inscritos/usuario/{usuarioId}/inscribir/{cursoId}', [CursoInscritoUsuarioController::class, 'inscribirUsuario']);
+
 // API PARA CURSOS ISCRITOS
 // Cursos inscritos
 Route::prefix('cursos-inscritos')->group(function () {
@@ -133,9 +135,6 @@ Route::prefix('cursos-inscritos')->group(function () {
     
     // Obtener inscripción específica
     Route::get('/usuario/{usuarioId}/curso/{cursoId}/detalle', [CursoInscritoUsuarioController::class, 'getInscripcion']);
-    
-    // Inscribir usuario en curso
-    Route::post('/usuario/{usuarioId}/inscribir/{cursoId}', [CursoInscritoUsuarioController::class, 'inscribirUsuario']);
     
     // Obtener cursos de un usuario
     Route::get('/usuario/{usuarioId}', [CursoInscritoUsuarioController::class, 'getCursosPorUsuario']);
