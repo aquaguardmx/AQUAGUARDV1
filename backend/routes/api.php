@@ -25,6 +25,8 @@ use App\Http\Controllers\Api\ParametrosController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\ProgresoLeccionController;
 use App\Http\Controllers\Api\EstacionesController;
+use App\Http\Controllers\Api\QuizResultadoController;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas de la API
@@ -172,7 +174,20 @@ Route::get('/quizzes/{id}', [QuizController::class, 'show']);
 Route::put('/quizzes/{id}', [QuizController::class, 'update']);
 Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']);
 
+
+
+Route::apiResource('quiz-resultados', QuizResultadoController::class);
+
+// Rutas adicionales
+Route::get('usuarios/{usuarioId}/quiz-resultados', [QuizResultadoController::class, 'resultadosPorUsuario']);
+Route::get('quizzes/{quizId}/resultados', [QuizResultadoController::class, 'resultadosPorQuiz']);
+Route::get('usuarios/{usuarioId}/estadisticas-quiz', [QuizResultadoController::class, 'estadisticasUsuario']);
+Route::get('usuarios/{usuarioId}/quizzes/{quizId}/ultimo-intento', [QuizResultadoController::class, 'ultimoIntento']);
+
+
+
 // API PARA ESCUELAS
+
 Route::get('/escuelas', [SchoolController::class, 'index']);
 
 Route::post('/escuelas', [SchoolController::class, 'store']);
