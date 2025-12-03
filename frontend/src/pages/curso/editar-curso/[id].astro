@@ -69,7 +69,7 @@ interface Curso {
 }
 
 // Configuración de la API
-const API_URL = "http://localhost:8000/api/cursos/";
+const API_URL = import.meta.env.PUBLIC_API_URL;
 
 // Parámetros de la ruta
 export async function getStaticPaths() {
