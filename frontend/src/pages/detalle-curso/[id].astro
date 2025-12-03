@@ -21,1389 +21,675 @@ try {
         );
     }
     curso = await response.json();
-    console.log(curso.categoria.nombre);
+    console.log(curso);
 } catch (e) {
     console.error(e);
+    error = e.message;
+}
+
+// Función para convertir minutos a formato legible
+function formatearTiempo(minutos) {
+    if (minutos < 60) {
+        return `${minutos} min`;
+    }
+    const horas = Math.floor(minutos / 60);
+    const minsRestantes = minutos % 60;
+    return minsRestantes > 0 ? `${horas}h ${minsRestantes}min` : `${horas}h`;
+}
+
+// Función para obtener el número total de lecciones
+function obtenerTotalLecciones(modulos) {
+    return modulos?.reduce((total, modulo) => total + modulo.lecciones.length, 0) || 0;
 }
 ---
 
-<Layout title="Detalles">
+<Layout title={curso?.titulo || "Detalles del Curso"}>
     <Header />
 
-    <!-- Hero Section Mejorada -->
-    <section
-        class="relative bg-gradient-to-br from-blue-700 via-purple-700 to-indigo-800 text-white py-20 overflow-hidden"
-    >
-        <!-- Elementos decorativos de fondo -->
-        <div class="absolute inset-0 overflow-hidden">
-            <div
-                class="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"
-            >
+    {error ? (
+        <!-- Error State -->
+        <section class="py-20 bg-white">
+            <div class="container mx-auto px-4 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Error al cargar el curso</h1>
+                <p class="text-gray-600 mb-8">{error}</p>
+                <a href="/cursos" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver a Cursos
+                </a>
             </div>
-            <div
-                class="absolute -bottom-32 -left-32 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"
+        </section>
+    ) : curso ? (
+        <>
+            <!-- Hero Section Mejorada -->
+            <section
+                class="relative bg-gradient-to-br from-blue-700 via-purple-700 to-indigo-800 text-white py-20 overflow-hidden"
             >
-            </div>
-            <div
-                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl"
-            >
-            </div>
-        </div>
-
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <!-- Información del curso -->
-                <div class="text-white">
+                <!-- Elementos decorativos de fondo -->
+                <div class="absolute inset-0 overflow-hidden">
                     <div
-                        class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 mb-6 transition-all hover:bg-white/30"
+                        class="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"
                     >
-                        <span class="text-blue-100 text-sm font-medium"
-                            >{curso.categoria.nombre}</span
-                        >
                     </div>
-
-                    <h1
-                        class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight animate-fade-in-up"
+                    <div
+                        class="absolute -bottom-32 -left-32 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"
                     >
-                        {curso.titulo}
-                    </h1>
-
-                    <p
-                        class="text-xl text-blue-100 mb-8 leading-relaxed opacity-90"
-                    >
-                        {curso.descripcion.replace(/<[^>]*>?/gm, "")}
-                    </p>
-
-                    <div class="flex flex-wrap gap-6 items-center mb-8">
-                        <div
-                            class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
-                        >
-                            <div class="flex items-center">
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <i class="fas fa-star-half-alt text-yellow-400"
-                                ></i>
-                            </div>
-                            <span class="text-blue-100 text-sm"
-                                >4.8 (2,450 reseñas)</span
-                            >
-                        </div>
-                        <div
-                            class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
-                        >
-                            <i class="fas fa-users text-blue-200"></i>
-                            <span class="text-blue-100 text-sm"
-                                >15,000+ estudiantes</span
-                            >
-                        </div>
-                        <div
-                            class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
-                        >
-                            <i class="fas fa-clock text-blue-200"></i>
-                            <span class="text-blue-100 text-sm"
-                                >48 horas totales</span
-                            >
-                        </div>
                     </div>
-
-                    <div class="flex flex-wrap gap-4">
-                        <button
-                            data-curso-id={curso.id_curso}
-                            id="btn-inscribir"
-                            class="group bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex items-center"
-                        >
-                            <i
-                                class="fas fa-shopping-cart mr-2 transition-transform group-hover:scale-110"
-                            ></i>
-                            Inscribirse ahora
-                        </button>
-                        <button
-                            class="group border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 flex items-center"
-                        >
-                            <i
-                                class="far fa-heart mr-2 transition-transform group-hover:scale-110"
-                            ></i>
-                            Agregar a favoritos
-                        </button>
+                    <div
+                        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl"
+                    >
                     </div>
                 </div>
 
-                <!-- Portada con imagen de fondo -->
-                <div class="relative">
-                    <div
-                        class="bg-gradient-to-br from-blue-600/90 to-purple-700/90 rounded-3xl overflow-hidden shadow-2xl relative transform hover:scale-[1.02] transition-transform duration-500"
-                    >
-                        <!-- Imagen de fondo con overlay -->
-                        <div
-                            class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')] bg-cover bg-center opacity-20"
-                        >
-                        </div>
-
-                        <div
-                            class="aspect-video flex items-center justify-center p-8 relative z-10"
-                        >
-                            <div class="text-center text-white">
-                                <div
-                                    class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/30 transform hover:scale-110 transition-transform duration-300"
-                                >
-                                    <i class="fab fa-js text-white text-4xl"
-                                    ></i>
-                                </div>
-                                <h3 class="text-2xl font-bold mb-2">
-                                    JavaScript Full Stack
-                                </h3>
-                                <p class="text-blue-100 text-lg opacity-90">
-                                    De Cero a Experto
-                                </p>
-                                <div class="mt-6 flex justify-center space-x-3">
-                                    <span
-                                        class="bg-white/20 px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-white/30"
-                                        >HTML/CSS</span
-                                    >
-                                    <span
-                                        class="bg-white/20 px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-white/30"
-                                        >React</span
-                                    >
-                                    <span
-                                        class="bg-white/20 px-4 py-2 rounded-full text-sm backdrop-blur-sm border border-white/30"
-                                        >Node.js</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Course Content -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <!-- Main Content -->
-                <div class="lg:col-span-2">
-                    <!-- Tabs Mejoradas -->
-                    <div class="border-b border-gray-200 mb-8">
-                        <nav class="flex space-x-2 overflow-x-auto pb-1">
-                            <button
-                                id="tab-descripcion"
-                                class="tab-button flex items-center px-6 py-4 rounded-t-lg border-b-2 border-blue-600 text-blue-600 font-semibold whitespace-nowrap transition-all bg-blue-50"
-                            >
-                                <i class="fas fa-info-circle mr-2"
-                                ></i>Descripción
-                            </button>
-                            <button
-                                id="tab-contenido"
-                                class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
-                            >
-                                <i class="fas fa-list-ol mr-2"></i>Contenido
-                            </button>
-                            <button
-                                id="tab-resenas"
-                                class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
-                            >
-                                <i class="fas fa-star mr-2"></i>Reseñas
-                            </button>
-                            <button
-                                id="tab-instructor"
-                                class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
-                            >
-                                <i class="fas fa-user mr-2"></i>Instructor
-                            </button>
-                        </nav>
-                    </div>
-
-                    <!-- Tab Contents -->
-                    <!-- Descripción Mejorada -->
-                    <div id="content-descripcion" class="tab-content active">
-                        <div class="prose max-w-none">
-                            <h2
-                                class="text-3xl font-bold text-gray-900 mb-8 flex items-center"
-                            >
-                                <span class="bg-blue-100 p-2 rounded-lg mr-3">
-                                    <i
-                                        class="fas fa-graduation-cap text-blue-600"
-                                    ></i>
-                                </span>
-                                Lo que aprenderás
-                            </h2>
-
+                <div class="container mx-auto px-4 relative z-10">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <!-- Información del curso -->
+                        <div class="text-white">
                             <div
-                                class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10"
+                                class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 mb-6 transition-all hover:bg-white/30"
                             >
-                                <div
-                                    class="flex items-start space-x-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 group"
-                                >
-                                    <div
-                                        class="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                                    >
-                                        <i class="fas fa-check text-green-600"
-                                        ></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium"
-                                        >Crear aplicaciones web modernas con
-                                        HTML5, CSS3 y JavaScript</span
-                                    >
-                                </div>
-                                <div
-                                    class="flex items-start space-x-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 group"
-                                >
-                                    <div
-                                        class="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                                    >
-                                        <i class="fas fa-check text-green-600"
-                                        ></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium"
-                                        >Desarrollar interfaces interactivas con
-                                        React y Tailwind CSS</span
-                                    >
-                                </div>
-                                <div
-                                    class="flex items-start space-x-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 group"
-                                >
-                                    <div
-                                        class="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                                    >
-                                        <i class="fas fa-check text-green-600"
-                                        ></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium"
-                                        >Construir APIs RESTful con Node.js y
-                                        Express</span
-                                    >
-                                </div>
-                                <div
-                                    class="flex items-start space-x-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 group"
-                                >
-                                    <div
-                                        class="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                                    >
-                                        <i class="fas fa-check text-green-600"
-                                        ></i>
-                                    </div>
-                                    <span class="text-gray-700 font-medium"
-                                        >Trabajar con bases de datos MongoDB y
-                                        PostgreSQL</span
-                                    >
-                                </div>
-                            </div>
-
-                            <div
-                                class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100"
-                            >
-                                <h3
-                                    class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
-                                >
-                                    <span
-                                        class="bg-blue-100 p-2 rounded-lg mr-3"
-                                    >
-                                        <i class="fas fa-book text-blue-600"
-                                        ></i>
-                                    </span>
-                                    Descripción del curso
-                                </h3>
-                                <p
-                                    class="text-gray-700 mb-6 leading-relaxed text-lg"
-                                >
-                                    {
-                                        curso.descripcion.replace(
-                                            /<[^>]*>?/gm,
-                                            "",
-                                        )
-                                    }
-                                </p>
-                            </div>
-
-                            <div
-                                class="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-r-xl p-6 mb-8"
-                            >
-                                <div class="flex items-start">
-                                    <div
-                                        class="flex-shrink-0 bg-yellow-100 p-3 rounded-lg"
-                                    >
-                                        <i
-                                            class="fas fa-lightbulb text-yellow-600 text-xl"
-                                        ></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p
-                                            class="text-lg font-semibold text-yellow-800"
-                                        >
-                                            ¡Novedad importante!
-                                        </p>
-                                        <p class="text-yellow-700 mt-1">
-                                            Este curso ha sido actualizado
-                                            recientemente con las últimas
-                                            tecnologías y mejores prácticas de
-                                            2024.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <h3
-                                        class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
-                                    >
-                                        <span
-                                            class="bg-purple-100 p-2 rounded-lg mr-3"
-                                        >
-                                            <i
-                                                class="fas fa-user-friends text-purple-600"
-                                            ></i>
-                                        </span>
-                                        ¿Para quién es este curso?
-                                    </h3>
-                                    <ul class="space-y-3">
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-green-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Principiantes que quieren
-                                                iniciar en el desarrollo web</span
-                                            >
-                                        </li>
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-green-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Desarrolladores que buscan
-                                                actualizar sus habilidades</span
-                                            >
-                                        </li>
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-green-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Estudiantes de informática y
-                                                carreras afines</span
-                                            >
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h3
-                                        class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
-                                    >
-                                        <span
-                                            class="bg-green-100 p-2 rounded-lg mr-3"
-                                        >
-                                            <i
-                                                class="fas fa-clipboard-list text-green-600"
-                                            ></i>
-                                        </span>
-                                        Requisitos
-                                    </h3>
-                                    <ul class="space-y-3">
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-blue-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Conocimientos básicos de
-                                                computación</span
-                                            >
-                                        </li>
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-blue-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Computadora con conexión a
-                                                internet</span
-                                            >
-                                        </li>
-                                        <li class="flex items-start space-x-3">
-                                            <i
-                                                class="fas fa-check text-blue-500 mt-1"
-                                            ></i>
-                                            <span class="text-gray-700"
-                                                >Muchas ganas de aprender y
-                                                practicar</span
-                                            >
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contenido Mejorado -->
-                    <div id="content-contenido" class="tab-content">
-                        <div class="flex justify-between items-center mb-8">
-                            <h2
-                                class="text-3xl font-bold text-gray-900 flex items-center"
-                            >
-                                <span class="bg-blue-100 p-2 rounded-lg mr-3">
-                                    <i class="fas fa-list-ol text-blue-600"></i>
-                                </span>
-                                Contenido del curso
-                            </h2>
-                            <div
-                                class="text-lg font-semibold text-blue-600 bg-blue-50 px-4 py-2 rounded-full"
-                            >
-                                <span>48 horas</span> de contenido
-                            </div>
-                        </div>
-
-                        <div class="space-y-6">
-                            <!-- Módulo 1 Mejorado -->
-                            <div
-                                class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-                            >
-                                <div
-                                    class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 border-b border-gray-200 flex justify-between items-center"
-                                >
-                                    <div class="flex items-center space-x-4">
-                                        <div
-                                            class="bg-blue-600 text-white p-2 rounded-lg"
-                                        >
-                                            <i class="fas fa-play-circle"></i>
-                                        </div>
-                                        <div>
-                                            <h3
-                                                class="font-semibold text-gray-900 text-lg"
-                                            >
-                                                Módulo 1: Fundamentos de
-                                                Desarrollo Web
-                                            </h3>
-                                            <p
-                                                class="text-gray-600 text-sm mt-1"
-                                            >
-                                                Domina los conceptos básicos del
-                                                desarrollo web moderno
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span
-                                        class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full"
-                                        >3 lecciones • 1h 25min</span
-                                    >
-                                </div>
-                                <div class="divide-y divide-gray-100">
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-blue-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-blue-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >Introducción al desarrollo web</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >15 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-blue-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-blue-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-blue-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >Configuración del entorno de
-                                                desarrollo</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >25 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-blue-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-blue-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-blue-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >HTML5 y semántica</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >45 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-blue-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Módulo 2 Mejorado -->
-                            <div
-                                class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-                            >
-                                <div
-                                    class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-5 border-b border-gray-200 flex justify-between items-center"
-                                >
-                                    <div class="flex items-center space-x-4">
-                                        <div
-                                            class="bg-purple-600 text-white p-2 rounded-lg"
-                                        >
-                                            <i class="fas fa-palette"></i>
-                                        </div>
-                                        <div>
-                                            <h3
-                                                class="font-semibold text-gray-900 text-lg"
-                                            >
-                                                Módulo 2: CSS y Diseño
-                                                Responsivo
-                                            </h3>
-                                            <p
-                                                class="text-gray-600 text-sm mt-1"
-                                            >
-                                                Crea diseños modernos y
-                                                adaptables a cualquier
-                                                dispositivo
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span
-                                        class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full"
-                                        >3 lecciones • 2h 5min</span
-                                    >
-                                </div>
-                                <div class="divide-y divide-gray-100">
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-purple-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-purple-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >Fundamentos de CSS3</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >35 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-purple-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-purple-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-purple-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >Flexbox y Grid Layout</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >50 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-purple-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="px-6 py-4 flex items-center justify-between hover:bg-purple-50 transition-all duration-200 group"
-                                    >
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <i
-                                                class="fas fa-play-circle text-gray-400 group-hover:text-purple-600 transition-colors"
-                                            ></i>
-                                            <span
-                                                class="text-gray-700 group-hover:text-gray-900"
-                                                >Diseño responsivo con Media
-                                                Queries</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="flex items-center space-x-4"
-                                        >
-                                            <span
-                                                class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded"
-                                                >40 min</span
-                                            >
-                                            <i
-                                                class="fas fa-lock text-gray-300 group-hover:text-purple-500 transition-colors"
-                                            ></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Módulos colapsables -->
-                        <div class="mt-8 text-center">
-                            <button
-                                class="group bg-white border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center mx-auto"
-                            >
-                                <span>Ver todos los módulos</span>
-                                <i
-                                    class="fas fa-chevron-down ml-2 group-hover:rotate-180 transition-transform duration-300"
-                                ></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Reseñas Mejoradas -->
-                    <div id="content-resenas" class="tab-content">
-                        <h2
-                            class="text-3xl font-bold text-gray-900 mb-8 flex items-center"
-                        >
-                            <span class="bg-yellow-100 p-2 rounded-lg mr-3">
-                                <i class="fas fa-star text-yellow-600"></i>
-                            </span>
-                            Reseñas de estudiantes
-                        </h2>
-
-                        <div
-                            class="flex flex-col md:flex-row items-start mb-8 gap-8"
-                        >
-                            <div
-                                class="md:w-1/3 bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl border border-yellow-200 shadow-sm"
-                            >
-                                <div
-                                    class="text-6xl font-bold text-gray-900 text-center mb-2"
-                                >
-                                    4.8
-                                </div>
-                                <div
-                                    class="flex items-center justify-center mb-3"
-                                >
-                                    <i
-                                        class="fas fa-star text-yellow-400 text-xl"
-                                    ></i>
-                                    <i
-                                        class="fas fa-star text-yellow-400 text-xl"
-                                    ></i>
-                                    <i
-                                        class="fas fa-star text-yellow-400 text-xl"
-                                    ></i>
-                                    <i
-                                        class="fas fa-star text-yellow-400 text-xl"
-                                    ></i>
-                                    <i
-                                        class="fas fa-star-half-alt text-yellow-400 text-xl"
-                                    ></i>
-                                </div>
-                                <div
-                                    class="text-gray-600 text-center text-lg font-medium"
-                                >
-                                    Calificación promedio
-                                </div>
-                                <div class="text-gray-500 text-center mt-2">
-                                    Basado en 2,450 reseñas
-                                </div>
-                            </div>
-
-                            <div class="md:w-2/3 space-y-4">
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm w-8 font-medium"
-                                        >5★</span
-                                    >
-                                    <div
-                                        class="h-3 bg-gray-200 rounded-full flex-1 overflow-hidden"
-                                    >
-                                        <div
-                                            class="h-full bg-yellow-400 rounded-full progress-bar"
-                                            style="width: 80%"
-                                        >
-                                        </div>
-                                    </div>
-                                    <span class="text-sm w-8 font-medium"
-                                        >80%</span
-                                    >
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm w-8 font-medium"
-                                        >4★</span
-                                    >
-                                    <div
-                                        class="h-3 bg-gray-200 rounded-full flex-1 overflow-hidden"
-                                    >
-                                        <div
-                                            class="h-full bg-yellow-400 rounded-full progress-bar"
-                                            style="width: 15%"
-                                        >
-                                        </div>
-                                    </div>
-                                    <span class="text-sm w-8 font-medium"
-                                        >15%</span
-                                    >
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm w-8 font-medium"
-                                        >3★</span
-                                    >
-                                    <div
-                                        class="h-3 bg-gray-200 rounded-full flex-1 overflow-hidden"
-                                    >
-                                        <div
-                                            class="h-full bg-yellow-400 rounded-full progress-bar"
-                                            style="width: 3%"
-                                        >
-                                        </div>
-                                    </div>
-                                    <span class="text-sm w-8 font-medium"
-                                        >3%</span
-                                    >
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm w-8 font-medium"
-                                        >2★</span
-                                    >
-                                    <div
-                                        class="h-3 bg-gray-200 rounded-full flex-1 overflow-hidden"
-                                    >
-                                        <div
-                                            class="h-full bg-yellow-400 rounded-full progress-bar"
-                                            style="width: 1%"
-                                        >
-                                        </div>
-                                    </div>
-                                    <span class="text-sm w-8 font-medium"
-                                        >1%</span
-                                    >
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm w-8 font-medium"
-                                        >1★</span
-                                    >
-                                    <div
-                                        class="h-3 bg-gray-200 rounded-full flex-1 overflow-hidden"
-                                    >
-                                        <div
-                                            class="h-full bg-yellow-400 rounded-full progress-bar"
-                                            style="width: 1%"
-                                        >
-                                        </div>
-                                    </div>
-                                    <span class="text-sm w-8 font-medium"
-                                        >1%</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Filtros de reseñas mejorados -->
-                        <div class="flex flex-wrap gap-3 mb-8">
-                            <button
-                                class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium border border-blue-200 hover:bg-blue-200 transition-colors"
-                                >Todas</button
-                            >
-                            <button
-                                class="bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors"
-                                >5 estrellas</button
-                            >
-                            <button
-                                class="bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors"
-                                >4 estrellas</button
-                            >
-                            <button
-                                class="bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors"
-                                >3 estrellas</button
-                            >
-                            <button
-                                class="bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors"
-                                >Con comentarios</button
-                            >
-                        </div>
-
-                        <div class="space-y-6">
-                            <!-- Reseña 1 Mejorada -->
-                            <div
-                                class="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-all duration-300 bg-white"
-                            >
-                                <div
-                                    class="flex items-start justify-between mb-4"
-                                >
-                                    <div class="flex items-center space-x-4">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face"
-                                            alt="Usuario"
-                                            class="w-12 h-12 rounded-full border-2 border-blue-100"
-                                        />
-                                        <div>
-                                            <h4
-                                                class="font-semibold text-gray-900 text-lg"
-                                            >
-                                                Ana Rodríguez
-                                            </h4>
-                                            <div class="flex items-center mt-1">
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <span
-                                                    class="text-gray-500 text-sm ml-2"
-                                                    >Hace 2 semanas</span
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p
-                                    class="text-gray-700 text-lg leading-relaxed"
-                                >
-                                    Excelente curso! La instructora explica de
-                                    manera clara y los proyectos son muy
-                                    prácticos. He aprendido mucho y ya estoy
-                                    aplicando estos conocimientos en mi trabajo.
-                                </p>
-                                <div class="flex items-center mt-6 text-sm">
-                                    <button
-                                        class="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-100 px-3 py-2 rounded-lg"
-                                    >
-                                        <i class="far fa-thumbs-up"></i>
-                                        <span>Útil (24)</span>
-                                    </button>
-                                    <span class="mx-3 text-gray-300">•</span>
-                                    <button
-                                        class="text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-100 px-3 py-2 rounded-lg"
-                                        >Responder</button
-                                    >
-                                </div>
-                            </div>
-
-                            <!-- Reseña 2 Mejorada -->
-                            <div
-                                class="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-all duration-300 bg-white"
-                            >
-                                <div
-                                    class="flex items-start justify-between mb-4"
-                                >
-                                    <div class="flex items-center space-x-4">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face"
-                                            alt="Usuario"
-                                            class="w-12 h-12 rounded-full border-2 border-blue-100"
-                                        />
-                                        <div>
-                                            <h4
-                                                class="font-semibold text-gray-900 text-lg"
-                                            >
-                                                Carlos Méndez
-                                            </h4>
-                                            <div class="flex items-center mt-1">
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star text-yellow-400 text-sm"
-                                                ></i>
-                                                <i
-                                                    class="fas fa-star-half-alt text-yellow-400 text-sm"
-                                                ></i>
-                                                <span
-                                                    class="text-gray-500 text-sm ml-2"
-                                                    >Hace 1 mes</span
-                                                >
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p
-                                    class="text-gray-700 text-lg leading-relaxed"
-                                >
-                                    Muy buen contenido, aunque algunos temas
-                                    avanzados podrían tener más ejemplos. En
-                                    general, el curso cumple con lo que promete
-                                    y la instructora es muy accesible para
-                                    resolver dudas.
-                                </p>
-                                <div class="flex items-center mt-6 text-sm">
-                                    <button
-                                        class="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-100 px-3 py-2 rounded-lg"
-                                    >
-                                        <i class="far fa-thumbs-up"></i>
-                                        <span>Útil (12)</span>
-                                    </button>
-                                    <span class="mx-3 text-gray-300">•</span>
-                                    <button
-                                        class="text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-100 px-3 py-2 rounded-lg"
-                                        >Responder</button
-                                    >
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Botón para cargar más reseñas -->
-                        <div class="mt-8 text-center">
-                            <button
-                                class="bg-white border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
-                            >
-                                Cargar más reseñas
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Instructor (se mantiene igual pero con mejoras de estilo) -->
-                    <div id="content-instructor" class="tab-content">
-                        <!-- ... contenido del instructor igual pero con mejoras visuales ... -->
-                    </div>
-                </div>
-
-                <!-- Sidebar Mejorada -->
-                <div class="space-y-6 sticky-sidebar">
-                    <!-- Course Features Mejorado -->
-                    <div
-                        class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200 shadow-lg"
-                    >
-                        <h3
-                            class="text-xl font-bold text-gray-900 mb-6 flex items-center"
-                        >
-                            <i class="fas fa-gift text-blue-600 mr-2"></i>
-                            Este curso incluye:
-                        </h3>
-                        <div class="space-y-4">
-                            <div
-                                class="flex items-center space-x-4 p-3 rounded-lg hover:bg-white transition-all"
-                            >
-                                <div class="bg-blue-100 p-2 rounded-lg">
-                                    <i class="fas fa-play-circle text-blue-600"
-                                    ></i>
-                                </div>
-                                <span class="text-gray-700 font-medium"
-                                    >48 horas de video bajo demanda</span
+                                <i class="fas fa-tag text-blue-100"></i>
+                                <span class="text-blue-100 text-sm font-medium"
+                                    >{curso.categoria.nombre}</span
                                 >
                             </div>
-                            <div
-                                class="flex items-center space-x-4 p-3 rounded-lg hover:bg-white transition-all"
-                            >
-                                <div class="bg-blue-100 p-2 rounded-lg">
-                                    <i class="fas fa-file-alt text-blue-600"
-                                    ></i>
-                                </div>
-                                <span class="text-gray-700 font-medium"
-                                    >125 recursos descargables</span
-                                >
-                            </div>
-                            <div
-                                class="flex items-center space-x-4 p-3 rounded-lg hover:bg-white transition-all"
-                            >
-                                <div class="bg-blue-100 p-2 rounded-lg">
-                                    <i class="fas fa-infinity text-blue-600"
-                                    ></i>
-                                </div>
-                                <span class="text-gray-700 font-medium"
-                                    >Acceso de por vida</span
-                                >
-                            </div>
-                            <div
-                                class="flex items-center space-x-4 p-3 rounded-lg hover:bg-white transition-all"
-                            >
-                                <div class="bg-blue-100 p-2 rounded-lg">
-                                    <i class="fas fa-mobile-alt text-blue-600"
-                                    ></i>
-                                </div>
-                                <span class="text-gray-700 font-medium"
-                                    >Acceso en dispositivos móviles y TV</span
-                                >
-                            </div>
-                            <div
-                                class="flex items-center space-x-4 p-3 rounded-lg hover:bg-white transition-all"
-                            >
-                                <div class="bg-blue-100 p-2 rounded-lg">
-                                    <i class="fas fa-certificate text-blue-600"
-                                    ></i>
-                                </div>
-                                <span class="text-gray-700 font-medium"
-                                    >Certificado de finalización</span
-                                >
-                            </div>
-                        </div>
 
-                        <!-- Precio con descuento mejorado -->
-                        <div class="mt-8 pt-6 border-t border-gray-200">
-                            <div class="flex items-baseline space-x-3 mb-2">
-                                <span class="text-4xl font-bold text-gray-900"
-                                    >$62.99</span
-                                >
-                                <span class="text-xl text-gray-500 line-through"
-                                    >$89.99</span
-                                >
-                                <span
-                                    class="bg-red-100 text-red-800 text-sm font-bold px-3 py-1 rounded-full"
-                                    >30% OFF</span
-                                >
-                            </div>
-                            <p class="text-sm text-gray-500 mb-4">
-                                <i class="fas fa-clock text-red-500 mr-1"></i>
-                                Oferta termina en 2 días
-                            </p>
-
-                            <button
-                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center"
+                            <h1
+                                class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight animate-fade-in-up"
                             >
-                                <i class="fas fa-shopping-cart mr-3"></i>
-                                Agregar al carrito
-                            </button>
-
-                            <button
-                                class="w-full border-2 border-gray-300 text-gray-700 py-4 rounded-xl font-semibold mt-3 hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center"
-                            >
-                                <i class="far fa-heart mr-3"></i>
-                                Agregar a la lista de deseos
-                            </button>
+                                {curso.titulo}
+                            </h1>
 
                             <p
-                                class="text-center text-sm text-gray-500 mt-4 flex items-center justify-center"
+                                class="text-xl text-blue-100 mb-8 leading-relaxed opacity-90"
                             >
-                                <i class="fas fa-shield-alt text-green-500 mr-2"
-                                ></i>
-                                Garantía de reembolso de 30 días
+                                {curso.descripcion.replace(/<[^>]*>?/gm, "").substring(0, 200)}...
                             </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Sección de cursos relacionados mejorada -->
-    <section class="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">
-                Cursos relacionados
-            </h2>
-            <p class="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
-                Explora otros cursos que podrían interesarte basados en este
-                contenido
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Curso 1 Mejorado -->
-                <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group"
-                >
-                    <div
-                        class="h-40 bg-gradient-to-r from-green-500 to-teal-600 relative overflow-hidden"
-                    >
-                        <div
-                            class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all"
-                        >
-                        </div>
-                        <div class="absolute bottom-4 left-4">
-                            <span
-                                class="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium"
-                                >Más vendido</span
-                            >
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3
-                            class="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors"
-                        >
-                            React Avanzado: Patrones y Mejores Prácticas
-                        </h3>
-                        <div
-                            class="flex items-center text-sm text-gray-600 mb-4"
-                        >
-                            <span
-                                class="flex items-center bg-yellow-50 px-2 py-1 rounded"
-                            >
-                                <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                4.9
-                            </span>
-                            <span class="mx-2">•</span>
-                            <span>24 horas</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-gray-900 text-xl"
-                                    >$74.99</span
+                            <div class="flex flex-wrap gap-6 items-center mb-8">
+                                <div
+                                    class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
                                 >
-                                <span
-                                    class="text-gray-500 line-through text-sm ml-2"
-                                    >$99.99</span
+                                    <div class="flex items-center">
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <i class="fas fa-star-half-alt text-yellow-400"
+                                        ></i>
+                                    </div>
+                                    <span class="text-blue-100 text-sm"
+                                        >4.8 (2,450 reseñas)</span
+                                    >
+                                </div>
+                                <div
+                                    class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
                                 >
+                                    <i class="fas fa-users text-blue-200"></i>
+                                    <span class="text-blue-100 text-sm"
+                                        >15,000+ estudiantes</span
+                                >
+                                </div>
+                                <div
+                                    class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
+                                >
+                                    <i class="fas fa-clock text-blue-200"></i>
+                                    <span class="text-blue-100 text-sm"
+                                        >{formatearTiempo(curso.tiempo_estimado_min)}</span
+                                    >
+                                </div>
                             </div>
-                            <button
-                                class="text-blue-600 hover:text-blue-800 font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors"
-                                >Ver curso</button
-                            >
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Curso 2 Mejorado -->
-                <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group"
-                >
-                    <div
-                        class="h-40 bg-gradient-to-r from-purple-500 to-pink-600 relative overflow-hidden"
-                    >
-                        <div
-                            class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all"
-                        >
-                        </div>
-                        <div class="absolute bottom-4 left-4">
-                            <span
-                                class="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium"
-                                >Nuevo</span
-                            >
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3
-                            class="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors"
-                        >
-                            Node.js y Express: Backend Profesional
-                        </h3>
-                        <div
-                            class="flex items-center text-sm text-gray-600 mb-4"
-                        >
-                            <span
-                                class="flex items-center bg-yellow-50 px-2 py-1 rounded"
-                            >
-                                <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                4.7
-                            </span>
-                            <span class="mx-2">•</span>
-                            <span>18 horas</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-gray-900 text-xl"
-                                    >$69.99</span
+                            <div class="flex flex-wrap gap-4">
+                                <button
+                                    data-curso-id={curso.id_curso}
+                                    id="btn-inscribir"
+                                    class="group bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex items-center"
                                 >
-                                <span
-                                    class="text-gray-500 line-through text-sm ml-2"
-                                    >$89.99</span
+                                    <i
+                                        class="fas fa-shopping-cart mr-2 transition-transform group-hover:scale-110"
+                                    ></i>
+                                    Inscribirse ahora
+                                </button>
+                                <button
+                                    class="group border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 flex items-center"
                                 >
+                                    <i
+                                        class="far fa-heart mr-2 transition-transform group-hover:scale-110"
+                                    ></i>
+                                    Agregar a favoritos
+                                </button>
                             </div>
-                            <button
-                                class="text-blue-600 hover:text-blue-800 font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors"
-                                >Ver curso</button
-                            >
                         </div>
-                    </div>
-                </div>
 
-                <!-- Curso 3 Mejorado -->
-                <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group"
-                >
-                    <div
-                        class="h-40 bg-gradient-to-r from-orange-500 to-red-600 relative overflow-hidden"
-                    >
-                        <div
-                            class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all"
-                        >
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3
-                            class="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors"
-                        >
-                            JavaScript Moderno: ES6+ y Más Allá
-                        </h3>
-                        <div
-                            class="flex items-center text-sm text-gray-600 mb-4"
-                        >
-                            <span
-                                class="flex items-center bg-yellow-50 px-2 py-1 rounded"
+                        <!-- Portada con imagen de fondo -->
+                        <div class="relative">
+                            <div
+                                class="bg-gradient-to-br from-blue-600/90 to-purple-700/90 rounded-3xl overflow-hidden shadow-2xl relative transform hover:scale-[1.02] transition-transform duration-500"
                             >
-                                <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                4.8
-                            </span>
-                            <span class="mx-2">•</span>
-                            <span>16 horas</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-gray-900 text-xl"
-                                    >$59.99</span
-                                >
-                                <span
-                                    class="text-gray-500 line-through text-sm ml-2"
-                                    >$79.99</span
-                                >
+                                <!-- Imagen de portada dinámica -->
+                                {curso.portada_url ? (
+                                    <div
+                                        class="aspect-video bg-cover bg-center"
+                                        style={`background-image: url('${API_URL}/storage/${curso.portada_url}')`}
+                                    ></div>
+                                ) : (
+                                    <div
+                                        class="aspect-video flex items-center justify-center p-8 relative z-10"
+                                    >
+                                        <div class="text-center text-white">
+                                            <div
+                                                class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/30 transform hover:scale-110 transition-transform duration-300"
+                                            >
+                                                <i class="fas fa-graduation-cap text-white text-4xl"
+                                                ></i>
+                                            </div>
+                                            <h3 class="text-2xl font-bold mb-2">
+                                                {curso.titulo.substring(0, 30)}...
+                                            </h3>
+                                            <p class="text-blue-100 text-lg opacity-90">
+                                                {curso.categoria.nombre}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                class="text-blue-600 hover:text-blue-800 font-medium bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors"
-                                >Ver curso</button
-                            >
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <!-- FAQ Section Mejorada -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4 text-center">
-                Preguntas frecuentes
-            </h2>
-            <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-                Encuentra respuestas a las preguntas más comunes sobre este
-                curso
-            </p>
-            <div class="max-w-3xl mx-auto space-y-4">
-                <!-- Pregunta 1 Mejorada -->
-                <div
-                    class="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
-                >
-                    <button
-                        class="faq-question w-full text-left p-6 bg-gray-50 hover:bg-gray-100 transition-all font-semibold flex justify-between items-center text-lg"
-                    >
-                        <span>¿Cuánto tiempo tengo acceso al curso?</span>
-                        <i
-                            class="fas fa-chevron-down transition-transform text-blue-600"
-                        ></i>
-                    </button>
-                    <div
-                        class="faq-answer p-6 border-t border-gray-200 hidden bg-white"
-                    >
-                        <p class="text-gray-700 leading-relaxed">
-                            Tienes acceso de por vida al curso. Una vez que te
-                            inscribas, podrás acceder al contenido para siempre,
-                            incluyendo todas las actualizaciones futuras.
-                        </p>
+            <!-- Course Content -->
+            <section class="py-16 bg-white">
+                <div class="container mx-auto px-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <!-- Main Content -->
+                        <div class="lg:col-span-2">
+                            <!-- Tabs Mejoradas -->
+                            <div class="border-b border-gray-200 mb-8">
+                                <nav class="flex space-x-2 overflow-x-auto pb-1">
+                                    <button
+                                        id="tab-descripcion"
+                                        class="tab-button flex items-center px-6 py-4 rounded-t-lg border-b-2 border-blue-600 text-blue-600 font-semibold whitespace-nowrap transition-all bg-blue-50"
+                                    >
+                                        <i class="fas fa-info-circle mr-2"
+                                        ></i>Descripción
+                                    </button>
+                                    <button
+                                        id="tab-contenido"
+                                        class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
+                                    >
+                                        <i class="fas fa-list-ol mr-2"></i>Contenido
+                                        <span class="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                            {obtenerTotalLecciones(curso.modulos)} lecciones
+                                        </span>
+                                    </button>
+                                    <button
+                                        id="tab-objetivos"
+                                        class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
+                                    >
+                                        <i class="fas fa-bullseye mr-2"></i>Objetivos
+                                    </button>
+                                    <button
+                                        id="tab-instructor"
+                                        class="tab-button flex items-center px-6 py-4 rounded-t-lg text-gray-500 hover:text-gray-700 font-semibold whitespace-nowrap transition-all hover:bg-gray-50"
+                                    >
+                                        <i class="fas fa-user mr-2"></i>Instructor
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Tab Contents -->
+                            <!-- Descripción Mejorada -->
+                            <div id="content-descripcion" class="tab-content active">
+                                <div class="prose max-w-none">
+                                    <h2
+                                        class="text-3xl font-bold text-gray-900 mb-8 flex items-center"
+                                    >
+                                        <span class="bg-blue-100 p-2 rounded-lg mr-3">
+                                            <i
+                                                class="fas fa-graduation-cap text-blue-600"
+                                            ></i>
+                                        </span>
+                                        Lo que aprenderás
+                                    </h2>
+
+                                    {curso.objetivos_aprendizaje && curso.objetivos_aprendizaje.length > 0 ? (
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10"
+                                        >
+                                            {curso.objetivos_aprendizaje.map((objetivo) => (
+                                                <div
+                                                    class="flex items-start space-x-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all duration-300 group"
+                                                >
+                                                    <div
+                                                        class="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
+                                                    >
+                                                        <i class="fas fa-check text-green-600"
+                                                        ></i>
+                                                    </div>
+                                                    <span class="text-gray-700 font-medium"
+                                                        >{objetivo.descripcion}</span
+                                                    >
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-10">
+                                            <p class="text-yellow-800">
+                                                <i class="fas fa-info-circle mr-2"></i>
+                                                No se han definido objetivos de aprendizaje para este curso.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div
+                                        class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100"
+                                    >
+                                        <h3
+                                            class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                                        >
+                                            <span
+                                                class="bg-blue-100 p-2 rounded-lg mr-3"
+                                            >
+                                                <i class="fas fa-book text-blue-600"
+                                                ></i>
+                                            </span>
+                                            Descripción del curso
+                                        </h3>
+                                        <div class="prose-lg text-gray-700 mb-6 leading-relaxed"
+                                            set:html={curso.descripcion.replace(/<[^>]*>?/gm, "")} 
+                                        />
+                                    </div>
+
+                                    <div
+                                        class="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-r-xl p-6 mb-8"
+                                    >
+                                        <div class="flex items-start">
+                                            <div
+                                                class="flex-shrink-0 bg-yellow-100 p-3 rounded-lg"
+                                            >
+                                                <i
+                                                    class="fas fa-lightbulb text-yellow-600 text-xl"
+                                                ></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p
+                                                    class="text-lg font-semibold text-yellow-800"
+                                                >
+                                                    ¡Curso actualizado!
+                                                </p>
+                                                <p class="text-yellow-700 mt-1">
+                                                    Este curso contiene información actualizada sobre la cultura del agua y prácticas sostenibles.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                                            >
+                                                <span
+                                                    class="bg-purple-100 p-2 rounded-lg mr-3"
+                                                >
+                                                    <i
+                                                        class="fas fa-user-friends text-purple-600"
+                                                    ></i>
+                                                </span>
+                                                ¿Para quién es este curso?
+                                            </h3>
+                                            <ul class="space-y-3">
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-green-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Personas interesadas en la conservación del agua</span
+                                                    >
+                                                </li>
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-green-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Familias que desean adoptar hábitos sostenibles</span
+                                                    >
+                                                </li>
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-green-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Profesionales del sector ambiental</span
+                                                    >
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                                            >
+                                                <span
+                                                    class="bg-green-100 p-2 rounded-lg mr-3"
+                                                >
+                                                    <i
+                                                        class="fas fa-clipboard-list text-green-600"
+                                                    ></i>
+                                                </span>
+                                                Requisitos
+                                            </h3>
+                                            <ul class="space-y-3">
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-blue-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Interés por el cuidado del medio ambiente</span
+                                                    >
+                                                </li>
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-blue-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Disposición para implementar cambios en el hogar</span
+                                                    >
+                                                </li>
+                                                <li class="flex items-start space-x-3">
+                                                    <i
+                                                        class="fas fa-check text-blue-500 mt-1"
+                                                    ></i>
+                                                    <span class="text-gray-700"
+                                                        >Deseo de aprender sobre cultura hídrica</span
+                                                    >
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contenido Mejorado -->
+                            <div id="content-contenido" class="tab-content">
+                                <div class="flex justify-between items-center mb-8">
+                                    <h2
+                                        class="text-3xl font-bold text-gray-900 flex items-center"
+                                    >
+                                        <span class="bg-blue-100 p-2 rounded-lg mr-3">
+                                            <i class="fas fa-list-ol text-blue-600"></i>
+                                        </span>
+                                        Contenido del curso
+                                    </h2>
+                                    <div
+                                        class="text-lg font-semibold text-blue-600 bg-blue-50 px-4 py-2 rounded-full"
+                                    >
+                                        <span>{formatearTiempo(curso.tiempo_estimado_min)}</span> de contenido
+                                    </div>
+                                </div>
+
+                                {curso.modulos && curso.modulos.length > 0 ? (
+                                    <div class="space-y-6">
+                                        {curso.modulos.map((modulo, index) => {
+                                            const totalLecciones = modulo.lecciones.length;
+                                            const colores = ['from-blue-50 to-indigo-50', 'from-purple-50 to-pink-50', 'from-green-50 to-emerald-50', 'from-orange-50 to-red-50', 'from-teal-50 to-cyan-50'];
+                                            const iconos = ['fa-play-circle', 'fa-palette', 'fa-flask', 'fa-chart-line', 'fa-code'];
+                                            const colorFondo = colores[index % colores.length];
+                                            const icono = iconos[index % iconos.length];
+                                            
+                                            return (
+                                                <div
+                                                    class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                                                >
+                                                    <div
+                                                        class={`bg-gradient-to-r ${colorFondo} px-6 py-5 border-b border-gray-200 flex justify-between items-center`}
+                                                    >
+                                                        <div class="flex items-center space-x-4">
+                                                            <div
+                                                                class="bg-blue-600 text-white p-2 rounded-lg"
+                                                            >
+                                                                <i class={`fas ${icono}`}></i>
+                                                            </div>
+                                                            <div>
+                                                                <h3
+                                                                    class="font-semibold text-gray-900 text-lg"
+                                                                >
+                                                                    Módulo {index + 1}: {modulo.titulo}
+                                                                </h3>
+                                                                <p
+                                                                    class="text-gray-600 text-sm mt-1"
+                                                                >
+                                                                    {modulo.lecciones.length} lecciones
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <span
+                                                            class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full"
+                                                        >{totalLecciones} lecciones</span>
+                                                    </div>
+                                                    <div class="divide-y divide-gray-100">
+                                                        {modulo.lecciones.map((leccion, lecIndex) => (
+                                                            <div
+                                                                class="px-6 py-4 flex items-center justify-between hover:bg-blue-50 transition-all duration-200 group"
+                                                            >
+                                                                <div
+                                                                    class="flex items-center space-x-4"
+                                                                >
+                                                                    <i
+                                                                        class={`fas ${leccion.tipo_contenido === 'mixto' ? 'fa-film' : 'fa-play-circle'} text-gray-400 group-hover:text-blue-600 transition-colors`}
+                                                                    ></i>
+                                                                    <div>
+                                                                        <span
+                                                                            class="text-gray-700 group-hover:text-gray-900 font-medium"
+                                                                        >{leccion.titulo}</span>
+                                                                        {leccion.tipo_contenido === 'mixto' && (
+                                                                            <span class="ml-3 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                                                                                <i class="fas fa-video mr-1"></i>Video
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div
+                                                                    class="flex items-center space-x-4"
+                                                                >
+                                                                    <i
+                                                                        class="fas fa-lock text-gray-300 group-hover:text-blue-500 transition-colors"
+                                                                    ></i>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div class="text-center py-12">
+                                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                                            <i class="fas fa-book-open text-gray-400 text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Contenido no disponible</h3>
+                                        <p class="text-gray-500">El contenido de este curso estará disponible próximamente.</p>
+                                    </div>
+                                )}
+
+                                {curso.modulos && curso.modulos.length > 3 && (
+                                    <div class="mt-8 text-center">
+                                        <button
+                                            id="ver-mas-modulos"
+                                            class="group bg-white border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center mx-auto"
+                                        >
+                                            <span>Ver todos los módulos</span>
+                                            <i
+                                                class="fas fa-chevron-down ml-2 group-hover:rotate-180 transition-transform duration-300"
+                                            ></i>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <!-- Objetivos de Aprendizaje -->
+                            <div id="content-objetivos" class="tab-content">
+                                <h2
+                                    class="text-3xl font-bold text-gray-900 mb-8 flex items-center"
+                                >
+                                    <span class="bg-blue-100 p-2 rounded-lg mr-3">
+                                        <i class="fas fa-bullseye text-blue-600"></i>
+                                    </span>
+                                    Objetivos de Aprendizaje
+                                </h2>
+
+                                {curso.objetivos_aprendizaje && curso.objetivos_aprendizaje.length > 0 ? (
+                                    <div class="space-y-6">
+                                        {curso.objetivos_aprendizaje.map((objetivo, index) => (
+                                            <div
+                                                class="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-all duration-300 bg-white"
+                                            >
+                                                <div class="flex items-start">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 rounded-full font-bold text-lg">
+                                                            {index + 1}
+                                                        </div>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <p class="text-gray-700 text-lg leading-relaxed">
+                                                            {objetivo.descripcion}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div class="text-center py-12">
+                                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                                            <i class="fas fa-bullseye text-gray-400 text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Objetivos no definidos</h3>
+                                        <p class="text-gray-500">No se han definido objetivos específicos para este curso.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <!-- Instructor -->
+                            <div id="content-instructor" class="tab-content">
+                                <h2
+                                    class="text-3xl font-bold text-gray-900 mb-8 flex items-center"
+                                >
+                                    <span class="bg-blue-100 p-2 rounded-lg mr-3">
+                                        <i class="fas fa-user text-blue-600"></i>
+                                    </span>
+                                    Instructor del Curso
+                                </h2>
+
+                                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-8 border border-gray-200">
+                                    <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-user text-blue-600 text-3xl"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                                                {curso.autor.nombre} {curso.autor.ap_paterno}
+                                            </h3>
+                                            <p class="text-blue-600 font-medium mb-3">
+                                                <i class="fas fa-envelope mr-2"></i>
+                                                {curso.autor.correo_electronico}
+                                            </p>
+                                            <p class="text-gray-700 mb-4">
+                                                Instructor certificado y experto en cultura del agua con amplia experiencia en educación ambiental y sostenibilidad.
+                                            </p>
+                                            <div class="flex flex-wrap gap-2">
+                                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                                    <i class="fas fa-star mr-1"></i> Experto en Agua
+                                                </span>
+                                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                                                    <i class="fas fa-graduation-cap mr-1"></i> Educador Ambiental
+                                                </span>
+                                                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                                                    <i class="fas fa-leaf mr-1"></i> Sostenibilidad
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="bg-white border border-gray-200 rounded-xl p-6">
+                                        <h4 class="font-bold text-gray-900 mb-3 flex items-center">
+                                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                                            Experiencia
+                                        </h4>
+                                        <p class="text-gray-700">
+                                            Más de 10 años de experiencia en educación ambiental y desarrollo de programas de cultura del agua.
+                                        </p>
+                                    </div>
+                                    <div class="bg-white border border-gray-200 rounded-xl p-6">
+                                        <h4 class="font-bold text-gray-900 mb-3 flex items-center">
+                                            <i class="fas fa-users text-green-600 mr-2"></i>
+                                            Estudiantes
+                                        </h4>
+                                        <p class="text-gray-700">
+                                            Ha capacitado a más de 15,000 estudiantes en temas de conservación del agua y prácticas sostenibles.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Mejorada -->
+                        <div class="space-y-6 sticky-sidebar">
+                            
+
+                            <!-- Información técnica -->
+                            <div
+                                class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+                            >
+                                <h3 class="font-bold text-gray-900 mb-4 flex items-center">
+                                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                    Información del curso
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">Categoría</span>
+                                        <span class="font-medium">{curso.categoria.nombre}</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">Duración</span>
+                                        <span class="font-medium">{formatearTiempo(curso.tiempo_estimado_min)}</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">Módulos</span>
+                                        <span class="font-medium">{curso.modulos?.length || 0}</span>
+                                    </div>
+                                    <div class="flex justify-between py-2">
+                                        <span class="text-gray-600">Nivel</span>
+                                        <span class="font-medium text-green-600">Principiante</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Pregunta 2 Mejorada -->
-                <div
-                    class="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
-                >
-                    <button
-                        class="faq-question w-full text-left p-6 bg-gray-50 hover:bg-gray-100 transition-all font-semibold flex justify-between items-center text-lg"
-                    >
-                        <span
-                            >¿Obtengo un certificado al completar el curso?</span
-                        >
-                        <i
-                            class="fas fa-chevron-down transition-transform text-blue-600"
-                        ></i>
-                    </button>
-                    <div
-                        class="faq-answer p-6 border-t border-gray-200 hidden bg-white"
-                    >
-                        <p class="text-gray-700 leading-relaxed">
-                            Sí, al completar todos los módulos y aprobar las
-                            evaluaciones, recibirás un certificado de
-                            finalización que puedes compartir en tu LinkedIn o
-                            incluir en tu CV.
-                        </p>
-                    </div>
+            </section>
+        </>
+    ) : (
+        <!-- Loading State -->
+        <section class="py-20 bg-white">
+            <div class="container mx-auto px-4 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
+                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
                 </div>
-
-                <!-- Pregunta 3 Mejorada -->
-                <div
-                    class="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
-                >
-                    <button
-                        class="faq-question w-full text-left p-6 bg-gray-50 hover:bg-gray-100 transition-all font-semibold flex justify-between items-center text-lg"
-                    >
-                        <span
-                            >¿Hay requisitos previos para tomar este curso?</span
-                        >
-                        <i
-                            class="fas fa-chevron-down transition-transform text-blue-600"
-                        ></i>
-                    </button>
-                    <div
-                        class="faq-answer p-6 border-t border-gray-200 hidden bg-white"
-                    >
-                        <p class="text-gray-700 leading-relaxed">
-                            No se requieren conocimientos previos de
-                            programación. El curso está diseñado para
-                            principiantes, aunque también es útil para
-                            desarrolladores que quieran actualizar sus
-                            habilidades.
-                        </p>
-                    </div>
-                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Cargando curso...</h1>
+                <p class="text-gray-600">Por favor espera mientras cargamos la información del curso.</p>
             </div>
+        </section>
+    )}
 
-            <div class="text-center mt-12">
-                <p class="text-gray-600 text-lg mb-4">¿Tienes más preguntas?</p>
-                <button
-                    class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-md"
-                >
-                    <i class="fas fa-envelope mr-2"></i>
-                    Contáctanos
-                </button>
-            </div>
-        </div>
-    </section>
-
+    
     <Footer />
 
     <script>
@@ -1430,29 +716,92 @@ try {
         // 2. ESPERAR A QUE CARGUE EL HTML
         // ==========================================================
         document.addEventListener("DOMContentLoaded", () => {
-            const botonInscribir = document.getElementById("btn-inscribir");
+            // ==========================================================
+            // 3. MANEJO DE TABS
+            // ==========================================================
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
 
-            if (!botonInscribir) {
-                console.error(
-                    "Error: No se pudo encontrar el botón #btn-inscribir",
-                );
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.id.replace('tab-', '');
+                    
+                    // Remover clases activas
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('border-blue-600', 'text-blue-600', 'bg-blue-50');
+                        btn.classList.add('text-gray-500');
+                    });
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Agregar clases activas
+                    button.classList.add('border-blue-600', 'text-blue-600', 'bg-blue-50');
+                    button.classList.remove('text-gray-500');
+                    document.getElementById(`content-${tabId}`).classList.add('active');
+                });
+            });
+
+            // ==========================================================
+            // 4. MANEJO DE FAQ
+            // ==========================================================
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const answer = question.nextElementSibling;
+                    const icon = question.querySelector('i');
+                    
+                    answer.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                });
+            });
+
+            // ==========================================================
+            // 5. MANEJO DE MÓDULOS COLAPSABLES
+            // ==========================================================
+            const verMasBtn = document.getElementById('ver-mas-modulos');
+            if (verMasBtn) {
+                verMasBtn.addEventListener('click', () => {
+                    const modulos = document.querySelectorAll('.border-gray-200.rounded-2xl');
+                    modulos.forEach((modulo, index) => {
+                        if (index >= 3) {
+                            modulo.classList.toggle('hidden');
+                        }
+                    });
+                    
+                    verMasBtn.querySelector('span').textContent = 
+                        verMasBtn.querySelector('span').textContent === 'Ver todos los módulos' 
+                        ? 'Ver menos módulos' 
+                        : 'Ver todos los módulos';
+                });
+            }
+
+            // ==========================================================
+            // 6. MANEJO DE BOTONES DE INSCRIPCIÓN
+            // ==========================================================
+            const botonInscribir = document.getElementById('btn-inscribir');
+            const botonSidebarInscribir = document.getElementById('btn-sidebar-inscribir');
+            
+            const botonesInscribir = [botonInscribir, botonSidebarInscribir].filter(btn => btn);
+
+            if (botonesInscribir.length === 0) {
+                console.error("Error: No se pudo encontrar ningún botón de inscripción");
                 return;
             }
 
-            const cursoId = botonInscribir.dataset.cursoId;
+            const cursoId = botonesInscribir[0].dataset.cursoId;
 
             // ==========================================================
-            // 3. COMPROBAR SI EL USUARIO ESTÁ LOGUEADO
+            // 7. COMPROBAR SI EL USUARIO ESTÁ LOGUEADO
             // ==========================================================
             if (!user || !authToken) {
                 console.log("Usuario no logueado.");
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-sign-in-alt mr-2"></i> Inicia sesión para inscribirte';
-                botonInscribir.disabled = true;
-
-                // Opcional: Hacer que el botón redirija al login
-                botonInscribir.addEventListener("click", () => {
-                    window.location.href = "/login";
+                botonesInscribir.forEach(boton => {
+                    boton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Inicia sesión para inscribirte';
+                    boton.disabled = true;
+                    boton.addEventListener("click", () => {
+                        window.location.href = "/login";
+                    });
                 });
                 return;
             }
@@ -1460,11 +809,11 @@ try {
             const usuarioId = user.id_usuario;
 
             if (!usuarioId) {
-                console.error(
-                    "No se pudo encontrar 'id_usuario' en el objeto 'user' del localStorage.",
-                );
-                botonInscribir.textContent = "Error de sesión";
-                botonInscribir.disabled = true;
+                console.error("No se pudo encontrar 'id_usuario' en el objeto 'user' del localStorage.");
+                botonesInscribir.forEach(boton => {
+                    boton.textContent = "Error de sesión";
+                    boton.disabled = true;
+                });
                 return;
             }
 
@@ -1472,13 +821,14 @@ try {
             // FUNCIÓN A: Inscribir usuario (POST)
             // ==========================================================
             const inscribirUsuario = async () => {
-                botonInscribir.disabled = true;
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-spinner fa-spin mr-2"></i> Inscribiendo...';
+                botonesInscribir.forEach(boton => {
+                    boton.disabled = true;
+                    boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Inscribiendo...';
+                });
 
                 try {
                     const response = await fetch(
-                        `https://aquaguardv1.onrender.com/api/cursos-inscritos/usuario/${usuarioId}/inscribir/${cursoId}`,
+                        `${API_URL}/api/cursos-inscritos/usuario/${usuarioId}/inscribir/${cursoId}`,
                         {
                             method: "POST",
                             headers: {
@@ -1512,9 +862,7 @@ try {
                     alert(`Hubo un error: ${error.message || error}`);
 
                     // Revertir el botón
-                    botonInscribir.disabled = false;
-                    botonInscribir.innerHTML =
-                        '<i class="fas fa-shopping-cart mr-2"></i> Inscribirme al Curso';
+                    mostrarBotonInscribirse();
                 }
             };
 
@@ -1556,55 +904,79 @@ try {
             // FUNCIÓN C: Mostrar botón "Entrar al curso"
             // ==========================================================
             const mostrarBotonEntrarAlCurso = () => {
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-play-circle mr-2"></i> Entrar al curso';
-                botonInscribir.classList.remove(
-                    "bg-white",
-                    "text-blue-600",
-                    "hover:bg-gray-50",
-                );
-                botonInscribir.classList.add(
-                    "bg-green-600",
-                    "text-white",
-                    "hover:bg-green-700",
-                );
+                botonesInscribir.forEach(boton => {
+                    boton.innerHTML = '<i class="fas fa-play-circle mr-2"></i> Entrar al curso';
+                    boton.classList.remove(
+                        "bg-white",
+                        "text-blue-600",
+                        "hover:bg-gray-50",
+                        "from-blue-600",
+                        "to-purple-600",
+                        "hover:from-blue-700",
+                        "hover:to-purple-700",
+                        "text-white"
+                    );
+                    boton.classList.add(
+                        "bg-green-600",
+                        "text-white",
+                        "hover:bg-green-700"
+                    );
 
-                // Cambiar comportamiento para redirigir al curso
-                botonInscribir.onclick = () => {
-                    window.location.href = `/curso/${cursoId}`;
-                };
+                    // Cambiar comportamiento para redirigir al curso
+                    boton.onclick = () => {
+                        window.location.href = `/curso/${cursoId}`;
+                    };
 
-                botonInscribir.disabled = false;
+                    boton.disabled = false;
+                });
             };
 
             // ==========================================================
             // FUNCIÓN D: Mostrar botón "Inscribirse"
             // ==========================================================
             const mostrarBotonInscribirse = () => {
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-shopping-cart mr-2"></i> Inscribirse ahora';
-                botonInscribir.classList.remove(
-                    "bg-green-600",
-                    "text-white",
-                    "hover:bg-green-700",
-                );
-                botonInscribir.classList.add(
-                    "bg-white",
-                    "text-blue-600",
-                    "hover:bg-gray-50",
-                );
+                botonesInscribir.forEach(boton => {
+                    if (boton.id === 'btn-inscribir') {
+                        boton.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i> Inscribirse ahora';
+                        boton.classList.remove(
+                            "bg-green-600",
+                            "text-white",
+                            "hover:bg-green-700"
+                        );
+                        boton.classList.add(
+                            "bg-white",
+                            "text-blue-600",
+                            "hover:bg-gray-50"
+                        );
+                    } else {
+                        boton.innerHTML = '<i class="fas fa-shopping-cart mr-3"></i> Inscribirse ahora';
+                        boton.classList.remove(
+                            "bg-green-600",
+                            "text-white",
+                            "hover:bg-green-700"
+                        );
+                        boton.classList.add(
+                            "from-blue-600",
+                            "to-purple-600",
+                            "hover:from-blue-700",
+                            "hover:to-purple-700",
+                            "text-white"
+                        );
+                    }
 
-                botonInscribir.onclick = inscribirUsuario;
-                botonInscribir.disabled = false;
+                    boton.onclick = inscribirUsuario;
+                    boton.disabled = false;
+                });
             };
 
             // ==========================================================
-            // FUNCIÓN E: Inicializar el botón
+            // FUNCIÓN E: Inicializar los botones
             // ==========================================================
-            const inicializarBoton = async () => {
-                botonInscribir.disabled = true;
-                botonInscribir.innerHTML =
-                    '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+            const inicializarBotones = async () => {
+                botonesInscribir.forEach(boton => {
+                    boton.disabled = true;
+                    boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...';
+                });
 
                 try {
                     const estaInscrito = await verificarInscripcion();
@@ -1625,9 +997,9 @@ try {
             };
 
             // ==========================================================
-            // 4. EJECUTAR LA INICIALIZACIÓN
+            // 8. EJECUTAR LA INICIALIZACIÓN
             // ==========================================================
-            inicializarBoton();
+            inicializarBotones();
         });
     </script>
 </Layout>

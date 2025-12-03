@@ -19,9 +19,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
             // Si no hay datos, el usuario no ha iniciado sesión. Lo redirigimos.
             if (!userString) {
-                localStorage.removeItem("authToken");
-                sessionStorage.removeItem("authToken");
-                window.location.href = "../../auth/login";
+                window.location.href = "../../pages/auth/login.astro";
                 return; // Detenemos la ejecución del script
             }
 
@@ -40,7 +38,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 );
                 localStorage.clear();
                 sessionStorage.clear(); // Limpia ambos también
-                window.location.href = "../../auth/login";
+                window.location.href = "../../pages/auth/login.astro";
             }
         });
     </script>
