@@ -316,7 +316,7 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
                             messageEl.style.color = "green";
                             form.reset(); // Limpia el formulario
                             setTimeout(() => {
-                                window.location.href = "/login"; // Redirige al login
+                                window.location.href = "auth/login"; // Redirige al login
                             }, 2000); // Espera 2 segundos antes de redirigir
                         }
                     } catch (error) {
