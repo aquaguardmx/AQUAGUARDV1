@@ -10,8 +10,8 @@ const navItems: NavItem[] = [
   { name: "Inicio", href: "/usuario/index-elearning" },
   { name: "Cursos", href: "/usuario/cursos" },
   { name: "Mis Cursos", href: "/usuario/mis-cursos" },
-  { name: "Recursos", href: "/recursos" },
-  { name: "Sobre Nosotros", href: "/nosotros" },
+  { name: "Recursos", href: "" },
+  { name: "Sobre Nosotros", href: "" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -340,7 +340,7 @@ function getRoleName(idRol: number): string {
                 ${
                   canCreate
                     ? `
-                  <a href="/cursos/crear" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                  <a href="../admin/formularios/formularioAgregarCurso" class="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
